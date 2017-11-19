@@ -10,12 +10,8 @@ def CreateTable():
         cur.executescript("""
             DROP TABLE IF EXISTS Cameras;
             CREATE TABLE Cameras(Id INT, Name TEXT, Key TEXT, LastCaptureFile TEXT, LastCaptureTime INT, URL TEXT, USERNAME TEXT, PASS TEXT, JSONRESULT TEXT);
-            INSERT INTO Cameras VALUES(1, "Camera49", "key", "", 0, "http://192.168.128.30/tmpfs/auto.jpg", "admin", "simcity69", "{}");
-            INSERT INTO Cameras VALUES(2, "Camera49_2", "key", "", 0, "http://192.168.128.40/tmpfs/auto.jpg", "admin", "simcity69", "{}");
-            INSERT INTO Cameras VALUES(3, "Camera49_3", "key", "", 0, "http://192.168.128.28/tmpfs/auto.jpg", "admin", "simcity69", "{}");
             DROP TABLE IF EXISTS Results;
             CREATE TABLE Results(Name TEXT, Key TEXT, LastCaptureFile TEXT, LastCaptureTime INT,  JSONRESULT TEXT);
-            COMMIT;
             """)
         ret=True
 

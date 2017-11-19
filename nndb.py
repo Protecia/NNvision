@@ -2,9 +2,10 @@ import sqlite3 as lite
 import sys
 
 
-def CreateTable(conx):
+def CreateTable():
     ret = False
     try:
+        conx = lite.connect("nnvision.db")
         cur = conx.cursor()
         cur.executescript("""
             DROP TABLE IF EXISTS Cameras;
@@ -82,9 +83,10 @@ def GetCamera(cameraname, camerainfos):
         print "SQL Error %s:" % e.args[0]
     return ret 
 
-def GetCameras(conx, cameras):
+def GetCameras(cameras):
     ret = False
     try:
+        conx = lite.connect("nnvision.db")
         cur = conx.cursor()
         cur.execute("SELECT Id,Name, Key, LastCaptureFile,LastCaptureTime,URL,USERNAME,PASS,JSONRESULT  FROM Cameras;")
         col_names = [cn[0] for cn in cur.description]

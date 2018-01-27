@@ -8,8 +8,7 @@ from wifi import Cell
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
-from .models import Info, Robot
-from .robot_server import Server, find_local_ip, check_url, robot_logs
+from .models import Cameras, Results
 from .wpa_wifi import Network, Fileconf
 
 # Create your views here.

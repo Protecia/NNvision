@@ -3,12 +3,13 @@
 while [ 1 ]
 do
         filename=`/bin/date +%d-%m-%Y_%Hh%M`
-        vlc rtsp://admin:password@192.168.128.25/11 --sout=file/ts:$filename.mpg --run-time 60  --play-and-exit
+	rm ${filename}.mpg
+        vlc rtsp://admin:simcity69@192.168.128.40/11 --sout=file/ts:${filename}.mpg --run-time 60  --play-and-exit
 
 (
 HOST='192.168.128.1'
 USER='freebox'
-PASSWD='youtpassword'
+PASSWD='simcity69'
 
 ftp -n -v $HOST << EOT
 ascii
@@ -18,15 +19,14 @@ bin
 ha
 cd "Disque dur"
 cd "Cameras"
-put $filename.mpg
+put "${filename}.mpg"
 bye
 EOT
 
-rm $filename.mpg
 ) &
 
 
 
-
+break
 done
 

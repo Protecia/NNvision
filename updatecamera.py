@@ -39,26 +39,29 @@ class GetPicture(Thread):
         print "Thread Run :" , self.camera["Name"]
         
         while [ 1 ]:
-            self.caminfos=[]
-            if nndb.GetCamera(self.camera["Name"],self.caminfos) == True:
-                if self.caminfos[0]["LastCaptureTime"] == 0 :
-	            self.getpicture()
+            now=int(time.time())
+            try:
+                self.caminfos=[]
+                if nndb.GetCamera(self.camera["Name"],self.caminfos) == True:
+                    if ((self.caminfos[0]["LastCaptureTime"] == 0) | (now - (self.caminfos[0]["LastCaptureTime"] ) > 20)):
+	                self.getpicture()
+            except:
+                print "Failed to access Camera %s " % (self.camera["Name"])
+                pass 
             time.sleep(1)
 
 
     def getpicture(self):
+        capturetime=0
+        filename=""
         baseurl=self.camera["URL"]
         try:
             r = requests.get(baseurl, auth=(self.camera["USERNAME"], self.camera["PASS"]), stream=True)
             print "r.url=" , r.url, "  status_code=>" , str(r.status_code)
             if r.status_code == 200:
                 capturetime=int(time.time())
-                #filename = "uploads/" + self.camera["Name"]+ "__" + str(self.imagecounter) + ".jpg"
                 filename = "uploads/" + self.camera["Name"];
                 print "writing file: " , filename
-                #self.imagecounter = self.imagecounter + 1
-                #if self.imagecounter > 3:
-                #    self.imagecounter = 0
 
                 with open(filename, 'wb') as fd:
                     for chunk in r.iter_content(chunk_size=128):
@@ -74,6 +77,8 @@ class GetPicture(Thread):
             print "Exception while calling URL"
             print "Unexpected error:   \n %s\n" % (sys.exc_info()[0])
             pass
+
+        nndb.UpdateCamera(self.camera["Name"], filename, capturetime)
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -94,14 +99,12 @@ def CheckDB():
 # -----
 # MAIN
 # -----
-conx = lite.connect('nnvision.db')
-nndb.CreateTable(conx)
 
 Cameras=[]
 print "================"
 print "Checking Cameras"
 print "================"
-nndb.GetCameras(conx, Cameras)
+nndb.GetCameras(Cameras)
 
 while [ 1 ]:    
     # print "Cameras:" , Cameras

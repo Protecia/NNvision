@@ -45,12 +45,13 @@ def on_message(client, userdata, msg):
 def camera_analysis(camera):
     print "====Camera analysis ==========================================================="
     print "Camera:" , camera['current']['camera'] 
-    update_camera_field(camera,"truck",60)
-    update_camera_field(camera,"pottedplant",50)
-    update_camera_field(camera,"person",60)
-    update_camera_field(camera,"car", 40)
+    update_camera_field(camera,"truck",50)
+    # update_camera_field(camera,"pottedplant",50)
+    update_camera_field(camera,"person",55)
+    update_camera_field(camera,"car", 70)
     update_camera_field(camera,"dog", 40)
     update_camera_field(camera,"cat", 80)
+    # update_camera_field(camera,"bench", 40)
     print "==============================================================================="
 
     # print "=>",camera
@@ -61,13 +62,13 @@ def camera_analysis(camera):
 
 
     print "Checking new state... previous was:",camera["previous"]
-    check_previous_field(camera,"pottedplant")
+    # check_previous_field(camera,"pottedplant")
     check_previous_field(camera,"car")
     check_previous_field(camera,"person")
     check_previous_field(camera,"truck")
     check_previous_field(camera,"dog")
     check_previous_field(camera,"cat")
-
+    # check_previous_field(camera,"bench")
 def update_camera_field(camera,field,prob_mini):
     count_key = "nb"+field
     if count_key not in camera['previous']:
@@ -101,7 +102,7 @@ def check_previous_field(camera,field):
 
 
 def notify(camera,message):
-    print "in Notify Camera"
+    print "in Notify Camera:%s" % (str(message))
     baseurl = "https://smsapi.free-mobile.fr/sendmsg?"
     filenameresult = camera["current"]["camera"]+"_result.jpg"
     date = datetime.datetime.now()

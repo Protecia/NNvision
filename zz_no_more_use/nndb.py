@@ -2,19 +2,16 @@ import sqlite3 as lite
 import sys
 
 
-def CreateTable(conx):
+def CreateTable():
     ret = False
     try:
+        conx = lite.connect("nnvision.db")
         cur = conx.cursor()
         cur.executescript("""
             DROP TABLE IF EXISTS Cameras;
             CREATE TABLE Cameras(Id INT, Name TEXT, Key TEXT, LastCaptureFile TEXT, LastCaptureTime INT, URL TEXT, USERNAME TEXT, PASS TEXT, JSONRESULT TEXT);
-            INSERT INTO Cameras VALUES(1, "Camera49", "key", "", 0, "http://192.168.128.30/tmpfs/auto.jpg", "admin", "simcity69", "{}");
-            INSERT INTO Cameras VALUES(2, "Camera49_2", "key", "", 0, "http://192.168.128.40/tmpfs/auto.jpg", "admin", "simcity69", "{}");
-            INSERT INTO Cameras VALUES(3, "Camera49_3", "key", "", 0, "http://192.168.128.28/tmpfs/auto.jpg", "admin", "simcity69", "{}");
             DROP TABLE IF EXISTS Results;
             CREATE TABLE Results(Name TEXT, Key TEXT, LastCaptureFile TEXT, LastCaptureTime INT,  JSONRESULT TEXT);
-            COMMIT;
             """)
         ret=True
 
@@ -82,9 +79,10 @@ def GetCamera(cameraname, camerainfos):
         print "SQL Error %s:" % e.args[0]
     return ret 
 
-def GetCameras(conx, cameras):
+def GetCameras(cameras):
     ret = False
     try:
+        conx = lite.connect("nnvision.db")
         cur = conx.cursor()
         cur.execute("SELECT Id,Name, Key, LastCaptureFile,LastCaptureTime,URL,USERNAME,PASS,JSONRESULT  FROM Cameras;")
         col_names = [cn[0] for cn in cur.description]

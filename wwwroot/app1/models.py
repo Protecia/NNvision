@@ -7,7 +7,7 @@ from django.utils.encoding import python_2_unicode_compatible
 
 # Informations about the camera you are using
 @python_2_unicode_compatible  # only if you need to support Python 2
-class Cameras(models.Model):
+class Camera(models.Model):
     name = models.CharField(max_length=20)
     key = models.CharField(max_length=20)
     url = models.URLField()
@@ -19,10 +19,18 @@ class Cameras(models.Model):
 
 # Informations about the detection of the cameras
 @python_2_unicode_compatible  # only if you need to support Python 2
-class Results(models.Model):
-    camera = models.ForeignKey(Cameras, on_delete=models.CASCADE)
+class Result(models.Model):
+    camera = models.ForeignKey(Camera, on_delete=models.CASCADE)
     lastCaptureFile = models.ImageField(upload_to='camera_images/')
     lastCaptureTime = models.TimeField(auto_now=True)
     jsonresult = models.TextField(default = '{}')
     def __str__(self):
         return 'Number of rows : {}'.format(self.count())
+
+# Informations about the board you are using and the version of the webapp
+@python_2_unicode_compatible  # only if you need to support Python 2
+class Info(models.Model):
+    version = models.CharField(max_length=10)
+    board = models.CharField(max_length=200, default='Tegra X1')
+    def __str__(self):
+        return 'v{} on {}'.format(self.version, self.board)

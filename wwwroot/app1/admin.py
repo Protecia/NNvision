@@ -2,7 +2,8 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Cameras, Results
+from .models import Camera, Result, Info
 
-admin.site.register(Cameras)
-admin.site.register(Results)
+admin.site.register(Camera)
+admin.site.register(Result)
+admin.site.register(Info)

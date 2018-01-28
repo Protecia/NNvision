@@ -1,0 +1,37 @@
+{% extends "app1/base.html" %}
+
+{% block content %}
+
+<div class="row">
+  <div class="columns">
+    <h1 class="section-title">Camera</h1>
+  </div>
+</div>
+
+<div class="row">
+  <div class="large-12 columns">
+    
+	
+	<div class="row">
+	<div class="large-9 columns">
+	<code id="robot-state" class="accesslog hljs">{% for res in camera %} {{ res.name }} - {{ res.url}} <br>   {% endfor %}</code>
+	</div>
+	
+	</div>
+	
+	
+	
+	
+	
+	
+		
+	
+  </div>
+</div>
+
+
+{% endblock content %}
+
+{% block endscript %}
+
+{% endblock endscript %}

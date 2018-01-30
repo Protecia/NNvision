@@ -15,17 +15,17 @@ class Camera(models.Model):
     password = models.CharField(max_length=20)
     
     def __str__(self):
-        return 'Camera list - id : {} - name : {} - url : {} - username : {} - password : {}'.format(self.id, self.name, self.url, self.username, self.password)
+        return 'id : {} - name : {} - url : {}'.format(self.id, self.name, self.url)
 
 # Informations about the detection of the cameras
 @python_2_unicode_compatible  # only if you need to support Python 2
 class Result(models.Model):
     camera = models.ForeignKey(Camera, on_delete=models.CASCADE)
-    lastCaptureFile = models.ImageField(upload_to='camera_images/')
-    lastCaptureTime = models.TimeField(auto_now=True)
-    jsonresult = models.TextField(default = '{}')
+    file = models.ImageField(upload_to='camera_images/')
+    time = models.TimeField(auto_now=True)
+    result = models.TextField(default='')
     def __str__(self):
-        return 'Number of rows : {}'.format(self.count())
+        return 'Camera : {} - at {}'.format(self.camera.name, self.time)
 
 # Informations about the board you are using and the version of the webapp
 @python_2_unicode_compatible  # only if you need to support Python 2

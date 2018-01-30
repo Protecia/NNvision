@@ -28,12 +28,17 @@ def Notify(camera,message):
 
 # ---------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------
-class GetPicture(Thread):
+class GetPicture(object):
     def __init__(self,camera):
-        Thread.__init__(self)
         self.camera = camera
         self.imagecounter = 0
-        self.caminfos=[]
+        self.running = False
+        
+    def start(self):
+            self._processing = Thread(target=self._process_loop)
+            self._processing.daemon = True
+            self.running = True
+            self._processing.start()
 
     def run(self):
         print "Thread Run :" , self.camera["Name"]
@@ -51,12 +56,9 @@ class GetPicture(Thread):
             time.sleep(1)
 
 
-    def getpicture(self):
-        capturetime=0
-        filename=""
-        baseurl=self.camera["URL"]
+    def _process_loop(self):
         try:
-            r = requests.get(baseurl, auth=(self.camera["USERNAME"], self.camera["PASS"]), stream=True)
+            r = requests.get(self.camera.url, auth=(self.camera.user, self.camera.password), stream=True)
             print "r.url=" , r.url, "  status_code=>" , str(r.status_code)
             if r.status_code == 200:
                 capturetime=int(time.time())
@@ -113,6 +115,9 @@ while [ 1 ]:
         cam['Thread'] = GetPicture(cam)
         cam['Thread'].start()
 
-    while [ 1 ]:
-        time.sleep(10)
-
+# Just run4ever (until Ctrl-c...)
+    try:
+        while(True):
+            time.sleep(1000)
+    except KeyboardInterrupt:
+        print("Bye bye!")

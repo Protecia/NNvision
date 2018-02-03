@@ -12,15 +12,16 @@ import requests
 url = "https://www.w3schools.com/howto/img_fjords.jpg"
 resp = requests.get(url)
 if resp.status_code != requests.codes.ok:
-    #  Error handling here
+    print('error')
 
-fp = BytesIO()
-fp.write(resp.content)
+fp = BytesIO(resp.content)
+#fp.write(resp.content)
 file_name = url.split("/")[-1]  # There's probably a better way of doing this but this is just a quick example
 
 #your_model.image_field.save(file_name, files.File(fp))
 new = Result(camera=cam[0])
-new.file.save(file_name,files.Files(fp))
+new.file.save(file_name,files.File(fp))
+new.save()
 
 
 

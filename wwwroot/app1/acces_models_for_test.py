@@ -9,3 +9,4 @@ import django
 django.setup()
 
 from app1.models import Camera, Result
+

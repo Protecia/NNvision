@@ -54,10 +54,27 @@ from app1.darknet_python import darknet as dn
 # locking process to avoid threads calling darknet more than once at a time
 lock = Lock()
 
+# the base condition to store the image is : is there a new objects detection
+# or a change in the localisation of the objects. It is not necessary to store
+# billions of images but only the different one.
+
+def base_condition(old,new):
+    # are the detected objects the same
+    if not ([i[0] for i in old]  == [i[0] for i in new] ):
+        logger.debug('New object detected'.format(set([i[0] for i in old])^
+        set([i[0] for i in new])))
+        return True
+    # are the location different
+    if abs(sum([i-j for i,j in zip(
+    [i for j in old for i in j[2]], [i for j in new for i in j[2]])]))>20:
+        logger.debug('New position detected - change of : {}'.format(abs(
+        sum([i-j for i,j in zip([i for j in old for i in j[2]],
+                                [i for j in new for i in j[2]])]))))
+        return True
+    return False
+
 class ProcessCamera(Thread):
-
     """Thread used to grab camera images and process the image with darknet"""
-
     def __init__(self, cam, event_list, nb_cam):
         Thread.__init__(self)
         self.cam = cam
@@ -83,26 +100,26 @@ class ProcessCamera(Thread):
                 logger.debug('cam {} alive'.format(self.cam_id))
                 with lock:
                    result_darknet = dn.detect2(net, meta, im)
-                   logger.debug('get result from darknet : {}\n'.format(
+                   logger.info('get result from darknet : {}\n'.format(
                    result_darknet))             
                 # compare with last result to check if different
-                #if not [i[0] for i in result_darknet]  == 
-                #[i[0] for i in self.result_DB]:
-                    
-
-                result_DB = Result(camera=self.cam)
-                # il faut utiliser opencv pour faire les box
-                result_DB.file.save('detect',File(img_bytes))
-                result_DB.save()
-                for r in result_darknet:
-                    object_DB = Object(result = result_DB, 
-                                       result_object=r[0],
-                                       result_prob=r[1],
-                                       result_loc1=r[2][0],
-                                       result_loc2=r[2][1],
-                                       result_loc3=r[2][2],
-                                       result_loc4=r[2][3])
-                    object_DB.save()
+                if base_condition(self.result_DB,result_darknet):
+                    logger.debug('>>> Result have changed <<< ')             
+                    result_DB = Result(camera=self.cam)
+                    # il faut utiliser opencv pour faire les box
+                    result_DB.file.save('detect',File(img_bytes))
+                    result_DB.save()
+                    for r in result_darknet:
+                        object_DB = Object(result = result_DB, 
+                                           result_object=r[0],
+                                           result_prob=r[1],
+                                           result_loc1=r[2][0],
+                                           result_loc2=r[2][1],
+                                           result_loc3=r[2][2],
+                                           result_loc4=r[2][3])
+                        object_DB.save()
+                    logger.info('--------- Result store in DB -------------\n')
+                    self.result_DB = result_darknet
             
             else:
                 logger.warning('bad camera download on {} \n'

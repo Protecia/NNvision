@@ -35,7 +35,8 @@ class Object(models.Model):
     result_loc2 = models.DecimalField(default=0, max_digits=6, decimal_places=2)
     result_loc3 = models.DecimalField(default=0, max_digits=6, decimal_places=2)
     result_loc4 = models.DecimalField(default=0, max_digits=6, decimal_places=2)
-
+    def __str__(self):
+        return 'Objetc : {} with p={}'.format(self.result_object, self.result_prob)
 
 # Informations about the board you are using and the version of the webapp
 @python_2_unicode_compatible  # only if you need to support Python 2

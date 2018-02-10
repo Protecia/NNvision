@@ -60,23 +60,7 @@ lock = Lock()
 # or a change in the localisation of the objects. It is not necessary to store
 # billions of images but only the different one.
 
-def base_condition(old,new):
-    sensivity = 40
-    # are the detected objects the same
-    if not ([i[0] for i in old]  == [i[0] for i in new] ):
-        logger.info('New object detected : {}'.format(set([i[0] for i in old])^
-        set([i[0] for i in new])))
-        return True
-    # are the location different 
-    # modifier la sensibilité selon le nb d'objets
-    if abs(sum([i-j for i,j in zip(
-    [i for j in old for i in j[2]], [i for j in new for i in j[2]])])
-    )>sensivity*len(new):
-        logger.info('New position detected - change of : {}'.format(abs(
-        sum([i-j for i,j in zip([i for j in old for i in j[2]],
-                                [i for j in new for i in j[2]])]))))
-        return True
-    return False
+
 
 class ProcessCamera(Thread):
     """Thread used to grab camera images and process the image with darknet"""
@@ -132,6 +116,40 @@ class ProcessCamera(Thread):
             self.event_list[((self.cam_id)+1)%self.nb_cam].set()
             logger.debug('cam {} set'.format((self.cam_id+1)%self.nb_cam))
             self.event_list[self.cam_id].clear()
+            
+        
+    def base_condition(self,new):
+    sensivity = 40
+    threshold = 0.6
+    # are the detected objects the same
+    new_thresh = [i for i in new if r[1]>threshold]
+    if [r[0] for r in new_tresh] == [r[0] for r in self.result_DB]:
+        #objects are same use map(none,a,b) on list.sort() puis egal ou >tresh
+    
+    
+
+        if abs(sum([i-j for i,j in zip(
+        [i for j in old for i in j[2]], [i for j in new for i in j[2]])])
+        )>sensivity*len(new):
+            logger.info('New position detected - change of : {}'.format(abs(
+            sum([i-j for i,j in zip([i for j in old for i in j[2]],
+                                    [i for j in new for i in j[2]])]))))
+            self.result_DB = new_tresh            
+            return True
+        else:
+            return False
+        
+    
+    if not ([i[0] for i in old if r[1]>threshold]  ==
+    [i[0] for i in new if r[1]>threshold] ):
+        logger.info('Change in detected objects : {}'.format(set([i[0]
+        for i in old])^set([i[0] for i in new]))):
+        # it is important to check if the object have
+        return True
+    # are the location different 
+    # modifier la sensibilité selon le nb d'objets
+    
+    return False
                 
 # get all the cameras in the DB
 cameras = Camera.objects.all()

@@ -17,6 +17,7 @@ from logging.handlers import RotatingFileHandler
 from scipy.misc import imread
 from io import BytesIO
 from django.core.files import File
+from collections import Counter 
 
 #------------------------------------------------------------------------------
 # a simple config to create a file log - change the level to warning in
@@ -72,6 +73,8 @@ class ProcessCamera(Thread):
         self.nb_cam = nb_cam
         self.running = False
         self.result_DB = []
+        self.threshold = 0.6
+        self.pos_sensivity = 40
  
     def run(self):
         """code run when the thread is started"""
@@ -90,9 +93,11 @@ class ProcessCamera(Thread):
                 with lock:
                    result_darknet = dn.detect2(net, meta, im,thresh=0.5)
                    logger.info('get result from darknet : {}\n'.format(
-                   result_darknet))             
+                   result_darknet))  
+                # get only result above trheshlod or previously valid
+                result_filtered = self.check_thresh(result_darknet)
                 # compare with last result to check if different
-                if base_condition(self.result_DB,result_darknet):
+                if self.base_condition(result_filtered):
                     logger.debug('>>> Result have changed <<< ')             
                     result_DB = Result(camera=self.cam)
                     # il faut utiliser opencv pour faire les box
@@ -117,39 +122,32 @@ class ProcessCamera(Thread):
             logger.debug('cam {} set'.format((self.cam_id+1)%self.nb_cam))
             self.event_list[self.cam_id].clear()
             
-        
     def base_condition(self,new):
-    sensivity = 40
-    threshold = 0.6
-    # are the detected objects the same
-    new_thresh = [i for i in new if r[1]>threshold]
-    if [r[0] for r in new_tresh] == [r[0] for r in self.result_DB]:
-        #objects are same use map(none,a,b) on list.sort() puis egal ou >tresh
-    
-    
-
-        if abs(sum([i-j for i,j in zip(
-        [i for j in old for i in j[2]], [i for j in new for i in j[2]])])
-        )>sensivity*len(new):
-            logger.info('New position detected - change of : {}'.format(abs(
-            sum([i-j for i,j in zip([i for j in old for i in j[2]],
-                                    [i for j in new for i in j[2]])]))))
-            self.result_DB = new_tresh            
+    # are the detected objects not the same
+        if not ([i[0] for i in self.result_DB]  == [i[0] for i in new] ):
+            logger.info('Change in objects detected : {}'.format(set([i[0] 
+            for i in self.result_DB])^set([i[0] for i in new])))
             return True
-        else:
-            return False
-        
-    
-    if not ([i[0] for i in old if r[1]>threshold]  ==
-    [i[0] for i in new if r[1]>threshold] ):
-        logger.info('Change in detected objects : {}'.format(set([i[0]
-        for i in old])^set([i[0] for i in new]))):
-        # it is important to check if the object have
-        return True
     # are the location different 
-    # modifier la sensibilité selon le nb d'objets
+        if abs(sum([i-j for i,j in zip(
+        [i for j in self.result_DB  for i in j[2]], [i for j in new for i in j[2]])])
+        )>self.sensivity*len(new):
+            logger.info('New position detected - change of : {}'.format(abs(
+            sum([i-j for i,j in zip([i for j in self.result_DB for i in j[2]],
+                                    [i for j in new for i in j[2]])]))))
+            return True
+        return False    
     
-    return False
+    
+    def check_thresh(self,result):
+        new_objects = [r[0] for r in result if r[1]>self.threshold]
+        diff_objects = list((Counter([r[0] for r in self.result_DB])-
+                     Counter(new_objects)).elements())
+        new_list = [r for r in result if (r[1]<self.threshold and  r[0]
+        in diff_objects) or r[1]>self.threshold  ]
+        return new_list
+    
+    
                 
 # get all the cameras in the DB
 cameras = Camera.objects.all()

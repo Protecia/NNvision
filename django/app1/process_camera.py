@@ -22,7 +22,7 @@ from django.core.files import File
 # a simple config to create a file log - change the level to warning in
 # production
 #------------------------------------------------------------------------------
-level= logging.INFO
+level= logging.DEBUG
 logger = logging.getLogger()
 logger.setLevel(level)
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')

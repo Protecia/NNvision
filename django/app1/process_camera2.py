@@ -11,10 +11,10 @@ import requests
 import os
 import sys
 import cv2
+import numpy as np
 
 from threading import Thread, Lock, Event
 from logging.handlers import RotatingFileHandler
-from scipy.misc import imread
 from io import BytesIO
 from django.core.files import File
 from collections import Counter 
@@ -31,9 +31,9 @@ file_handler = RotatingFileHandler('camera.log', 'a', 10000000, 1)
 file_handler.setLevel(level)
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
-stream_handler = logging.StreamHandler()
-stream_handler.setLevel(level)
-logger.addHandler(stream_handler)
+#stream_handler = logging.StreamHandler()
+#stream_handler.setLevel(level)
+#logger.addHandler(stream_handler)
 
 #------------------------------------------------------------------------------
 # Because this script have to be run in a separate process from manage.py
@@ -61,8 +61,6 @@ lock = Lock()
 # or a change in the localisation of the objects. It is not necessary to store
 # billions of images but only the different one.
 
-
-
 class ProcessCamera(Thread):
     """Thread used to grab camera images and process the image with darknet"""
     def __init__(self, cam, event_list, nb_cam):
@@ -75,6 +73,7 @@ class ProcessCamera(Thread):
         self.result_DB = []
         self.threshold = 0.6
         self.pos_sensivity = 40
+        self.black_list=(b'pottedplant',)
  
     def run(self):
         """code run when the thread is started"""
@@ -84,15 +83,19 @@ class ProcessCamera(Thread):
                                                  self.cam.password
                                                  ), stream=True)
             if r.status_code == 200 :
-                img_bytes = BytesIO(r.content)
-                arr = imread(img_bytes)
+                img_bytes = BytesIO(r.content)                
+                arr = np.asarray(bytearray(r.content), dtype="uint8")
+                arr = cv2.imdecode(arr, 1)
                 im = dn.array_to_image(arr)
+                dn.rgbgr_image(im)
                 logger.debug('image ready for darknet :  {} '.format(im))
                 self.event_list[self.cam_id].wait()
                 logger.debug('cam {} alive'.format(self.cam_id))
                 with lock:
-                   result_darknet = dn.detect2(net, meta, im,thresh=0.5)
-                   logger.info('get result from darknet : {}\n'.format(
+                   result_darknet = dn.detect2(net, meta, im,
+                                               thresh=self.threshold-0.2,
+                                               hier_thresh = 0.9)
+                   logger.info('get brut result from darknet : {}\n'.format(
                    result_darknet))  
                 # get only result above trheshlod or previously valid
                 result_filtered = self.check_thresh(result_darknet)
@@ -100,20 +103,30 @@ class ProcessCamera(Thread):
                 if self.base_condition(result_filtered):
                     logger.debug('>>> Result have changed <<< ')             
                     result_DB = Result(camera=self.cam)
-                    # il faut utiliser opencv pour faire les box
-                    result_DB.file.save('detect',File(img_bytes))
-                    result_DB.save()
-                    for r in result_darknet:
+                    result_DB.file1.save('detect',File(img_bytes))
+                    for r in result_filtered:
+                        box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
+                        ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
+                        ))))
+                        logger.debug('box calculated : {}'.format(box))
+                        arr = cv2.rectangle(arr,box[0],box[1],(0,255,0),3)
+                        arr = cv2.putText(arr,r[0].decode(),box[1],
+                        cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
                         object_DB = Object(result = result_DB, 
-                                           result_object=r[0],
+                                           result_object=r[0].decode(),
                                            result_prob=r[1],
                                            result_loc1=r[2][0],
                                            result_loc2=r[2][1],
                                            result_loc3=r[2][2],
                                            result_loc4=r[2][3])
                         object_DB.save()
-                    logger.info('--------- Result store in DB -------------\n')
-                    self.result_DB = result_darknet
+                    img_bytes_rect = BytesIO(cv2.imencode('.jpg', arr)[1].
+                    tobytes())
+                    result_DB.file2.save('detect_box',File(img_bytes_rect))
+                    result_DB.save()
+                    logger.info('>>>>>>>>>>>>>>>--------- Result store in DB '
+                    '-------------<<<<<<<<<<<<<<<<<<<<<\n')
+                    self.result_DB = result_filtered
             
             else:
                 logger.warning('bad camera download on {} \n'
@@ -125,13 +138,15 @@ class ProcessCamera(Thread):
     def base_condition(self,new):
     # are the detected objects not the same
         if not ([i[0] for i in self.result_DB]  == [i[0] for i in new] ):
-            logger.info('Change in objects detected : {}'.format(set([i[0] 
+            logger.info('Change in objects detected : list1={} list2={} diff={}'
+            .format([i[0] for i in self.result_DB],[i[0] for i in new],set([i[0] 
             for i in self.result_DB])^set([i[0] for i in new])))
             return True
     # are the location different 
         if abs(sum([i-j for i,j in zip(
-        [i for j in self.result_DB  for i in j[2]], [i for j in new for i in j[2]])])
-        )>self.sensivity*len(new):
+        [i for j in self.result_DB  for i in j[2]], [i for j in new for i in
+        j[2]])])
+        )>self.pos_sensivity*len(new):
             logger.info('New position detected - change of : {}'.format(abs(
             sum([i-j for i,j in zip([i for j in self.result_DB for i in j[2]],
                                     [i for j in new for i in j[2]])]))))
@@ -139,16 +154,20 @@ class ProcessCamera(Thread):
         return False    
     
     
-    def check_thresh(self,result):
+    def check_thresh(self,resultb):
+        result = [r for r in resultb if r[0] not in self.black_list]
         new_objects = [r[0] for r in result if r[1]>self.threshold]
         diff_objects = list((Counter([r[0] for r in self.result_DB])-
                      Counter(new_objects)).elements())
-        new_list = [r for r in result if (r[1]<self.threshold and  r[0]
-        in diff_objects) or r[1]>self.threshold  ]
+        logger.debug('objects lost since last detection is :{} '
+        'with objects {} under threshold'.format(diff_objects,[r for r in
+        result if r[1]<self.threshold and  r[0] in diff_objects]))
+        new_list = sorted([r for r in result if (r[1]<self.threshold and  r[0]
+        in diff_objects) or r[1]>self.threshold  ])
+        logger.debug('the filtered list of detected objects is {}'.format(
+        new_list))
         return new_list
-    
-    
-                
+              
 # get all the cameras in the DB
 cameras = Camera.objects.all()
 nb_cam = len(cameras)
@@ -173,6 +192,10 @@ def main():
 def stop():
     for t in thread_list:
         t.running=False
+        
+def start():
+    for t in thread_list:
+        t.running=True
 
 # start the threads
 if __name__ == 'main':

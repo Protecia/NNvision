@@ -23,7 +23,7 @@ from collections import Counter
 # a simple config to create a file log - change the level to warning in
 # production
 #------------------------------------------------------------------------------
-level= logging.INFO
+level= logging.WARNING
 logger = logging.getLogger()
 logger.setLevel(level)
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
@@ -71,7 +71,7 @@ class ProcessCamera(Thread):
         self.nb_cam = nb_cam
         self.running = False
         self.result_DB = []
-        self.threshold = 0.6
+        self.threshold = 0.7
         self.pos_sensivity = 40
         self.black_list=(b'pottedplant',)
  
@@ -93,7 +93,7 @@ class ProcessCamera(Thread):
                 logger.debug('cam {} alive'.format(self.cam_id))
                 with lock:
                    result_darknet = dn.detect2(net, meta, im,
-                                               thresh=self.threshold-0.2,
+                                               thresh=self.threshold-0.4,
                                                hier_thresh = 0.9)
                    logger.info('get brut result from darknet : {}\n'.format(
                    result_darknet))  

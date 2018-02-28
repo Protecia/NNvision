@@ -26,6 +26,7 @@ class Result(models.Model):
     file2 = models.ImageField(upload_to='camera_images_box/', 
                               default='camera_images/detect')
     time = models.TimeField(auto_now=True)
+    brut = models.TextField(default='')
     def __str__(self):
         return 'Camera : {} - at {}'.format(self.camera.name, self.time)
 

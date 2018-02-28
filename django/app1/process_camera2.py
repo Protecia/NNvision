@@ -7,6 +7,7 @@ Created on Sat Feb  3 11:58:19 2018
 Main script to process the camera images
 """
 import logging
+import time
 import requests
 import os
 import sys
@@ -94,7 +95,7 @@ class ProcessCamera(Thread):
                 with lock:
                    result_darknet = dn.detect2(net, meta, im,
                                                thresh=self.threshold-0.4,
-                                               hier_thresh = 0.9)
+                                               hier_thresh = 0.5)
                    logger.info('get brut result from darknet : {}\n'.format(
                    result_darknet))  
                 # get only result above trheshlod or previously valid
@@ -102,7 +103,7 @@ class ProcessCamera(Thread):
                 # compare with last result to check if different
                 if self.base_condition(result_filtered):
                     logger.debug('>>> Result have changed <<< ')             
-                    result_DB = Result(camera=self.cam)
+                    result_DB = Result(camera=self.cam,brut=result_darknet)
                     result_DB.file1.save('detect',File(img_bytes))
                     for r in result_filtered:
                         box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
@@ -188,6 +189,13 @@ def main():
     for t in thread_list:
         t.start()
     thread_list[0].event_list[0].set()
+    print('darknet is running...')
+    # Just run4ever (until Ctrl-c...)
+    try:
+        while(True):
+            time.sleep(1000)
+    except KeyboardInterrupt:
+        print("Bye bye!")
     
 def stop():
     for t in thread_list:
@@ -198,6 +206,7 @@ def start():
         t.running=True
 
 # start the threads
-if __name__ == 'main':
-    # grzet
-    pass
+if __name__ == '__main__':
+    main()
+
+

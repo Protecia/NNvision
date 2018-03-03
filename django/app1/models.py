@@ -47,5 +47,6 @@ class Object(models.Model):
 class Info(models.Model):
     version = models.CharField(max_length=10)
     board = models.CharField(max_length=200, default='Tegra X1')
+    darknet_path = models.CharField(max_length=20)
     def __str__(self):
         return 'v{} on {}'.format(self.version, self.board)

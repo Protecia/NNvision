@@ -51,7 +51,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projet.settings")
 import django
 django.setup()
 
-from app1.models import Camera, Result, Object
+from app1.models import Camera, Result, Object, Info
 from app1.darknet_python import darknet as dn
 #------------------------------------------------------------------------------
 
@@ -72,66 +72,87 @@ class ProcessCamera(Thread):
         self.nb_cam = nb_cam
         self.running = False
         self.result_DB = []
-        self.threshold = 0.7
-        self.pos_sensivity = 40
-        self.black_list=(b'pottedplant',)
+        self.threshold = 0.6
+        self.pos_sensivity = 60
+        self.black_list=(b'pottedplant',b'cell phone')
+        self.clone={b'cell phone':b'car'}
  
     def run(self):
         """code run when the thread is started"""
         self.running = True
         while self.running :
-            r = requests.get(self.cam.url, auth=(self.cam.username,
+            t=time.time()
+            time_out_request = False
+            try : 
+                r = requests.get(self.cam.url, auth=(self.cam.username,
                                                  self.cam.password
-                                                 ), stream=True)
-            if r.status_code == 200 :
-                img_bytes = BytesIO(r.content)                
-                arr = np.asarray(bytearray(r.content), dtype="uint8")
-                arr = cv2.imdecode(arr, 1)
-                im = dn.array_to_image(arr)
-                dn.rgbgr_image(im)
-                logger.debug('image ready for darknet :  {} '.format(im))
-                self.event_list[self.cam_id].wait()
-                logger.debug('cam {} alive'.format(self.cam_id))
-                with lock:
-                   result_darknet = dn.detect2(net, meta, im,
-                                               thresh=self.threshold-0.4,
-                                               hier_thresh = 0.5)
-                   logger.info('get brut result from darknet : {}\n'.format(
-                   result_darknet))  
-                # get only result above trheshlod or previously valid
-                result_filtered = self.check_thresh(result_darknet)
-                # compare with last result to check if different
-                if self.base_condition(result_filtered):
-                    logger.debug('>>> Result have changed <<< ')             
-                    result_DB = Result(camera=self.cam,brut=result_darknet)
-                    result_DB.file1.save('detect',File(img_bytes))
-                    for r in result_filtered:
-                        box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
-                        ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
-                        ))))
-                        logger.debug('box calculated : {}'.format(box))
-                        arr = cv2.rectangle(arr,box[0],box[1],(0,255,0),3)
-                        arr = cv2.putText(arr,r[0].decode(),box[1],
-                        cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
-                        object_DB = Object(result = result_DB, 
-                                           result_object=r[0].decode(),
-                                           result_prob=r[1],
-                                           result_loc1=r[2][0],
-                                           result_loc2=r[2][1],
-                                           result_loc3=r[2][2],
-                                           result_loc4=r[2][3])
-                        object_DB.save()
-                    img_bytes_rect = BytesIO(cv2.imencode('.jpg', arr)[1].
-                    tobytes())
-                    result_DB.file2.save('detect_box',File(img_bytes_rect))
-                    result_DB.save()
-                    logger.info('>>>>>>>>>>>>>>>--------- Result store in DB '
-                    '-------------<<<<<<<<<<<<<<<<<<<<<\n')
-                    self.result_DB = result_filtered
-            
+                                                 ), stream=False, timeout=2)
+            except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+                time_out_request = True
+                pass
+            if not time_out_request:              
+                if r.status_code == 200 :
+                    img_bytes = BytesIO(r.content)                
+                    arr = np.asarray(bytearray(r.content), dtype="uint8")
+                    arr = cv2.imdecode(arr, 1)
+                    im = dn.array_to_image(arr)
+                    dn.rgbgr_image(im)
+                    logger.info('image ready for darknet :  {} in {}s '.format(im,
+                                 time.time()-t))
+                    t=time.time()             
+                    self.event_list[self.cam_id].wait()
+                    logger.debug('cam {} alive'.format(self.cam_id))
+                    
+                    with lock:
+                       result_darknet = dn.detect2(net, meta, im,
+                                                   thresh=self.threshold-0.4,
+                                                   hier_thresh = 0.4)
+                       logger.info('get brut result from darknet : {} in {}s\n'.format(
+                       result_darknet,time.time()-t))  
+                    # get only result above trheshlod or previously valid
+                    t=time.time()                
+                    result_filtered = self.check_thresh(result_darknet)
+                    # compare with last result to check if different
+                    if self.base_condition(result_filtered):
+                        logger.debug('>>> Result have changed <<< ')             
+                        result_DB = Result(camera=self.cam,brut=result_darknet)
+                        date = time.strftime("%Y-%m-%d-%H-%M-%S")                        
+                        result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes))
+                        for r in result_filtered:
+                            box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
+                            ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
+                            ))))
+                            logger.debug('box calculated : {}'.format(box))
+                            arr = cv2.rectangle(arr,box[0],box[1],(0,255,0),3)
+                            arr = cv2.putText(arr,r[0].decode(),box[1],
+                            cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
+                            object_DB = Object(result = result_DB, 
+                                               result_object=r[0].decode(),
+                                               result_prob=r[1],
+                                               result_loc1=r[2][0],
+                                               result_loc2=r[2][1],
+                                               result_loc3=r[2][2],
+                                               result_loc4=r[2][3])
+                            object_DB.save()
+                        img_bytes_rect = BytesIO(cv2.imencode('.jpg', arr)[1].
+                        tobytes())
+                        
+
+                        result_DB.file2.save('detect_box_'+date+'.jpg',File(img_bytes_rect))
+                        result_DB.save()
+                        logger.info('>>>>>>>>>>>>>>>--------- Result store in DB '
+                        '-------------<<<<<<<<<<<<<<<<<<<<<\n')
+                        self.result_DB = result_filtered
+                
+                else:
+                    logger.warning('bad camera download on {} \n'
+                                 .format(self.cam.name))
             else:
-                logger.warning('bad camera download on {} \n'
-                             .format(self.cam.name))
+                logger.warning('network error on {} \n'
+                                 .format(self.cam.name))
+                time.sleep(0.5)
+                
+            logger.info('brut result process in {}s '.format(time.time()-t))            
             self.event_list[((self.cam_id)+1)%self.nb_cam].set()
             logger.debug('cam {} set'.format((self.cam_id+1)%self.nb_cam))
             self.event_list[self.cam_id].clear()
@@ -157,14 +178,22 @@ class ProcessCamera(Thread):
     
     def check_thresh(self,resultb):
         result = [r for r in resultb if r[0] not in self.black_list]
-        new_objects = [r[0] for r in result if r[1]>self.threshold]
-        diff_objects = list((Counter([r[0] for r in self.result_DB])-
-                     Counter(new_objects)).elements())
-        logger.debug('objects lost since last detection is :{} '
-        'with objects {} under threshold'.format(diff_objects,[r for r in
-        result if r[1]<self.threshold and  r[0] in diff_objects]))
-        new_list = sorted([r for r in result if (r[1]<self.threshold and  r[0]
-        in diff_objects) or r[1]>self.threshold  ])
+        #result = [(e1,e2,e3) if e1 not in self.clone else (self.clone[e1],e2,e3)
+        #for (e1,e2,e3) in result]
+        rp = [r for r in result if r[1]>=self.threshold]
+        rm = sorted([r for r in result if r[1]<self.threshold],reverse=True)
+        if len(rm)>0:        
+            diff_objects = list((Counter([r[0] for r in self.result_DB])-
+                         Counter([r[0] for r in rp])).elements())
+            logger.debug('objects lost since last detection is :{} '
+            'with objects {} under threshold'.format(diff_objects,[r for r in
+            result if r[1]<self.threshold and  r[0] in diff_objects]))
+            for d in diff_objects :
+                rd = next(((i,r) for i,r in enumerate(rm) if r[0]==d),False)
+                if rd : 
+                    rp.append(rd[1])
+                    del rm[rd[0]]
+        new_list = sorted(rp)
         logger.debug('the filtered list of detected objects is {}'.format(
         new_list))
         return new_list
@@ -182,8 +211,13 @@ event_list = [Event() for _ in range(nb_cam)]
 thread_list = [ ProcessCamera(c,event_list, nb_cam) for c in cameras]
 
 # load the Neural Network and the meta
-net = dn.load_net(b"darknet_python/cfg/yolo.cfg", b"../../yolo.weights", 0)
-meta = dn.load_meta(b"darknet_python/cfg/coco.data")
+path = Info.objects.get().darknet_path
+cfg = os.path.join(path,'cfg/yolo.cfg').encode()
+weights = os.path.join(path,'yolo.weights').encode()
+data = os.path.join(path,'cfg/coco.data').encode()
+
+net = dn.load_net(cfg,weights, 0)
+meta = dn.load_meta(data)
    
 def main():
     for t in thread_list:

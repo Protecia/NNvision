@@ -35,8 +35,8 @@ class METADATA(Structure):
 
     
 
-lib = CDLL("./darknet_python/libdarknet.so", RTLD_GLOBAL)
-#lib = CDLL("libdarknet.so", RTLD_GLOBAL)
+#lib = CDLL("./darknet_python/libdarknet.so", RTLD_GLOBAL)
+lib = CDLL("/home/julien/darknet/libdarknet.so", RTLD_GLOBAL)
 lib.network_width.argtypes = [c_void_p]
 lib.network_width.restype = c_int
 lib.network_height.argtypes = [c_void_p]

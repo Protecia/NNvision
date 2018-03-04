@@ -2,6 +2,7 @@
 
 import os
 import time
+import psutil as ps
 import socket
 import subprocess
 from wifi import Cell
@@ -14,7 +15,9 @@ from .wpa_wifi import Network, Fileconf
 # Create your views here.
 
 
-#function to load the global context    
+def process():
+    return [ p for p in ps.process_iter() if 'process_camera.py' in
+    p.cmdline()]
 
 
 def index(request):
@@ -25,7 +28,27 @@ def camera(request):
     context = {'camera' : Camera.objects.all(), 'info' : Info.objects.get(), 'url_for_index' : '/',}
     return render(request, 'app1/camera.html',context)
 
-
+def darknet(request):
+    d_action = request.POST.get('d_action')
+    p = process()
+    message = None
+    if d_action == 'start': 
+        if len(process())>0 : message = "Darknet already running, stop ip if you want to restart"
+        else : subprocess.Popen(['python3','process_camera.py'])
+    if d_action == 'stop' :
+        if len(process())==0 : message = "Darknet is not running !" 
+        else :
+            for i in p:
+                i.kill()
+    context = { 'message' : message, 'category' : 'warning', 'd_action' : d_action, 'url_state' : '/darknet/state'}
+    return render(request, 'app1/darknet.html', context)
+    
+def darknet_state(request):
+    if len(process())>0:
+        raw = 'Darknet serveur is running with PID : {}'.format(process[0].pid)
+    else : 
+        raw = 'Darknet serveur is stopped'
+    return HttpResponse(raw)
     
 def configuration(request):
     try:

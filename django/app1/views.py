@@ -42,14 +42,15 @@ def darknet(request):
                 i.kill()
     context = { 'message' : message, 'category' : 'warning', 'd_action' : d_action, 'url_state' : '/darknet/state'}
     return render(request, 'app1/darknet.html', context)
-    
+
 def darknet_state(request):
-    if len(process())>0:
-        raw = 'Darknet serveur is running with PID : {}'.format(process[0].pid)
-    else : 
+    p = process()
+    if len(p)>0:
+        raw = 'Darknet serveur is running with PID : {}'.format(p[0].pid)
+    else :
         raw = 'Darknet serveur is stopped'
     return HttpResponse(raw)
-    
+
 def configuration(request):
     try:
         connect = subprocess.check_output(['iwgetid', '-r'])

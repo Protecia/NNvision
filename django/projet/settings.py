@@ -120,10 +120,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [ 
-    os.path.join(BASE_DIR, 'static-externe'),
-]
+STATIC_ROOT = os.path.join(BASE_DIR, '../static_root')
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
-LOG_ROOT = os.path.join(BASE_DIR, 'log')
-PYTHON_ROOT = os.path.join(BASE_DIR, 'my_python')
+# URL that your MEDIA files will be accessible through the browser.
+MEDIA_URL = '/media/'
+# Physical system path where the static files are stored. Files that are being uploaded by the user.
+MEDIA_ROOT = os.path.join(BASE_DIR, '../media_root')

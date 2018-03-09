@@ -1,0 +1,34 @@
+{% extends "app1/base.html" %}
+
+{% block content %}
+
+<div class="row">
+  <div class="columns">
+    <h1 class="section-title">Images</h1>
+  </div>
+</div>
+
+<div class="row">
+  <div class="large-12 columns">
+    <h3> Last detection :  </h3>
+	{% for row in img_array %}
+	<div class="row">
+
+		{% for img in row %}
+		<div class="large-4 columns">
+			<img src="{{img.file2.url]]" alt="" height="42" width="42">
+		</div>
+		{% endfor %}
+
+	</div>
+	{% endfor %}
+  </div>
+</div>
+
+
+
+{% endblock content %}
+
+{% block endscript %}
+
+{% endblock endscript %}

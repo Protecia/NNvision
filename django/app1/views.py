@@ -16,7 +16,7 @@ from .wpa_wifi import Network, Fileconf
 
 
 def process():
-    return [ p for p in ps.process_iter() if 'process_camera.py' in
+    return [ p for p in ps.process_iter() if 'app1/process_camera.py' in
     p.cmdline()]
 
 
@@ -32,15 +32,16 @@ def darknet(request):
     d_action = request.POST.get('d_action')
     p = process()
     message = None
-    if d_action == 'start': 
+    if d_action == 'start':
         if len(process())>0 : message = "Darknet already running, stop ip if you want to restart"
-        else : subprocess.Popen(['python3','process_camera.py'])
+        else :
+            p = subprocess.Popen(['python3','app1/process_camera.py'])
     if d_action == 'stop' :
         if len(process())==0 : message = "Darknet is not running !" 
         else :
             for i in p:
                 i.kill()
-    context = { 'message' : message, 'category' : 'warning', 'd_action' : d_action, 'url_state' : '/darknet/state'}
+    context = { 'message' : message, 'category' : 'warning', 'd_action' :d_action, 'url_state' : '/darknet/state'}
     return render(request, 'app1/darknet.html', context)
 
 def darknet_state(request):

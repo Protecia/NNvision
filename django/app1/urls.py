@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^camera/$', views.camera, name='camera'),
     url(r'^darknet/$', views.darknet, name='darknet'),
     url(r'^darknet/state/$', views.darknet_state, name='ds'),
+    url(r'^panel/$', views.panel, name='panel'),
     url(r'^settings/$', views.configuration, name='configuration'),
     url(r'^settings/wifi_add/$', views.wifi_add, name='wifi_add'),
     url(r'^settings/wifi_suppr/$', views.wifi_suppr, name='wifi_suppr'),

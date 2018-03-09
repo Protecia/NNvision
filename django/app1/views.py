@@ -36,6 +36,7 @@ def darknet(request):
         if len(process())>0 : message = "Darknet already running, stop ip if you want to restart"
         else :
             p = subprocess.Popen(['python3','app1/process_camera.py'])
+            time.sleep(2)
     if d_action == 'stop' :
         if len(process())==0 : message = "Darknet is not running !" 
         else :
@@ -51,6 +52,13 @@ def darknet_state(request):
     else :
         raw = 'Darknet serveur is stopped'
     return HttpResponse(raw)
+
+def panel(request):
+    first = request.POST.get('first',0)
+    imgs = Result.objects.all().order_by('-id')[first:first+12]
+    img_array = [imgs[i:i + 4] for i in range(0, len(imgs), 4)]
+    context = { 'first' : first, 'img_array' : img_array}
+    return render(request, 'app1/panel.html', context)
 
 def configuration(request):
     try:
@@ -73,6 +81,10 @@ def configuration(request):
         'wifi' : wifi, 'conf' : conf.network_list, 'connect' : connect })
     return render(request, 'app1/settings.html', context)
     
+
+    
+
+
 def wifi_add(request):
     try : 
     # works only on linux system

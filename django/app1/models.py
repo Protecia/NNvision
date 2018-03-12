@@ -21,10 +21,10 @@ class Camera(models.Model):
 @python_2_unicode_compatible  # only if you need to support Python 2
 class Result(models.Model):
     camera = models.ForeignKey(Camera, on_delete=models.CASCADE)
-    file1 = models.ImageField(upload_to='../media_root/camera_images/',
-                              default='camera_images/detect')
-    file2 = models.ImageField(upload_to='../media_root/camera_images_box/', 
-                              default='camera_images/detect')
+    file1 = models.ImageField(upload_to='camera_images/',
+                              default='detect')
+    file2 = models.ImageField(upload_to='camera_images_box/', 
+                              default='detect')
     time = models.TimeField(auto_now=True)
     brut = models.TextField(default='')
     def __str__(self):

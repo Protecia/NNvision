@@ -11,17 +11,25 @@
 <div class="row">
   <div class="large-15 columns">
     <h3> Last detection :  </h3>
+	<div align="right">
+	{% if first >= 30 %}<a href="/panel/{{first|add:-30}}" class="button tiny">&laquo; previous</a>{% endif %}
+	<a href="/panel/{{first|add:30}}" class="button tiny">next &raquo;</a></div>
 	{% for row in img_array %}
 	<div class="row">
 
 		{% for img in row %}
-		<div class="large-3 columns">
-			<img src="{{img.file2.url}}" alt="" height="100" >
+		<div class="large-4 columns">
+		<a href="/panel/detail/{{img.id}}">
+			<img src="{{img.file2.url}}" alt="" height="100" >{{img.time|date:'Y-m-d H:i:s'}}
+		</a>
 		</div>
 		{% endfor %}
 
-	</div>
+	</div><br>
 	{% endfor %}
+	<div align="right">
+	{% if first >= 30 %}<a href="/panel/{{first|add:-30}}" class="button tiny">&laquo; previous</a>{% endif %}
+	<a href="/panel/{{first|add:30}}" class="button tiny">next &raquo;</a></div>
   </div>
 </div>
 

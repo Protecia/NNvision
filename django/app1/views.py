@@ -9,7 +9,8 @@ from wifi import Cell
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
-from .models import Camera, Result, Info
+from .models import Camera, Result, Info, Alert
+from.forms import AlertForm
 from .wpa_wifi import Network, Fileconf
 
 # Create your views here.
@@ -53,12 +54,37 @@ def darknet_state(request):
         raw = 'Darknet serveur is stopped'
     return HttpResponse(raw)
 
-def panel(request):
-    first = request.POST.get('first',0)
-    imgs = Result.objects.all().order_by('-id')[first:first+12]
-    img_array = [imgs[i:i + 4] for i in range(0, len(imgs), 4)]
+def panel(request, first):
+    #first=int(first)
+    imgs = Result.objects.all().order_by('-id')[first:first+30]
+    img_array = [imgs[i:i + 3] for i in range(0, len(imgs), 3)]
     context = { 'first' : first, 'img_array' : img_array}
     return render(request, 'app1/panel.html', context)
+
+def panel_detail(request, id):
+    img = Result.objects.get(id=id)
+    return render(request, 'app1/panel_detail.html', {'img':img, 'id':id})
+
+
+def alert(request):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = AlertForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            form.save()
+            # process the data in form.cleaned_data as required
+            # ...
+            # redirect to a new URL:
+            return HttpResponseRedirect('/alert')
+        
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = AlertForm()
+    alert = Alert.objects.all()
+    return render(request, 'app1/alert.html', {'message' : form.errors, 'category' : 'warning','form': form, 'alert':alert})
 
 def configuration(request):
     try:

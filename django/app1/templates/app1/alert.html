@@ -1,0 +1,60 @@
+{% extends "app1/base.html" %}
+
+{% block content %}
+
+<div class="row">
+  <div class="columns">
+    <h1 class="section-title">Alert</h1>
+  </div>
+</div>
+
+<div class="row">
+  <div class="large-10 columns">
+    
+	
+	<div class="row">
+	<div class="large-10 columns">Alert settled :
+	<code id="robot-state" class="accesslog hljs">{% for res in alert %} {{ res.get_stuffs_display }} {{ res.get_actions_display }} {% if res.sms %}Sms{% endif %} {% if res.call %}call{% endif %} {% if res.alarm %}Alarm{% endif %} {% if res.patrol %}Patrol{% endif %} <br>   {% endfor %}</code>
+	</div>
+	
+	</div>
+	<br><br><br>
+	<div class="row" style="border: 1px solid #466d98;">
+	<form action="/alert" method="post">{% csrf_token %}
+    <div class="large-2 columns">
+      <label>Select objects
+        {{form.stuffs}}
+      </label>
+    </div>
+	<div class="large-3 columns">
+      <label>Action</label>
+	  {{form.actions.0}}{{form.actions.1}}
+	  
+    </div>
+	<div class="large-4 columns">
+      <label>Contact</label>
+	  <label for="{{form.sms.id_for_label}}">{{form.sms}}{{form.sms.label}}</label>
+	  <label for="{{form.call.id_for_label}}">{{form.call}}{{form.call.label}}</label>
+	  <label for="{{form.alarm.id_for_label}}">{{form.alarm}}{{form.alarm.label}}</label>
+	  <label for="{{form.sms.id_for_label}}">{{form.patrol}}{{form.patrol.label}}</label>
+      
+    </div>
+	<div class="large-2 columns">
+	<br>
+	<button type="submit" name="valid_alert" value="ok" class="button large">Go</button>
+	</div>
+	</form>
+  </div>
+  
+ 
+	
+  </div>
+</div>
+
+
+
+{% endblock content %}
+
+{% block endscript %}
+
+{% endblock endscript %}

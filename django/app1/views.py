@@ -43,7 +43,8 @@ def darknet(request):
         else :
             [ item.kill() for sublist in p for item in sublist]
     context = { 'message' : message, 'category' : 'warning', 'd_action' :d_action, 'url_state' : '/darknet/state'}
-    return render(request, 'app1/darknet.html', context)
+    if not d_action : 
+        return render(request, 'app1/darknet.html', context)
 
 def darknet_state(request):
     p = process()
@@ -52,7 +53,7 @@ def darknet_state(request):
         raw += 'Darknet server is running (PID : {}). '.format(p[0][0].pid)
     if len(p[1])>0:
         raw += 'Alert server is running (PID : {}). '.format(p[1][0].pid)
-    else :
+    if len(p[0])==0 and len(p[1])==0 :
         raw += 'Servers are stopped'
     return HttpResponse(raw)
 

@@ -11,13 +11,14 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from .models import Camera, Result, Info, Alert
 from.forms import AlertForm
-from .wpa_wifi import Network, Fileconf
 
 # Create your views here.
 
 def process():
-    return ([p for p in ps.process_iter() if 'app1/process_camera.py' in p.cmdline()],
-             [p for p in ps.process_iter() if 'app1/process_alert.py' in p.cmdline()])
+    cam_path = os.path.join(settings.BASE_DIR,'app1/process_camera.py')
+    alert_path = os.path.join(settings.BASE_DIR,'app1/process_alert.py')
+    return ([p for p in ps.process_iter() if cam_path in p.cmdline()],
+             [p for p in ps.process_iter() if alert_path in p.cmdline()])
 
 
 def index(request):
@@ -25,10 +26,7 @@ def index(request):
     return render(request, 'app1/index.html',context)
 
 def camera(request):
-    p = subprocess.Popen(['python3','/home/nnvision/NNvision/django/app1/process_alert.py'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    (out,err)= p.communicate()
-    message = out.decode()+err.decode()
-    context = {'message' : message, 'category' : 'warning', 'camera' : Camera.objects.all(), 'info' : Info.objects.get(), 'url_for_index' : '/',}
+    context = {'camera' : Camera.objects.all(), 'info' : Info.objects.get(), 'url_for_index' : '/',}
     return render(request, 'app1/camera.html',context)
 
 def darknet(request):
@@ -38,8 +36,8 @@ def darknet(request):
     if d_action == 'start':
         if len(p[0])>0 : message = "Darknet already running, stop ip if you want to restart"
         else :
-            subprocess.Popen(['python3','/home/nnsision/NNvision/django/app1/process_camera.py'])
-            subprocess.Popen(['python3','app1/process_alert.py'])
+            subprocess.Popen(['python3',os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
+            subprocess.Popen(['python3',os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
             time.sleep(2)
     if d_action == 'stop' :
         if len(p[0])==0 : message = "Darknet is not running !" 

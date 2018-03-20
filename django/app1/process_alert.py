@@ -25,23 +25,6 @@ auth_token  = "97c36acf2c85e62436181e878305f982"
 client = Client(account_sid, auth_token)
 
 
-
-#------------------------------------------------------------------------------
-# a simple config to create a file log - change the level to warning in
-# production
-#------------------------------------------------------------------------------
-level= logging.DEBUG
-logger = logging.getLogger()
-logger.setLevel(level)
-formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-file_handler = RotatingFileHandler('/home/nnvision/NNvision/django/app1/alert.log', 'a', 10000000, 1)
-file_handler.setLevel(level)
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
-#stream_handler = logging.StreamHandler()
-#stream_handler.setLevel(level)
-#logger.addHandler(stream_handler)
-
 #------------------------------------------------------------------------------
 # Because this script have to be run in a separate process from manage.py
 # you need to set up a Django environnement to use the Class defined in
@@ -59,6 +42,25 @@ django.setup()
 
 from app1.models import Profile, Camera, Result, Object, Alert, Info
 #from django.contrib.auth.models import User
+
+#------------------------------------------------------------------------------
+# a simple config to create a file log - change the level to warning in
+# production
+#------------------------------------------------------------------------------
+level= logging.DEBUG
+logger = logging.getLogger()
+logger.setLevel(level)
+formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+file_handler = RotatingFileHandler(os.path.join(settings.BASE_DIR,'alert.log'), 'a', 10000000, 1)
+file_handler.setLevel(level)
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+#stream_handler = logging.StreamHandler()
+#stream_handler.setLevel(level)
+#logger.addHandler(stream_handler)
+
+
+
 
 #------------------------------------------------------------------------------
 

@@ -13,28 +13,13 @@ import os
 import sys
 import cv2
 import numpy as np
-
+from django.conf import settings
 from threading import Thread, Lock, Event
 from logging.handlers import RotatingFileHandler
 from io import BytesIO
 from django.core.files import File
 from collections import Counter 
 
-#------------------------------------------------------------------------------
-# a simple config to create a file log - change the level to warning in
-# production
-#------------------------------------------------------------------------------
-level= logging.WARNING
-logger = logging.getLogger()
-logger.setLevel(level)
-formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-file_handler = RotatingFileHandler('camera.log', 'a', 10000000, 1)
-file_handler.setLevel(level)
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
-#stream_handler = logging.StreamHandler()
-#stream_handler.setLevel(level)
-#logger.addHandler(stream_handler)
 
 #------------------------------------------------------------------------------
 # Because this script have to be run in a separate process from manage.py
@@ -51,9 +36,30 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projet.settings")
 import django
 django.setup()
 
+#------------------------------------------------------------------------------
+# a simple config to create a file log - change the level to warning in
+# production
+#------------------------------------------------------------------------------
+level= logging.WARNING
+logger = logging.getLogger()
+logger.setLevel(level)
+formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+file_handler = RotatingFileHandler(os.path.join(settings.BASE_DIR,'camera.log'), 'a', 10000000, 1)
+file_handler.setLevel(level)
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+#stream_handler = logging.StreamHandler()
+#stream_handler.setLevel(level)
+#logger.addHandler(stream_handler)
+
+#------------------------------------------------------------------------------
+
 from app1.models import Camera, Result, Object, Info
 from app1.darknet_python import darknet as dn
-#------------------------------------------------------------------------------
+
+
+
+
 
 # locking process to avoid threads calling darknet more than once at a time
 lock = Lock()

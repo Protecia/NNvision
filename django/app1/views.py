@@ -17,8 +17,8 @@ from.forms import AlertForm
 def process():
     cam_path = os.path.join(settings.BASE_DIR,'app1/process_camera.py')
     alert_path = os.path.join(settings.BASE_DIR,'app1/process_alert.py')
-    return ([p for p in ps.process_iter() if cam_path in p.cmdline() and p.status()=='running'],
-             [p for p in ps.process_iter() if alert_path in p.cmdline() and p.status()=='running'])
+    return ([p for p in ps.process_iter() if cam_path in p.cmdline() and p.status()!='zombie'],
+             [p for p in ps.process_iter() if alert_path in p.cmdline() and p.status()!='zombie'])
 
 
 def index(request):

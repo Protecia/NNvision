@@ -15,7 +15,6 @@ from .wpa_wifi import Network, Fileconf
 
 # Create your views here.
 
-
 def process():
     return ([p for p in ps.process_iter() if 'app1/process_camera.py' in p.cmdline()],
              [p for p in ps.process_iter() if 'app1/process_alert.py' in p.cmdline()])

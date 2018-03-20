@@ -26,7 +26,10 @@ def index(request):
     return render(request, 'app1/index.html',context)
 
 def camera(request):
-    context = {'camera' : Camera.objects.all(), 'info' : Info.objects.get(), 'url_for_index' : '/',}
+    p = subprocess.Popen(['pwd'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    (out,err)= p.communicate()
+    message = out.decode()+err.decode()
+    context = {'message' : message, 'category' : 'warning', 'camera' : Camera.objects.all(), 'info' : Info.objects.get(), 'url_for_index' : '/',}
     return render(request, 'app1/camera.html',context)
 
 def darknet(request):

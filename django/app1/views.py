@@ -40,7 +40,7 @@ def darknet(request):
             subprocess.Popen(['python3',os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
             time.sleep(2)
     if d_action == 'stop' :
-        if len(p[0])==0 : message = "Darknet is not running !" 
+        if len(p[0])==0 and len(p[1])==0 : message = "Servers are not running !" 
         else :
             [ item.kill() for sublist in p for item in sublist]
     context = { 'message' : message, 'category' : 'warning', 'd_action' :d_action, 'url_state' : '/darknet/state'}

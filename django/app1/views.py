@@ -44,8 +44,7 @@ def darknet(request):
         else :
             [ item.kill() for sublist in p for item in sublist]
     context = { 'message' : message, 'category' : 'warning', 'd_action' :d_action, 'url_state' : '/darknet/state'}
-    if not d_action : 
-        return render(request, 'app1/darknet.html', context)
+    return render(request, 'app1/darknet.html', context)
 
 def darknet_state(request):
     p = process()

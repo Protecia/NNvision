@@ -98,7 +98,7 @@ class Process_alert(object):
                 body = " A {} just {}. Check the image : {} - {}".format(Alert.stuffs_d[alert.stuffs],
                            Alert.actions_d[alert.actions], self.info.public_site, t)
                 client.messages.create(to=to, from_=sender,body=body)
-                logger.info('sms send to : {}').format(to)
+                logger.info('sms send to : {}'.format(to))
                 
         if alert.call:
             pass

@@ -96,7 +96,7 @@ class Alert(models.Model):
         unique_together = ('stuffs', 'actions')
         
     def __str__(self):
-        return 'action : {} / object {} : '.format(Alert.actions_d[self.actions],
+        return 'action : {} / object : {} '.format(Alert.actions_d[self.actions],
                          Alert.stuffs_d[self.stuffs])
 
 

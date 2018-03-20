@@ -99,6 +99,8 @@ class Process_alert(object):
                            Alert.actions_d[alert.actions], self.info.public_site, t)
                 client.messages.create(to=to, from_=sender,body=body)
                 logger.info('sms send to : {}'.format(to))
+                alert.when = t
+                alert.save()
                 
         if alert.call:
             pass

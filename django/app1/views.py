@@ -17,8 +17,8 @@ from .wpa_wifi import Network, Fileconf
 
 
 def process():
-    return [ p for p in ps.process_iter() if 'app1/process_camera.py' in
-    p.cmdline()]
+    return ([p for p in ps.process_iter() if 'app1/process_camera.py' in p.cmdline()],
+             [p for p in ps.process_iter() if 'app1/process_alert.py' in p.cmdline()])
 
 
 def index(request):
@@ -48,10 +48,13 @@ def darknet(request):
 
 def darknet_state(request):
     p = process()
-    if len(p)>0:
-        raw = 'Darknet serveur is running with PID : {}'.format(p[0].pid)
-    else :
-        raw = 'Darknet serveur is stopped'
+    raw=''
+    if len(p[0])>0:
+        raw += 'Darknet server is running (PID : {}). '.format(p[0][0].pid)
+    elif len(p[1])>0:
+        raw += 'Alert server is running (PID : {}). '.format(p[1][0].pid)
+    else:
+        raw += 'Servers are stopped'
     return HttpResponse(raw)
 
 def panel(request, first):

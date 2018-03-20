@@ -79,6 +79,11 @@ ACTIONS_CHOICES = ((1,'appear'),
     
 @python_2_unicode_compatible  # only if you need to support Python 2
 class Alert(models.Model):
+    actions_reverse = dict((v, k) for k, v in ACTIONS_CHOICES)
+    stuffs_reverse = dict((v, k) for k, v in STUFFS_CHOICES)
+    stuffs_d = dict((k, v) for k, v in STUFFS_CHOICES)
+    actions_d = dict((k, v) for k, v in ACTIONS_CHOICES)
+    
     stuffs = models.IntegerField(choices=STUFFS_CHOICES, default=1)
     actions = models.IntegerField(choices=ACTIONS_CHOICES, default=1)
     sms = models.BooleanField(default=True)
@@ -89,6 +94,10 @@ class Alert(models.Model):
     key = models.CharField(max_length=10, default='')
     class Meta:
         unique_together = ('stuffs', 'actions')
+        
+    def __str__(self):
+        return 'action : {} / object {} : '.format(Alert.actions_d[self.actions],
+                         Alert.stuffs_d[self.stuffs])
 
 
     

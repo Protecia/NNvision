@@ -10,7 +10,7 @@ import logging
 import os
 import sys
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from logging.handlers import RotatingFileHandler
 from collections import Counter
 from twilio.rest import Client
@@ -56,7 +56,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projet.settings")
 import django
 django.setup()
 
-from app1.models import Profile, Camera, Result, Object, Alert, Info, STUFFS_CHOICES, ACTIONS_CHOICES
+from app1.models import Profile, Camera, Result, Object, Alert, Info
 #from django.contrib.auth.models import User
 
 #------------------------------------------------------------------------------
@@ -66,10 +66,6 @@ class Process_alert(object):
     def __init__(self):
         self.user = Profile.objects.filter(alert=True)
         self.info = Info.objects.get(pk=1)
-        self.stuffs_reverse = dict((v, k) for k, v in STUFFS_CHOICES)
-        self.actions_reverse = dict((v, k) for k, v in ACTIONS_CHOICES)
-        self.stuffs_d = dict((k, v) for k, v in STUFFS_CHOICES)
-        self.actions_d = dict((k, v) for k, v in ACTIONS_CHOICES)
         self.running=True
         self.result = Result.objects.all().last()
         
@@ -90,14 +86,14 @@ class Process_alert(object):
                 logger.info('waiting {} s, end loop'.format(_time))       
    
     def warn(self, alert):
-        t = datetime.now()
+        t = datetime.now(timezone.utc)
         if alert.sms and t-alert.when>timedelta(minutes=5):
             for u in self.user :
                 t = datetime.now()
                 to = u.phone_number
                 sender ="+33757916187"
-                body = " A {} just {}. Check the image : {} - {}".format(self.stuffs_d[alert.stuffs],
-                           self.actions_d[alert.actions], self.info.public_site, t)
+                body = " A {} just {}. Check the image : {} - {}".format(Alert.stuffs_d[alert.stuffs],
+                           Alert.actions_d[alert.actions], self.info.public_site, t)
                 client.messages.create(to, sender,body)
                 logger.info('sms send to : {}').format(to)
                 
@@ -124,14 +120,14 @@ class Process_alert(object):
                 logger.debug('getting objects in databases : {}'.format(cn))
                 appear = cn-c
                 for s in appear :
-                    a = Alert.objects.get(stuffs=self.stuffs_reverse[s], 
-                                             actions=self.actions_reverse['appear'])
+                    a = Alert.objects.get(stuffs=Alert.stuffs_reverse[s], 
+                                             actions=Alert.actions_reverse['appear'])
                     logger.info('new appear alert : {}'.format(a))
                     self.warn(a)
                 disappear = c-cn
                 for s in disappear:
-                    a = Alert.objects.get(stuffs=self.stuffs_reverse[s], 
-                                             actions=self.actions_reverse['disappear'])
+                    a = Alert.objects.get(stuffs=Alert.stuffs_reverse[s], 
+                                             actions=Alert.actions_reverse['disappear'])
                     logger.info('new disappear alert : {}'.format(a))
                     self.warn(a)
                 self.result = r

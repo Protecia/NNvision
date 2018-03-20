@@ -36,7 +36,7 @@ def darknet(request):
     if d_action == 'start':
         if len(p[0])>0 : message = "Darknet already running, stop ip if you want to restart"
         else :
-            subprocess.Popen(['python3','app1/process_camera.py'])
+            subprocess.Popen(['python3','/home/nnsision/NNvision/django/app1/process_camera.py'])
             subprocess.Popen(['python3','app1/process_alert.py'])
             time.sleep(2)
     if d_action == 'stop' :

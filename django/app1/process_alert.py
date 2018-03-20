@@ -120,16 +120,16 @@ class Process_alert(object):
                 logger.debug('getting objects in databases : {}'.format(cn))
                 appear = cn-c
                 for s in appear :
-                    a = Alert.objects.get(stuffs=Alert.stuffs_reverse[s], 
-                                             actions=Alert.actions_reverse['appear'])
+                    a = Alert.objects.filter(stuffs=Alert.stuffs_reverse[s], 
+                                             actions=Alert.actions_reverse['appear']).first()
                     logger.info('new appear alert : {}'.format(a))
-                    self.warn(a)
+                    if a : self.warn(a)
                 disappear = c-cn
                 for s in disappear:
-                    a = Alert.objects.get(stuffs=Alert.stuffs_reverse[s], 
-                                             actions=Alert.actions_reverse['disappear'])
+                    a = Alert.objects.filter(stuffs=Alert.stuffs_reverse[s], 
+                                             actions=Alert.actions_reverse['disappear']).first()
                     logger.info('new disappear alert : {}'.format(a))
-                    self.warn(a)
+                    if a : self.warn(a)
                 self.result = r
             time.sleep(_time)
 

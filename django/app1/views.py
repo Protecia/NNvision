@@ -51,9 +51,9 @@ def darknet_state(request):
     raw=''
     if len(p[0])>0:
         raw += 'Darknet server is running (PID : {}). '.format(p[0][0].pid)
-    elif len(p[1])>0:
+    if len(p[1])>0:
         raw += 'Alert server is running (PID : {}). '.format(p[1][0].pid)
-    else:
+    else :
         raw += 'Servers are stopped'
     return HttpResponse(raw)
 

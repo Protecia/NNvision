@@ -97,7 +97,7 @@ class Process_alert(object):
                 sender ="+33757916187"
                 body = " A {} just {}. Check the image : {} - {}".format(Alert.stuffs_d[alert.stuffs],
                            Alert.actions_d[alert.actions], self.info.public_site, t)
-                client.messages.create(to, sender,body)
+                client.messages.create(to=to, from_=sender,body=body)
                 logger.info('sms send to : {}').format(to)
                 
         if alert.call:
@@ -139,6 +139,7 @@ class Process_alert(object):
 
 def main():
     process_alert=Process_alert()
+    print("Waiting...")
     process_alert.wait(30)
     print("Alert are running !")
     try:

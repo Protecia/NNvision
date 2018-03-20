@@ -10,6 +10,7 @@ import logging
 import os
 import sys
 import time
+from django.conf import settings
 from datetime import datetime, timedelta, timezone
 from logging.handlers import RotatingFileHandler
 from collections import Counter
@@ -33,7 +34,7 @@ level= logging.DEBUG
 logger = logging.getLogger()
 logger.setLevel(level)
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-file_handler = RotatingFileHandler('alert.log', 'a', 10000000, 1)
+file_handler = RotatingFileHandler('/home/nnvision/NNvision/django/app1/alert.log', 'a', 10000000, 1)
 file_handler.setLevel(level)
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
@@ -61,14 +62,14 @@ from app1.models import Profile, Camera, Result, Object, Alert, Info
 
 #------------------------------------------------------------------------------
 
-    
+
 class Process_alert(object):
     def __init__(self):
         self.user = Profile.objects.filter(alert=True)
         self.info = Info.objects.get(pk=1)
         self.running=True
         self.result = Result.objects.all().last()
-        
+
     def wait(self,_time):
         i=0
         wait=True
@@ -83,8 +84,8 @@ class Process_alert(object):
             time.sleep(1)
             if i>_time : 
                 wait=False
-                logger.info('waiting {} s, end loop'.format(_time))       
-   
+                logger.info('waiting {} s, end loop'.format(_time))
+
     def warn(self, alert):
         t = datetime.now(timezone.utc)
         logger.debug('warn in action at {} / alert timer is {} / timedelta : {}'.format(t
@@ -101,21 +102,21 @@ class Process_alert(object):
                 logger.info('sms send to : {}'.format(to))
                 alert.when = t
                 alert.save()
-                
+
         if alert.call:
             pass
         if alert.alarm:
             pass
         if alert.patrol:
-            pass        
-        
+            pass
+
     def run(self,_time):
         while(self.running):
             #get last objects
             o = Object.objects.filter(result=self.result)
             c = Counter([i.result_object for i in o])
             logger.info('getting last object : {}'.format(c))
-            
+
             # Is there new result
             rn = Result.objects.filter(pk__gt=self.result.id)
             for r in rn:

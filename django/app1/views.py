@@ -26,7 +26,7 @@ def index(request):
     return render(request, 'app1/index.html',context)
 
 def camera(request):
-    p = subprocess.Popen(['pwd'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    p = subprocess.Popen(['python3','/home/nnvision/NNvision/django/app1/process_alert.py'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     (out,err)= p.communicate()
     message = out.decode()+err.decode()
     context = {'message' : message, 'category' : 'warning', 'camera' : Camera.objects.all(), 'info' : Info.objects.get(), 'url_for_index' : '/',}

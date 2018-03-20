@@ -87,10 +87,10 @@ class Process_alert(object):
    
     def warn(self, alert):
         t = datetime.now(timezone.utc)
-        logger.debug('warn in action at {} / alert timer is {} / timedelta : {}').format(t
-                    ,alert.when,t-alert.when)
-        logger.debug('sms : {} / call : {} / alarm : {} / patrol : {}').format(
-                alert.sms,alert.call,alert.alarm,alert.patrol)
+        logger.debug('warn in action at {} / alert timer is {} / timedelta : {}'.format(t
+                    ,alert.when,t-alert.when))
+        logger.debug('sms : {} / call : {} / alarm : {} / patrol : {}'.format(
+                alert.sms,alert.call,alert.alarm,alert.patrol))
         if alert.sms and t-alert.when>timedelta(minutes=5):
             for u in self.user :
                 to = u.phone_number

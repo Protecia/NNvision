@@ -132,17 +132,18 @@ class Process_alert(object):
                     self.warn(a)
                 self.result = r
             time.sleep(_time)
-    
-    
+
+
 def main():
     process_alert=Process_alert()
     process_alert.wait(30)
+    print("Alert are running !")
     try:
-        process_alert.run(3)        
+        process_alert.run(3)
     except KeyboardInterrupt:
         print("Bye bye!")
-    
-    
+
+
 # start the threads
 if __name__ == '__main__':
     main()

@@ -41,8 +41,7 @@ def darknet(request):
     if d_action == 'stop' :
         if len(p[0])==0 : message = "Darknet is not running !" 
         else :
-            for i in p:
-                i.kill()
+            [ item.kill() for sublist in p for item in sublist]
     context = { 'message' : message, 'category' : 'warning', 'd_action' :d_action, 'url_state' : '/darknet/state'}
     return render(request, 'app1/darknet.html', context)
 

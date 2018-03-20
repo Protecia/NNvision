@@ -87,9 +87,12 @@ class Process_alert(object):
    
     def warn(self, alert):
         t = datetime.now(timezone.utc)
+        logger.debug('warn in action at {} / alert timer is {} / timedelta : {}').format(t
+                    ,alert.when,t-alert.when)
+        logger.debug('sms : {} / call : {} / alarm : {} / patrol : {}').format(
+                alert.sms,alert.call,alert.alarm,alert.patrol)
         if alert.sms and t-alert.when>timedelta(minutes=5):
             for u in self.user :
-                t = datetime.now()
                 to = u.phone_number
                 sender ="+33757916187"
                 body = " A {} just {}. Check the image : {} - {}".format(Alert.stuffs_d[alert.stuffs],
@@ -122,13 +125,13 @@ class Process_alert(object):
                 for s in appear :
                     a = Alert.objects.filter(stuffs=Alert.stuffs_reverse[s], 
                                              actions=Alert.actions_reverse['appear']).first()
-                    logger.info('new appear alert : {}'.format(a))
+                    logger.info('test appear alert : {}'.format(a))
                     if a : self.warn(a)
                 disappear = c-cn
                 for s in disappear:
                     a = Alert.objects.filter(stuffs=Alert.stuffs_reverse[s], 
                                              actions=Alert.actions_reverse['disappear']).first()
-                    logger.info('new disappear alert : {}'.format(a))
+                    logger.info('test disappear alert : {}'.format(a))
                     if a : self.warn(a)
                 self.result = r
             time.sleep(_time)

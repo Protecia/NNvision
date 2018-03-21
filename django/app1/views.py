@@ -15,10 +15,15 @@ from.forms import AlertForm
 # Create your views here.
 
 def process():
-    cam_path = os.path.join(settings.BASE_DIR,'app1/process_camera.py')
-    alert_path = os.path.join(settings.BASE_DIR,'app1/process_alert.py')
-    return ([p for p in ps.process_iter() if cam_path in p.cmdline() and p.status()=='running'],
-             [p for p in ps.process_iter() if alert_path in p.cmdline() and p.status()=='running'])
+    _process = [[],[]]
+    for p in ps.process_iter():
+        try :
+            for n in p.cmdline():
+                if 'process_camera' in n : _process[0].append(p)
+                if 'process_alert' in n : _process[1].append(p)
+        except ps.AccessDenied :
+            pass
+    return _process
 
 
 def index(request):

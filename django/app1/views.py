@@ -25,7 +25,6 @@ def process():
             pass
     return _process
 
-
 def index(request):
     context = {'info' : Info.objects.get(), 'url_for_index' : '/',}
     return render(request, 'app1/index.html',context)
@@ -86,7 +85,7 @@ def alert(request):
             # ...
             # redirect to a new URL:
             return HttpResponseRedirect('/alert')
-        
+
 
     # if a GET (or any other method) we'll create a blank form
     else:
@@ -100,7 +99,7 @@ def configuration(request):
     except :
         connect = 'none'
         pass
-    try : 
+    try :
     # works only on linux system
         wifi = list(Cell.all('wlan0'))
         conf = Fileconf.from_file('/etc/wpa_supplicant/wpa_supplicant.conf')
@@ -109,18 +108,18 @@ def configuration(request):
         context.update({'ip' : find_local_ip(),'hostname' : socket.gethostname(), 
         'wifi' : [{ 'ssid' : 'test network' , 'quality' : '0/70' , 'encrypted' : 'secure' },{ 'ssid' : 'reseau test2' , 'quality' : '0/70' , 'encrypted' : 'secure' }],  'conf' : [{'ssid' : 'reseau test', 'opts' : {'priority' : '1'}},{'ssid' : 'reseau test2', 'opts' : {'priority' : '5'}},], 'connect' : 'reseau test' })
         pass
-    else : 
+    else :
         # Adding new context specific to the view here :
         context.update({'ip' : find_local_ip(),'hostname' : socket.gethostname(), 
         'wifi' : wifi, 'conf' : conf.network_list, 'connect' : connect })
     return render(request, 'app1/settings.html', context)
-    
 
-    
+
+
 
 
 def wifi_add(request):
-    try : 
+    try :
     # works only on linux system
         conf = Fileconf.from_file('/etc/wpa_supplicant/wpa_supplicant.conf')
     except :
@@ -133,14 +132,14 @@ def wifi_add(request):
     opts = {}
     if wifi_psk != '' : opts = { 'psk' : wifi_psk, }
     if wifi_priority != 'Aucune' : opts.update({'priority' : wifi_priority})
-    (res, msg) = conf.add(wifi_ssid, **opts)   
+    (res, msg) = conf.add(wifi_ssid, **opts)
     if res : conf.make_new()
     message = { 'ok' : None, 'ssid' : "Wrong network name !", 'psk' : "Wrong password !"} 
     context.update({ 'message' : message[msg], 'category' : 'warning'})
     return HttpResponseRedirect('/settings')
-    
+
 def wifi_suppr(request):
-    try : 
+    try :
     # works only on linux system
         conf = Fileconf.from_file('/etc/wpa_supplicant/wpa_supplicant.conf')
     except :
@@ -153,9 +152,9 @@ def wifi_suppr(request):
     message = { True : "Network deleted" , False : "Can't suppress the network !"} 
     context.update({ 'message' : message[res], 'category' : 'success'})
     return HttpResponseRedirect('/settings')
-   
+
 def wifi_restart(request):
-    try : 
+    try :
         res1 = subprocess.call(['sudo', 'ifdown', 'wlan0'])
         time.sleep(1)
         res2 = subprocess.call(['sudo', 'ifup', 'wlan0'])
@@ -165,10 +164,9 @@ def wifi_restart(request):
         return HttpResponseRedirect('/settings')
     if res1 == 0 and res2 == 0 : context.update({ 'message' : 'Wifi restarted', 'category' : 'success'})
     else :  context.update({ 'message' : 'Unable to restart wifi', 'category' : 'warning'})
-    return HttpResponseRedirect('/settings')   
-    
-    
-    
+    return HttpResponseRedirect('/settings')
+
+
 def reboot(request):
     try :
         command = '(sleep 2 ; sudo reboot) &'
@@ -176,14 +174,14 @@ def reboot(request):
     except :
     # return on fail (windows)
         pass
-    return HttpResponseRedirect('/')    
-    
+    return HttpResponseRedirect('/')
+
 def shutdown(request):
-    try : 
+    try :
         subprocess.call(['sudo', 'halt'])
     except :
     # return on fail (windows)
         pass
-    return HttpResponseRedirect('/')    
+    return HttpResponseRedirect('/')
 
 

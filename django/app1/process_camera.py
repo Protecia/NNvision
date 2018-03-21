@@ -82,6 +82,14 @@ class ProcessCamera(Thread):
         self.pos_sensivity = 60
         self.black_list=(b'pottedplant',b'cell phone')
         self.clone={b'cell phone':b'car'}
+        ###  getting last object in db for camera to avoid writing same images at each restart
+        r_last = Result.objects.filter(camera=cam).last()
+        o_last = Object.objects.filter(result_id=r_last.id)
+        result_last = [(r.result_object.encode(), float(r.result_prob),
+                        (float(r.result_loc1),float(r.result_loc2),
+                         float(r.result_loc3),float(r.result_loc4))) for r in o_last]
+        self.result_DB = result_last
+        
  
     def run(self):
         """code run when the thread is started"""

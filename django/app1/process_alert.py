@@ -101,7 +101,7 @@ class Process_alert(object):
                 body = " A {} just {}. Check the image : {} - {}".format(Alert.stuffs_d[alert.stuffs],
                            Alert.actions_d[alert.actions], self.info.public_site, t)
                 client.messages.create(to=to, from_=sender,body=body)
-                logger.info('sms send to : {}'.format(to))
+                logger.warning('sms send to : {}'.format(to))
                 alert.when = t
                 alert.save()
 
@@ -128,15 +128,21 @@ class Process_alert(object):
                 logger.debug('getting objects in databases : {}'.format(cn))
                 appear = cn-c
                 for s in appear :
-                    a = Alert.objects.filter(stuffs=Alert.stuffs_reverse[s], 
+                    a=False
+                    object_appear = Alert.stuffs_reverse.get(s)
+                    if object_appear :
+                        a = Alert.objects.filter(stuffs=object_appear, 
                                              actions=Alert.actions_reverse['appear']).first()
-                    logger.info('test appear alert : {}'.format(a))
+                        logger.info('test appear alert : {}'.format(a))
                     if a : self.warn(a)
                 disappear = c-cn
                 for s in disappear:
-                    a = Alert.objects.filter(stuffs=Alert.stuffs_reverse[s], 
+                    a=False
+                    object_disappear = Alert.stuffs_reverse.get(s)
+                    if object_disappear :
+                        a = Alert.objects.filter(stuffs=object_disappear, 
                                              actions=Alert.actions_reverse['disappear']).first()
-                    logger.info('test disappear alert : {}'.format(a))
+                        logger.info('test disappear alert : {}'.format(a))
                     if a : self.warn(a)
                 self.result = r
             time.sleep(_time)

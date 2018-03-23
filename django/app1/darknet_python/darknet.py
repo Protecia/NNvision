@@ -127,7 +127,7 @@ def detect(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
     free_image(im)
     free_ptrs(cast(probs, POINTER(c_void_p)), num)
     return res
-    
+
 def detect2(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
     boxes = make_boxes(net)
     probs = make_probs(net)
@@ -139,10 +139,9 @@ def detect2(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
             if probs[j][i] > 0:
                 res.append((meta.names[i], probs[j][i], (boxes[j].x, boxes[j].y, boxes[j].w, boxes[j].h)))
     res = sorted(res, key=lambda x: -x[1])
-    free_image(image)
     free_ptrs(cast(probs, POINTER(c_void_p)), num)
     return res
-    
+
 def array_to_image(arr):
     arr = arr.transpose(2,0,1)
     c = arr.shape[0]

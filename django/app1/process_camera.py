@@ -79,7 +79,7 @@ class ProcessCamera(Thread):
         self.running = False
         self.result_DB = []
         self.threshold = 0.6
-        self.pos_sensivity = 60
+        self.pos_sensivity = 100
         self.black_list=(b'pottedplant',b'cell phone')
         self.clone={b'cell phone':b'car'}
         ###  getting last object in db for camera to avoid writing same images at each restart

@@ -9,6 +9,7 @@ from wifi import Cell
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from .models import Camera, Result, Info, Alert
 from.forms import AlertForm
 
@@ -25,14 +26,17 @@ def process():
             pass
     return _process
 
+@login_required
 def index(request):
     context = {'info' : Info.objects.get(), 'url_for_index' : '/',}
     return render(request, 'app1/index.html',context)
 
+@login_required
 def camera(request):
     context = {'camera' : Camera.objects.all(), 'info' : Info.objects.get(), 'url_for_index' : '/',}
     return render(request, 'app1/camera.html',context)
 
+@login_required
 def darknet(request):
     d_action = request.POST.get('d_action')
     p = process()
@@ -61,6 +65,7 @@ def darknet_state(request):
         raw += 'Servers are stopped'
     return HttpResponse(raw)
 
+@login_required
 def panel(request, first):
     #first=int(first)
     imgs = Result.objects.all().order_by('-id')[first:first+30]
@@ -68,11 +73,12 @@ def panel(request, first):
     context = { 'first' : first, 'img_array' : img_array}
     return render(request, 'app1/panel.html', context)
 
+@login_required
 def panel_detail(request, id):
     img = Result.objects.get(id=id)
     return render(request, 'app1/panel_detail.html', {'img':img, 'id':id})
 
-
+@login_required
 def alert(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
@@ -93,6 +99,7 @@ def alert(request):
     alert = Alert.objects.all()
     return render(request, 'app1/alert.html', {'message' : form.errors, 'category' : 'warning','form': form, 'alert':alert})
 
+@login_required
 def configuration(request):
     try:
         connect = subprocess.check_output(['iwgetid', '-r'])
@@ -117,7 +124,7 @@ def configuration(request):
 
 
 
-
+@login_required
 def wifi_add(request):
     try :
     # works only on linux system
@@ -138,6 +145,7 @@ def wifi_add(request):
     context.update({ 'message' : message[msg], 'category' : 'warning'})
     return HttpResponseRedirect('/settings')
 
+@login_required
 def wifi_suppr(request):
     try :
     # works only on linux system
@@ -153,6 +161,7 @@ def wifi_suppr(request):
     context.update({ 'message' : message[res], 'category' : 'success'})
     return HttpResponseRedirect('/settings')
 
+@login_required
 def wifi_restart(request):
     try :
         res1 = subprocess.call(['sudo', 'ifdown', 'wlan0'])
@@ -166,7 +175,7 @@ def wifi_restart(request):
     else :  context.update({ 'message' : 'Unable to restart wifi', 'category' : 'warning'})
     return HttpResponseRedirect('/settings')
 
-
+@login_required
 def reboot(request):
     try :
         command = '(sleep 2 ; sudo reboot) &'
@@ -176,12 +185,6 @@ def reboot(request):
         pass
     return HttpResponseRedirect('/')
 
-def shutdown(request):
-    try :
-        subprocess.call(['sudo', 'halt'])
-    except :
-    # return on fail (windows)
-        pass
-    return HttpResponseRedirect('/')
+
 
 

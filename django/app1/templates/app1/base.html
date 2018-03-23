@@ -21,14 +21,17 @@
         <a href="/">
           <img width="100" height="38" data-interchange="[{% get_static_prefix %}app1/img/neural_network.gif, retina]" src="{% get_static_prefix %}app1/img/neural_network.gif" alt="NNvision">
         </a>
-        </a>
+        
       </div>
       <div class="top-bar-right">
         <ul class="menu">
-	      <li><a href="/logs">Logs</a></li>
-          <li><a href="http://docs.poppy-project.org/en/" target="_blank">Docs</a></li>
-          <li><span class="version">v{{ info.version }}</span></li>
+		  
+          <li><a href="http://www.roboticia.com" target="_blank">Help center</a></li>
+          {% if user.is_authenticated %}<li><span class="version">v{{ info.version}}</span></li>{% endif %}
         </ul>
+		<ul class="menu">
+		<li><a href="/accounts/logout/" >Logout</a></li>
+		</ul>
       </div>
     </nav>
 

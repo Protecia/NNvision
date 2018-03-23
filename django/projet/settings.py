@@ -126,3 +126,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, '../static_root')
 MEDIA_URL = '/media/'
 # Physical system path where the static files are stored. Files that are being uploaded by the user.
 MEDIA_ROOT = os.path.join(BASE_DIR, '../media_root')
+
+LOGOUT_REDIRECT_URL = '/'

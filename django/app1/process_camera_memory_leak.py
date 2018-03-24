@@ -12,7 +12,7 @@ import requests
 import os
 import sys
 import cv2
-# import numpy as np -->to use numpy without memory inflate : https://github.com/pjreddie/darknet/issues/289
+import numpy as np
 from django.conf import settings
 from threading import Thread, Lock, Event
 from logging.handlers import RotatingFileHandler
@@ -77,7 +77,7 @@ class ProcessCamera(Thread):
         self.cam_id = cam.id-1
         self.nb_cam = nb_cam
         self.running = False
-        self.img_temp = settings.MEDIA_ROOT
+        self.result_DB = []
         self.threshold = 0.6
         self.pos_sensivity = 100
         self.black_list=(b'pottedplant',b'cell phone')
@@ -100,23 +100,25 @@ class ProcessCamera(Thread):
             try : 
                 r = requests.get(self.cam.url, auth=(self.cam.username,
                                                  self.cam.password
-                                                 ), stream=True, timeout=2)
+                                                 ), stream=False, timeout=2)
             except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
                 time_out_request = True
                 pass
             if not time_out_request:              
                 if r.status_code == 200 :
-                     with open(self.img_temp, 'wb') as fd:
-                        for chunk in r.iter_content(chunk_size=128):
-                            fd.write(chunk)
-                    logger.info('image saved to temp folder for darknet in {}s '.format(
+                    img_bytes = BytesIO(r.content)                
+                    arr = np.asarray(bytearray(r.content), dtype="uint8")
+                    arr = cv2.imdecode(arr, 1)
+                    im = dn.array_to_image(arr)
+                    dn.rgbgr_image(im)
+                    logger.info('image ready for darknet :  {} in {}s '.format(im,
                                  time.time()-t))
                     t=time.time()             
                     self.event_list[self.cam_id].wait()
                     logger.debug('cam {} alive'.format(self.cam_id))
                     
                     with lock:
-                       result_darknet = dn.detect(net, meta, self.img_temp,
+                       result_darknet = dn.detect2(net, meta, im,
                                                    thresh=self.threshold-0.4,
                                                    hier_thresh = 0.4)
                        logger.info('get brut result from darknet : {} in {}s\n'.format(

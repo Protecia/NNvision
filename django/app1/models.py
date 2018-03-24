@@ -40,6 +40,7 @@ class Result(models.Model):
                               default='detect')
     time = models.DateTimeField(auto_now=True)
     brut = models.TextField(default='')
+    alert = models.BooleanField(default="False")
     def __str__(self):
         return 'Camera : {} - at {}'.format(self.camera.name, self.time)
 

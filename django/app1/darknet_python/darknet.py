@@ -111,9 +111,8 @@ def classify(net, meta, im):
     res = sorted(res, key=lambda x: -x[1])
     return res
 
-def detect(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
-    im = load_image(image, 0, 0)
-    im2 = im
+def detect(net, meta, img, thresh=.5, hier_thresh=.5, nms=.45):
+    im = load_image(img, 0, 0)
     boxes = make_boxes(net)
     probs = make_probs(net)
     num =   num_boxes(net)

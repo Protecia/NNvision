@@ -58,10 +58,6 @@ logger.addHandler(file_handler)
 #stream_handler = logging.StreamHandler()
 #stream_handler.setLevel(level)
 #logger.addHandler(stream_handler)
-
-
-
-
 #------------------------------------------------------------------------------
 
 
@@ -134,7 +130,10 @@ class Process_alert(object):
                         a = Alert.objects.filter(stuffs=object_appear, 
                                              actions=Alert.actions_reverse['appear']).first()
                         logger.info('test appear alert : {}'.format(a))
-                    if a : self.warn(a)
+                    if a : 
+                        r.alert= True
+                        r.save()
+                        self.warn(a)
                 disappear = c-cn
                 for s in disappear:
                     a=False
@@ -143,7 +142,10 @@ class Process_alert(object):
                         a = Alert.objects.filter(stuffs=object_disappear, 
                                              actions=Alert.actions_reverse['disappear']).first()
                         logger.info('test disappear alert : {}'.format(a))
-                    if a : self.warn(a)
+                    if a : 
+                        r.alert= True
+                        r.save()
+                        self.warn(a)
                 self.result = r
             time.sleep(_time)
 

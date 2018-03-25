@@ -77,7 +77,7 @@ class ProcessCamera(Thread):
         self.cam_id = cam.id-1
         self.nb_cam = nb_cam
         self.running = False
-        self.img_temp = settings.BASE_DIR
+        self.img_temp = os.path.join(settings.BASE_DIR,'tempimg_cam'+str(self.cam_id))
         self.threshold = 0.6
         self.pos_sensivity = 100
         self.black_list=(b'pottedplant',b'cell phone')
@@ -115,7 +115,7 @@ class ProcessCamera(Thread):
                     logger.debug('cam {} alive'.format(self.cam_id))
 
                     with lock:
-                       result_darknet = dn.detect(net, meta, self.img_temp,
+                       result_darknet = dn.detect(net, meta, self.img_temp.encode(),
                                                    thresh=self.threshold-0.4,
                                                    hier_thresh = 0.4)
                        logger.info('get brut result from darknet : {} in {}s\n'.format(

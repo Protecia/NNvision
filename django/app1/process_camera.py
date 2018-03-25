@@ -98,7 +98,7 @@ class ProcessCamera(Thread):
             try :
                 r = requests.get(self.cam.url, auth=(self.cam.username,
                                                  self.cam.password
-                                                 ), stream=True, timeout=2)
+                                                 ), stream=True, timeout=4)
             except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
                 time_out_request = True
                 pass
@@ -128,7 +128,7 @@ class ProcessCamera(Thread):
                         result_DB = Result(camera=self.cam,brut=result_darknet)
                         date = time.strftime("%Y-%m-%d-%H-%M-%S")
                         arr = cv2.imread(self.img_temp)
-                        img_bytes = BytesIO(cv2.imencode('.jpg', arr[1]).tobytes())
+                        img_bytes = BytesIO(cv2.imencode('.jpg', arr)[1].tobytes())
                         result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes)) 
                         for r in result_filtered:
                             box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2

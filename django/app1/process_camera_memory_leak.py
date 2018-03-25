@@ -6,6 +6,9 @@ Created on Sat Feb  3 11:58:19 2018
 
 Main script to process the camera images
 """
+#<<<<<<<<<<<<<<<<<<<<<<<<<<<<< this script inflate the memory >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# to use numpy without memory inflate : https://github.com/pjreddie/darknet/issues/289
+#<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ++++++++++++++++++++++++++++++ >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 import logging
 import time
 import requests

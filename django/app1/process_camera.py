@@ -12,7 +12,6 @@ import requests
 import os
 import sys
 import cv2
-import numpy as np #-->to use numpy without memory inflate : https://github.com/pjreddie/darknet/issues/289
 from django.conf import settings
 from threading import Thread, Lock, Event
 from logging.handlers import RotatingFileHandler
@@ -110,10 +109,7 @@ class ProcessCamera(Thread):
                             fd.write(chunk)
                     logger.info('image saved to temp folder for darknet in {}s '.format(
                                  time.time()-t))
-                    t=time.time()
-                    img_bytes = BytesIO(r.content)                
-                    arr = np.asarray(bytearray(r.content), dtype="uint8")
-                    arr = cv2.imdecode(arr, 1)
+                    t=time.time()   
                     self.event_list[self.cam_id].wait()
                     logger.debug('cam {} alive'.format(self.cam_id))
 
@@ -131,14 +127,14 @@ class ProcessCamera(Thread):
                         logger.debug('>>> Result have changed <<< ')
                         result_DB = Result(camera=self.cam,brut=result_darknet)
                         date = time.strftime("%Y-%m-%d-%H-%M-%S")
-                        result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes))
+                        arr1 = cv2.imread(self.img_temp)
                         for r in result_filtered:
                             box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
                             ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
                             ))))
                             logger.debug('box calculated : {}'.format(box))
-                            arr = cv2.rectangle(arr,box[0],box[1],(0,255,0),3)
-                            arr = cv2.putText(arr,r[0].decode(),box[1],
+                            arr2 = cv2.rectangle(arr1,box[0],box[1],(0,255,0),3)
+                            arr2 = cv2.putText(arr2,r[0].decode(),box[1],
                             cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
                             object_DB = Object(result = result_DB, 
                                                result_object=r[0].decode(),
@@ -148,10 +144,9 @@ class ProcessCamera(Thread):
                                                result_loc3=r[2][2],
                                                result_loc4=r[2][3])
                             object_DB.save()
-                        img_bytes_rect = BytesIO(cv2.imencode('.jpg', arr)[1].
-                        tobytes())
-                        
-
+                        img_bytes = BytesIO(cv2.imencode('.jpg', arr1)[1].tobytes())
+                        img_bytes_rect = BytesIO(cv2.imencode('.jpg', arr2)[1].tobytes())
+                        result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes)) 
                         result_DB.file2.save('detect_box_'+date+'.jpg',File(img_bytes_rect))
                         result_DB.save()
                         logger.info('>>>>>>>>>>>>>>>--------- Result store in DB '

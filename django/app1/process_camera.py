@@ -77,7 +77,7 @@ class ProcessCamera(Thread):
         self.cam_id = cam.id-1
         self.nb_cam = nb_cam
         self.running = False
-        self.img_temp = settings.MEDIA_ROOT
+        self.img_temp = settings.BASE_DIR
         self.threshold = 0.6
         self.pos_sensivity = 100
         self.black_list=(b'pottedplant',b'cell phone')

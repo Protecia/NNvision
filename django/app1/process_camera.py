@@ -127,16 +127,16 @@ class ProcessCamera(Thread):
                         logger.debug('>>> Result have changed <<< ')
                         result_DB = Result(camera=self.cam,brut=result_darknet)
                         date = time.strftime("%Y-%m-%d-%H-%M-%S")
-                        arr1 = cv2.imread(self.img_temp)
-                        img_bytes = BytesIO(cv2.imencode('.jpg', arr1)[1].tobytes())
+                        arr = cv2.imread(self.img_temp)
+                        img_bytes = BytesIO(cv2.imencode('.jpg', arr[1]).tobytes())
                         result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes)) 
                         for r in result_filtered:
                             box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
                             ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
                             ))))
                             logger.debug('box calculated : {}'.format(box))
-                            arr2 = cv2.rectangle(arr1,box[0],box[1],(0,255,0),3)
-                            arr2 = cv2.putText(arr2,r[0].decode(),box[1],
+                            arr = cv2.rectangle(arr,box[0],box[1],(0,255,0),3)
+                            arr = cv2.putText(arr,r[0].decode(),box[1],
                             cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
                             object_DB = Object(result = result_DB, 
                                                result_object=r[0].decode(),
@@ -146,7 +146,7 @@ class ProcessCamera(Thread):
                                                result_loc3=r[2][2],
                                                result_loc4=r[2][3])
                             object_DB.save()
-                        img_bytes_rect = BytesIO(cv2.imencode('.jpg', arr2)[1].tobytes())
+                        img_bytes_rect = BytesIO(cv2.imencode('.jpg', arr)[1].tobytes())
                         result_DB.file2.save('detect_box_'+date+'.jpg',File(img_bytes_rect))
                         result_DB.save()
                         logger.info('>>>>>>>>>>>>>>>--------- Result store in DB '

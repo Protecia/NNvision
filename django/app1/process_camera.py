@@ -12,7 +12,7 @@ import requests
 import os
 import sys
 import cv2
-# import numpy as np -->to use numpy without memory inflate : https://github.com/pjreddie/darknet/issues/289
+import numpy as np #-->to use numpy without memory inflate : https://github.com/pjreddie/darknet/issues/289
 from django.conf import settings
 from threading import Thread, Lock, Event
 from logging.handlers import RotatingFileHandler
@@ -111,6 +111,9 @@ class ProcessCamera(Thread):
                     logger.info('image saved to temp folder for darknet in {}s '.format(
                                  time.time()-t))
                     t=time.time()
+                    img_bytes = BytesIO(r.content)                
+                    arr = np.asarray(bytearray(r.content), dtype="uint8")
+                    arr = cv2.imdecode(arr, 1)
                     self.event_list[self.cam_id].wait()
                     logger.debug('cam {} alive'.format(self.cam_id))
 

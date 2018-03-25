@@ -128,6 +128,8 @@ class ProcessCamera(Thread):
                         result_DB = Result(camera=self.cam,brut=result_darknet)
                         date = time.strftime("%Y-%m-%d-%H-%M-%S")
                         arr1 = cv2.imread(self.img_temp)
+                        img_bytes = BytesIO(cv2.imencode('.jpg', arr1)[1].tobytes())
+                        result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes)) 
                         for r in result_filtered:
                             box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
                             ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
@@ -144,9 +146,7 @@ class ProcessCamera(Thread):
                                                result_loc3=r[2][2],
                                                result_loc4=r[2][3])
                             object_DB.save()
-                        img_bytes = BytesIO(cv2.imencode('.jpg', arr1)[1].tobytes())
                         img_bytes_rect = BytesIO(cv2.imencode('.jpg', arr2)[1].tobytes())
-                        result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes)) 
                         result_DB.file2.save('detect_box_'+date+'.jpg',File(img_bytes_rect))
                         result_DB.save()
                         logger.info('>>>>>>>>>>>>>>>--------- Result store in DB '

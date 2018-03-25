@@ -89,46 +89,45 @@ class ProcessCamera(Thread):
                         (float(r.result_loc1),float(r.result_loc2),
                          float(r.result_loc3),float(r.result_loc4))) for r in o_last]
         self.result_DB = result_last
-        
- 
+
     def run(self):
         """code run when the thread is started"""
         self.running = True
         while self.running :
             t=time.time()
             time_out_request = False
-            try : 
+            try :
                 r = requests.get(self.cam.url, auth=(self.cam.username,
                                                  self.cam.password
                                                  ), stream=True, timeout=2)
             except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
                 time_out_request = True
                 pass
-            if not time_out_request:              
+            if not time_out_request:
                 if r.status_code == 200 :
-                     with open(self.img_temp, 'wb') as fd:
+                    with open(self.img_temp, 'wb') as fd:
                         for chunk in r.iter_content(chunk_size=128):
                             fd.write(chunk)
                     logger.info('image saved to temp folder for darknet in {}s '.format(
                                  time.time()-t))
-                    t=time.time()             
+                    t=time.time()
                     self.event_list[self.cam_id].wait()
                     logger.debug('cam {} alive'.format(self.cam_id))
-                    
+
                     with lock:
                        result_darknet = dn.detect(net, meta, self.img_temp,
                                                    thresh=self.threshold-0.4,
                                                    hier_thresh = 0.4)
                        logger.info('get brut result from darknet : {} in {}s\n'.format(
-                       result_darknet,time.time()-t))  
+                       result_darknet,time.time()-t))
                     # get only result above trheshlod or previously valid
-                    t=time.time()                
+                    t=time.time()
                     result_filtered = self.check_thresh(result_darknet)
                     # compare with last result to check if different
                     if self.base_condition(result_filtered):
-                        logger.debug('>>> Result have changed <<< ')             
+                        logger.debug('>>> Result have changed <<< ')
                         result_DB = Result(camera=self.cam,brut=result_darknet)
-                        date = time.strftime("%Y-%m-%d-%H-%M-%S")                        
+                        date = time.strftime("%Y-%m-%d-%H-%M-%S")
                         result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes))
                         for r in result_filtered:
                             box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
@@ -155,7 +154,7 @@ class ProcessCamera(Thread):
                         logger.info('>>>>>>>>>>>>>>>--------- Result store in DB '
                         '-------------<<<<<<<<<<<<<<<<<<<<<\n')
                         self.result_DB = result_filtered
-                
+
                 else:
                     logger.warning('bad camera download on {} \n'
                                  .format(self.cam.name))
@@ -163,12 +162,12 @@ class ProcessCamera(Thread):
                 logger.warning('network error on {} \n'
                                  .format(self.cam.name))
                 time.sleep(0.5)
-                
-            logger.info('brut result process in {}s '.format(time.time()-t))            
+
+            logger.info('brut result process in {}s '.format(time.time()-t))
             self.event_list[((self.cam_id)+1)%self.nb_cam].set()
             logger.debug('cam {} set'.format((self.cam_id+1)%self.nb_cam))
             self.event_list[self.cam_id].clear()
-            
+
     def base_condition(self,new):
     # are the detected objects not the same
         if not ([i[0] for i in self.result_DB]  == [i[0] for i in new] ):
@@ -176,7 +175,7 @@ class ProcessCamera(Thread):
             .format([i[0] for i in self.result_DB],[i[0] for i in new],set([i[0] 
             for i in self.result_DB])^set([i[0] for i in new])))
             return True
-    # are the location different 
+    # are the location different
         if abs(sum([i-j for i,j in zip(
         [i for j in self.result_DB  for i in j[2]], [i for j in new for i in
         j[2]])])
@@ -185,9 +184,9 @@ class ProcessCamera(Thread):
             sum([i-j for i,j in zip([i for j in self.result_DB for i in j[2]],
                                     [i for j in new for i in j[2]])]))))
             return True
-        return False    
-    
-    
+        return False
+
+
     def check_thresh(self,resultb):
         result = [r for r in resultb if r[0] not in self.black_list]
         #result = [(e1,e2,e3) if e1 not in self.clone else (self.clone[e1],e2,e3)

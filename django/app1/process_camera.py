@@ -56,10 +56,6 @@ logger.addHandler(file_handler)
 from app1.models import Camera, Result, Object, Info
 from app1.darknet_python import darknet as dn
 
-
-
-
-
 # locking process to avoid threads calling darknet more than once at a time
 lock = Lock()
 
@@ -94,74 +90,69 @@ class ProcessCamera(Thread):
         self.running = True
         while self.running :
             t=time.time()
-            time_out_request = False
+            request_OK = True
             try :
                 r = requests.get(self.cam.url, auth=(self.cam.username,
                                                  self.cam.password
                                                  ), stream=True, timeout=4)
-            except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
-                time_out_request = True
-                pass
-            if not time_out_request:
                 if r.status_code == 200 :
                     with open(self.img_temp, 'wb') as fd:
                         for chunk in r.iter_content(chunk_size=128):
                             fd.write(chunk)
                     logger.info('image saved to temp folder for darknet in {}s '.format(
                                  time.time()-t))
-                    t=time.time()   
-                    self.event_list[self.cam_id].wait()
-                    logger.debug('cam {} alive'.format(self.cam_id))
-
-                    with lock:
-                       result_darknet = dn.detect(net, meta, self.img_temp.encode(),
-                                                   thresh=self.threshold-0.4,
-                                                   hier_thresh = 0.4)
-                       logger.info('get brut result from darknet : {} in {}s\n'.format(
-                       result_darknet,time.time()-t))
-                    # get only result above trheshlod or previously valid
-                    t=time.time()
-                    result_filtered = self.check_thresh(result_darknet)
-                    # compare with last result to check if different
-                    if self.base_condition(result_filtered):
-                        logger.debug('>>> Result have changed <<< ')
-                        result_DB = Result(camera=self.cam,brut=result_darknet)
-                        date = time.strftime("%Y-%m-%d-%H-%M-%S")
-                        arr = cv2.imread(self.img_temp)
-                        img_bytes = BytesIO(cv2.imencode('.jpg', arr)[1].tobytes())
-                        result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes)) 
-                        for r in result_filtered:
-                            box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
-                            ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
-                            ))))
-                            logger.debug('box calculated : {}'.format(box))
-                            arr = cv2.rectangle(arr,box[0],box[1],(0,255,0),3)
-                            arr = cv2.putText(arr,r[0].decode(),box[1],
-                            cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
-                            object_DB = Object(result = result_DB, 
-                                               result_object=r[0].decode(),
-                                               result_prob=r[1],
-                                               result_loc1=r[2][0],
-                                               result_loc2=r[2][1],
-                                               result_loc3=r[2][2],
-                                               result_loc4=r[2][3])
-                            object_DB.save()
-                        img_bytes_rect = BytesIO(cv2.imencode('.jpg', arr)[1].tobytes())
-                        result_DB.file2.save('detect_box_'+date+'.jpg',File(img_bytes_rect))
-                        result_DB.save()
-                        logger.info('>>>>>>>>>>>>>>>--------- Result store in DB '
-                        '-------------<<<<<<<<<<<<<<<<<<<<<\n')
-                        self.result_DB = result_filtered
-
                 else:
-                    logger.warning('bad camera download on {} \n'
-                                 .format(self.cam.name))
-            else:
-                logger.warning('network error on {} \n'
-                                 .format(self.cam.name))
-                time.sleep(0.5)
+                    request_OK = False
+                    logger.warning('bad camera download on {} \n'.format(self.cam.name))    
+            except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+                request_OK = False
+                logger.warning('network error on {} \n'.format(self.cam.name))
+                pass
+            t=time.time()
+            if request_OK:
+                self.event_list[self.cam_id].wait()
+                logger.debug('cam {} alive'.format(self.cam_id))
 
-            logger.info('brut result process in {}s '.format(time.time()-t))
+                with lock:
+                   result_darknet = dn.detect(net, meta, self.img_temp.encode(),
+                                               thresh=self.threshold-0.4,
+                                               hier_thresh = 0.4)
+                   logger.info('get brut result from darknet : {} in {}s\n'.format(
+                   result_darknet,time.time()-t))
+                # get only result above trheshlod or previously valid
+                t=time.time()
+                result_filtered = self.check_thresh(result_darknet)
+                # compare with last result to check if different
+                if self.base_condition(result_filtered):
+                    logger.debug('>>> Result have changed <<< ')
+                    result_DB = Result(camera=self.cam,brut=result_darknet)
+                    date = time.strftime("%Y-%m-%d-%H-%M-%S")
+                    arr = cv2.imread(self.img_temp)
+                    img_bytes = BytesIO(cv2.imencode('.jpg', arr)[1].tobytes())
+                    result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes)) 
+                    for r in result_filtered:
+                        box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
+                        ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
+                        ))))
+                        logger.debug('box calculated : {}'.format(box))
+                        arr = cv2.rectangle(arr,box[0],box[1],(0,255,0),3)
+                        arr = cv2.putText(arr,r[0].decode(),box[1],
+                        cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
+                        object_DB = Object(result = result_DB, 
+                                           result_object=r[0].decode(),
+                                           result_prob=r[1],
+                                           result_loc1=r[2][0],
+                                           result_loc2=r[2][1],
+                                           result_loc3=r[2][2],
+                                           result_loc4=r[2][3])
+                        object_DB.save()
+                    img_bytes_rect = BytesIO(cv2.imencode('.jpg', arr)[1].tobytes())
+                    result_DB.file2.save('detect_box_'+date+'.jpg',File(img_bytes_rect))
+                    result_DB.save()
+                    logger.info('>>>>>>>>>>>>>>>--------- Result store in DB '
+                    '-------------<<<<<<<<<<<<<<<<<<<<<\n')
+                    self.result_DB = result_filtered    
+                logger.info('brut result process in {}s '.format(time.time()-t))
             self.event_list[((self.cam_id)+1)%self.nb_cam].set()
             logger.debug('cam {} set'.format((self.cam_id+1)%self.nb_cam))
             self.event_list[self.cam_id].clear()

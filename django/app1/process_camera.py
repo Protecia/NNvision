@@ -212,8 +212,8 @@ thread_list = [ ProcessCamera(c,event_list, nb_cam) for c in cameras]
 
 # load the Neural Network and the meta
 path = Info.objects.get().darknet_path
-cfg = os.path.join(path,'cfg/yolo.cfg').encode()
-weights = os.path.join(path,'yolo.weights').encode()
+cfg = os.path.join(path,'cfg/yolov3.cfg').encode()
+weights = os.path.join(path,'yolov3.weights').encode()
 data = os.path.join(path,'cfg/coco.data').encode()
 
 net = dn.load_net(cfg,weights, 0)

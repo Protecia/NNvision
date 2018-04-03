@@ -17,6 +17,9 @@ class Profile(models.Model):
         verbose_name = 'user'
         verbose_name_plural = 'users'
         
+    def __str__(self):
+        return 'user : {} - phone_number : {} - alert : {}'.format(self.user, self.phone_number, self.alert)
+        
 # Create your models here.
 
 # Informations about the camera you are using

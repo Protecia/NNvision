@@ -73,7 +73,7 @@ class ProcessCamera(Thread):
         self.nb_cam = nb_cam
         self.running = False
         self.img_temp = os.path.join(settings.BASE_DIR,'tempimg_cam'+str(self.cam_id))
-        self.threshold = 0.6
+        self.threshold = 0.8
         self.pos_sensivity = 100
         self.black_list=(b'pottedplant',b'cell phone')
         self.clone={b'cell phone':b'car'}
@@ -153,9 +153,11 @@ class ProcessCamera(Thread):
                     '-------------<<<<<<<<<<<<<<<<<<<<<\n')
                     self.result_DB = result_filtered    
                 logger.info('brut result process in {}s '.format(time.time()-t))
+            self.event_list[self.cam_id].clear()
+            logger.debug('cam {} clear -> so wait !'.format(self.cam_id))
             self.event_list[((self.cam_id)+1)%self.nb_cam].set()
             logger.debug('cam {} set'.format((self.cam_id+1)%self.nb_cam))
-            self.event_list[self.cam_id].clear()
+            
 
     def base_condition(self,new):
     # are the detected objects not the same

@@ -25,7 +25,7 @@ if v[0] >=2 :
 else :
     from django.conf.urls import include
     urlpatterns = [
-        url(r'^accounts/$', include('django.contrib.auth.urls')),
+        url(r'^accounts/', include('django.contrib.auth.urls')),
         url(r'^$', views.index, name='index'),
         url(r'^camera/$', views.camera, name='camera'),
         url(r'^darknet/$', views.darknet, name='darknet'),

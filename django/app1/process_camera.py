@@ -39,7 +39,7 @@ django.setup()
 # a simple config to create a file log - change the level to warning in
 # production
 #------------------------------------------------------------------------------
-level= logging.WARNING
+level= logging.DEBUG
 logger = logging.getLogger()
 logger.setLevel(level)
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
@@ -212,8 +212,8 @@ thread_list = [ ProcessCamera(c,event_list, nb_cam) for c in cameras]
 
 # load the Neural Network and the meta
 path = Info.objects.get().darknet_path
-cfg = os.path.join(path,'cfg/yolov3.cfg').encode()
-weights = os.path.join(path,'yolov3.weights').encode()
+cfg = os.path.join(path,'cfg/yolov2.cfg').encode()
+weights = os.path.join(path,'yolov2.weights').encode()
 data = os.path.join(path,'cfg/coco.data').encode()
 
 net = dn.load_net(cfg,weights, 0)

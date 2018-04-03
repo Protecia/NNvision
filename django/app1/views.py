@@ -67,7 +67,7 @@ def darknet_state(request):
 
 @login_required
 def panel(request, first):
-    #first=int(first)
+    first=int(first)
     imgs = Result.objects.all().order_by('-id')[first:first+30]
     img_array = [imgs[i:i + 3] for i in range(0, len(imgs), 3)]
     context = { 'first' : first, 'img_array' : img_array}

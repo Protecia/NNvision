@@ -135,8 +135,8 @@ class ProcessCamera(Thread):
                         ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
                         ))))
                         logger.debug('box calculated : {}'.format(box))
-                        arr = cv2.rectangle(arr,box[0],box[1],(0,255,0),3)
-                        arr = cv2.putText(arr,r[0].decode(),box[1],
+                        cv2.rectangle(arr,box[0],box[1],(0,255,0),3)
+                        cv2.putText(arr,r[0].decode(),box[1],
                         cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
                         object_DB = Object(result = result_DB, 
                                            result_object=r[0].decode(),

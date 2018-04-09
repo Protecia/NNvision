@@ -188,6 +188,6 @@ def reboot(request):
 
 @login_required
 def last(request, cam):
-    img = '/media/tempimg_cam'+cam
+    img = '/media/tempimg_cam'+str(cam)
     return render(request, 'app1/last_img.html', {'img':img})
 

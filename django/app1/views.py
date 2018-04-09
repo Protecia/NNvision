@@ -44,8 +44,8 @@ def darknet(request):
     if d_action == 'start':
         if len(p[0])>0 : message = "Darknet already running, stop ip if you want to restart"
         else :
-            subprocess.Popen(['python3',os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
-            subprocess.Popen(['python3',os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
+            subprocess.Popen(['python',os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
+            subprocess.Popen(['python',os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
             time.sleep(2)
     if d_action == 'stop' :
         if len(p[0])==0 and len(p[1])==0 : message = "Servers are not running !" 
@@ -186,5 +186,13 @@ def reboot(request):
     return HttpResponseRedirect('/')
 
 
-
+@login_required
+def test_open(request):
+    #cmd = subprocess.Popen(['python',os.path.join(settings.BASE_DIR,'app1/process_camera.py')],stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cmd = subprocess.Popen(['echo','$LD_LIBRARY_PATH'],stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = cmd.communicate()
+    env = os.environ
+    
+    context = { 'message' : env, 'category' : 'warning'}
+    return render(request, 'app1/camera.html', context)
 

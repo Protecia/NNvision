@@ -17,7 +17,7 @@
 
 		
 		
-			<img src="/media/tempimg_cam0" id="img" alt=""  >
+			<img src="{{ img }}" id="img" alt=""  >
 		
 
 	</div><br>
@@ -34,7 +34,7 @@
 
 window.setInterval(function()
 {
-    document.getElementById('img').src = "/media/tempimg_cam0?random="+new Date().getTime();
+    document.getElementById('img').src = "{{ img }}?random="+new Date().getTime();
 }, 5000);
 
 </script>

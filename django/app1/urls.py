@@ -19,7 +19,7 @@ if v[0] >=2 :
         url(r'^settings/wifi_add/$', views.wifi_add, name='wifi_add'),
         url(r'^settings/wifi_suppr/$', views.wifi_suppr, name='wifi_suppr'),
         url(r'^settings/wifi_restart/$', views.wifi_restart, name='wifi_restart'),
-        url(r'^test/$', views.test_open, name='test'),
+        path('last/<int:cam>', views.last, name='last image'),
     ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     
 else :

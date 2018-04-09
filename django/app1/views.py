@@ -187,12 +187,7 @@ def reboot(request):
 
 
 @login_required
-def test_open(request):
-    #cmd = subprocess.Popen(['python',os.path.join(settings.BASE_DIR,'app1/process_camera.py')],stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    cmd = subprocess.Popen(['echo','$LD_LIBRARY_PATH'],stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out, err = cmd.communicate()
-    env = os.environ
-    
-    context = { 'message' : env, 'category' : 'warning'}
-    return render(request, 'app1/camera.html', context)
+def last(request, cam):
+    img = '/media/tempimg_cam'+cam
+    return render(request, 'app1/last_img.html', {'img':img})
 

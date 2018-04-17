@@ -26,7 +26,7 @@ class Profile(models.Model):
 @python_2_unicode_compatible  # only if you need to support Python 2
 class Camera(models.Model):
     name = models.CharField(max_length=20)
-    key = models.CharField(max_length=20)
+    active = models.BooleanField()
     url = models.URLField()
     username = models.CharField(max_length=20)
     password = models.CharField(max_length=20)
@@ -44,7 +44,7 @@ class Result(models.Model):
                               default='detect')
     time = models.DateTimeField(auto_now=True)
     brut = models.TextField(default='')
-    alert = models.BooleanField(default="False")
+    alert = models.BooleanField(default=False)
     def __str__(self):
         return 'Camera : {} - at {}'.format(self.camera.name, self.time)
 

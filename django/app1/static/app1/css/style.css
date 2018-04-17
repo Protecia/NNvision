@@ -68,6 +68,15 @@
   text-align: center;
 }
 
+.border-on a {
+	border: 2px solid green;
+}
+
+.border-off a {
+	border: 2px solid red;
+}
+
+
 .section-title {
   padding: 2rem 0;
 }

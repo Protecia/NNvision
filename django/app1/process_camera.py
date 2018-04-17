@@ -79,11 +79,15 @@ class ProcessCamera(Thread):
         self.clone={b'cell phone':b'car'}
         ###  getting last object in db for camera to avoid writing same images at each restart
         r_last = Result.objects.filter(camera=cam).last()
-        o_last = Object.objects.filter(result_id=r_last.id)
-        result_last = [(r.result_object.encode(), float(r.result_prob),
-                        (float(r.result_loc1),float(r.result_loc2),
-                         float(r.result_loc3),float(r.result_loc4))) for r in o_last]
-        self.result_DB = result_last
+        if r_last :
+            o_last = Object.objects.filter(result_id=r_last.id)
+            result_last = [(r.result_object.encode(), float(r.result_prob),
+                            (float(r.result_loc1),float(r.result_loc2),
+                             float(r.result_loc3),float(r.result_loc4))) for r in o_last]
+            self.result_DB = result_last
+        else :
+            self.result_DB = []
+            
 
     def run(self):
         """code run when the thread is started"""
@@ -201,7 +205,7 @@ class ProcessCamera(Thread):
         return new_list
               
 # get all the cameras in the DB
-cameras = Camera.objects.all()
+cameras = Camera.objects.filter(active=True)
 nb_cam = len(cameras)
 
 # create one event for each camera. So the thread will be able to communicate

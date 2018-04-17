@@ -14,7 +14,7 @@
 	
 	<div class="row">
 	<div class="large-9 columns">
-	<code id="robot-state" class="accesslog hljs">{% for res in camera %} {{ res.name }} - {{ res.url}} <br>   {% endfor %}</code>
+	<code id="robot-state" class="accesslog hljs">{% for res in camera %} {{ res.name }} - {{ res.url}} &nbsp;&nbsp;<u><a href='/camera/last/{{ res.id }}'>image</a></u> &nbsp;&nbsp;   <u><a href='#'>video</a></u>  <br>   {% endfor %}</code>
 	</div>
 	
 	</div>

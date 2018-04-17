@@ -20,7 +20,7 @@ if v[0] >=2 :
         url(r'^settings/wifi_add/$', views.wifi_add, name='wifi_add'),
         url(r'^settings/wifi_suppr/$', views.wifi_suppr, name='wifi_suppr'),
         url(r'^settings/wifi_restart/$', views.wifi_restart, name='wifi_restart'),
-        path('last/<int:cam>', views.last, name='last image'),
+        path('camera/last/<int:cam>', views.last, name='last image'),
     ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     
 else :
@@ -29,6 +29,7 @@ else :
         url(r'^accounts/', include('django.contrib.auth.urls')),
         url(r'^$', views.index, name='index'),
         url(r'^camera/$', views.camera, name='camera'),
+        url(r'^camera/last/(?P<cam>\d+)$', views.last, name='last image'),
         url(r'^darknet/$', views.darknet, name='darknet'),
         url(r'^darknet/state/$', views.darknet_state, name='ds'),
         url(r'^panel/(?P<first>\d+)/(?P<first_alert>\d+)$', views.panel, name='panel'),

@@ -65,12 +65,10 @@ lock = Lock()
 
 class ProcessCamera(Thread):
     """Thread used to grab camera images and process the image with darknet"""
-    def __init__(self, cam, event_list, nb_cam):
+    def __init__(self, cam, event_ind):
         Thread.__init__(self)
         self.cam = cam
-        self.event_list = event_list
-        self.cam_id = cam.id-1
-        self.nb_cam = nb_cam
+        self.event_ind = event_ind
         self.running = False
         self.img_temp = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam_id))
         self.threshold = 0.4
@@ -114,8 +112,8 @@ class ProcessCamera(Thread):
                 pass
             t=time.time()
             if request_OK:
-                self.event_list[self.cam_id].wait()
-                logger.debug('cam {} alive'.format(self.cam_id))
+                event_list[self.event_ind].wait()
+                logger.debug('cam {} alive'.format(self.cam.id))
 
                 with lock:
                    result_darknet = dn.detect(net, meta, self.img_temp.encode(),
@@ -157,10 +155,10 @@ class ProcessCamera(Thread):
                     '-------------<<<<<<<<<<<<<<<<<<<<<\n')
                     self.result_DB = result_filtered    
                 logger.info('brut result process in {}s '.format(time.time()-t))
-            self.event_list[self.cam_id].clear()
-            logger.debug('cam {} clear -> so wait !'.format(self.cam_id))
-            self.event_list[((self.cam_id)+1)%self.nb_cam].set()
-            logger.debug('cam {} set'.format((self.cam_id+1)%self.nb_cam))
+            event_list[self.event_ind].clear()
+            logger.debug('cam {} clear -> so wait !'.format(self.cam.id))
+            self.event_list[((self.event_ind)+1)%nb_cam].set()
+            logger.debug('event {} set'.format((self.event_ind+1)%nb_cam))
             
 
     def base_condition(self,new):
@@ -208,13 +206,16 @@ class ProcessCamera(Thread):
 cameras = Camera.objects.filter(active=True)
 nb_cam = len(cameras)
 
-# create one event for each camera. So the thread will be able to communicate
+# create one event and one thread for each camera. So the thread will be able to communicate
 # between each other using this event. It is necesary to tell other threads
 # when the darknet process is over. 
-event_list = [Event() for _ in range(nb_cam)]
+thread_list = []
+event_list = []
+for c in cameras:
+    event_list.append = Event()
+    thread_list.append(ProcessCamera(c,len(event_list)-1))
 
-# create one thread per camera
-thread_list = [ ProcessCamera(c,event_list, nb_cam) for c in cameras]
+
 
 # load the Neural Network and the meta
 path = Info.objects.get().darknet_path

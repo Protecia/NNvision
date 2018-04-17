@@ -14,13 +14,13 @@
 	
 	<div class="row">
 	<div class="large-10 columns">Alert settled :
-	<code id="robot-state" class="accesslog hljs">{% for res in alert %} {{ res.get_stuffs_display }} {{ res.get_actions_display }} {% if res.sms %}Sms{% endif %} {% if res.call %}call{% endif %} {% if res.alarm %}Alarm{% endif %} {% if res.patrol %}Patrol{% endif %} <br>   {% endfor %}</code>
+	<code id="robot-state" class="accesslog hljs">{% for res in alert %} {{ res.get_stuffs_display }} {{ res.get_actions_display }} -> {% if res.sms %}Sms{% endif %} {% if res.call %}call{% endif %} {% if res.alarm %}Alarm{% endif %} {% if res.patrol %}Patrol{% endif %} &nbsp <a href=/alert/suppr/{{ res.id }} >delete</a> <br>   {% endfor %}</code>
 	</div>
 	
 	</div>
 	<br><br><br>
 	<div class="row" style="border: 1px solid #466d98;">
-	<form action="/alert" method="post">{% csrf_token %}
+	<form action="/alert/" method="post">{% csrf_token %}
     <div class="large-2 columns">
       <label>Select objects
         {{form.stuffs}}
@@ -41,7 +41,7 @@
     </div>
 	<div class="large-2 columns">
 	<br>
-	<button type="submit" name="valid_alert" value="ok" class="button large">Go</button>
+	<button type="submit" name="valid_alert" value="ok" class="button large">Add Alert</button>
 	</div>
 	</form>
   </div>

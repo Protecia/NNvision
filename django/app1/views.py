@@ -28,7 +28,25 @@ def process():
 
 @login_required
 def index(request):
-    context = {'info' : Info.objects.get(), 'url_for_index' : '/',}
+    d_action = request.POST.get('d_action')
+    if d_action == 'start':
+        subprocess.Popen(['python',os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
+        subprocess.Popen(['python',os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
+        time.sleep(2)
+    if d_action == 'stop' :
+        p = process()
+        [ item.kill() for sublist in p for item in sublist]
+        time.sleep(2)
+    p = process()
+    if len(p[0])>0 and len(p[1])>0 :
+        running = True
+    elif len(p[0])==0 and len(p[1])==0:
+        running = False
+    else : 
+        [ item.kill() for sublist in p for item in sublist]
+        running = False
+        
+    context = {'info' : Info.objects.get(), 'url_for_index' : '/','running':running}
     return render(request, 'app1/index.html',context)
 
 @login_required
@@ -44,8 +62,8 @@ def darknet(request):
     if d_action == 'start':
         if len(p[0])>0 : message = "Darknet already running, stop ip if you want to restart"
         else :
-            subprocess.Popen(['python3',os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
-            subprocess.Popen(['python3',os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
+            subprocess.Popen(['python',os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
+            subprocess.Popen(['python',os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
             time.sleep(2)
     if d_action == 'stop' :
         if len(p[0])==0 and len(p[1])==0 : message = "Servers are not running !" 
@@ -66,11 +84,14 @@ def darknet_state(request):
     return HttpResponse(raw)
 
 @login_required
-def panel(request, first):
-    #first=int(first)
-    imgs = Result.objects.all().order_by('-id')[first:first+30]
+def panel(request, first, first_alert):
+    first=int(first)
+    first_alert=int(first_alert)
+    imgs = Result.objects.all().order_by('-id')[first:first+12]
     img_array = [imgs[i:i + 3] for i in range(0, len(imgs), 3)]
-    context = { 'first' : first, 'img_array' : img_array}
+    imgs_alert = Result.objects.filter(alert=True).order_by('-id')[first_alert:first_alert+3]
+    img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
+    context = { 'first' : first, 'first_alert' : first_alert, 'img_array' : img_array, 'img_alert_array' : img_alert_array}
     return render(request, 'app1/panel.html', context)
 
 @login_required
@@ -79,7 +100,7 @@ def panel_detail(request, id):
     return render(request, 'app1/panel_detail.html', {'img':img, 'id':id})
 
 @login_required
-def alert(request):
+def alert(request, id=0):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
@@ -96,6 +117,9 @@ def alert(request):
     # if a GET (or any other method) we'll create a blank form
     else:
         form = AlertForm()
+    if id !=0 :
+        Alert.objects.get(pk=id).delete()     
+    
     alert = Alert.objects.all()
     return render(request, 'app1/alert.html', {'message' : form.errors, 'category' : 'warning','form': form, 'alert':alert})
 
@@ -186,5 +210,8 @@ def reboot(request):
     return HttpResponseRedirect('/')
 
 
-
+@login_required
+def last(request, cam):
+    img = '/media/tempimg_cam'+str(cam)
+    return render(request, 'app1/last_img.html', {'img':img})
 

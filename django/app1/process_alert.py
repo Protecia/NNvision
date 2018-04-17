@@ -10,8 +10,9 @@ import logging
 import os
 import sys
 import time
+import pytz
 from django.conf import settings
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
 from collections import Counter
 from twilio.rest import Client
@@ -85,7 +86,7 @@ class Process_alert(object):
                 logger.info('waiting {} s, end loop'.format(_time))
 
     def warn(self, alert):
-        t = datetime.now(timezone.utc)
+        t = datetime.now(pytz.utc)
         logger.debug('warn in action at {} / alert timer is {} / timedelta : {}'.format(t
                     ,alert.when,t-alert.when))
         logger.debug('sms : {} / call : {} / alarm : {} / patrol : {}'.format(

@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from datetime import datetime
 
+@python_2_unicode_compatible
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
@@ -16,13 +17,16 @@ class Profile(models.Model):
         verbose_name = 'user'
         verbose_name_plural = 'users'
         
+    def __str__(self):
+        return 'user : {} - phone_number : {} - alert : {}'.format(self.user, self.phone_number, self.alert)
+        
 # Create your models here.
 
 # Informations about the camera you are using
 @python_2_unicode_compatible  # only if you need to support Python 2
 class Camera(models.Model):
     name = models.CharField(max_length=20)
-    key = models.CharField(max_length=20)
+    active = models.BooleanField()
     url = models.URLField()
     username = models.CharField(max_length=20)
     password = models.CharField(max_length=20)
@@ -40,7 +44,7 @@ class Result(models.Model):
                               default='detect')
     time = models.DateTimeField(auto_now=True)
     brut = models.TextField(default='')
-    alert = models.BooleanField(default="False")
+    alert = models.BooleanField(default=False)
     def __str__(self):
         return 'Camera : {} - at {}'.format(self.camera.name, self.time)
 

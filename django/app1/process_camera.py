@@ -65,25 +65,27 @@ lock = Lock()
 
 class ProcessCamera(Thread):
     """Thread used to grab camera images and process the image with darknet"""
-    def __init__(self, cam, event_list, nb_cam):
+    def __init__(self, cam, event_ind):
         Thread.__init__(self)
         self.cam = cam
-        self.event_list = event_list
-        self.cam_id = cam.id-1
-        self.nb_cam = nb_cam
+        self.event_ind = event_ind
         self.running = False
-        self.img_temp = os.path.join(settings.BASE_DIR,'tempimg_cam'+str(self.cam_id))
+        self.img_temp = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam_id))
         self.threshold = 0.8
-        self.pos_sensivity = 100
+        self.pos_sensivity = 80
         self.black_list=(b'pottedplant',b'cell phone')
         self.clone={b'cell phone':b'car'}
         ###  getting last object in db for camera to avoid writing same images at each restart
         r_last = Result.objects.filter(camera=cam).last()
-        o_last = Object.objects.filter(result_id=r_last.id)
-        result_last = [(r.result_object.encode(), float(r.result_prob),
-                        (float(r.result_loc1),float(r.result_loc2),
-                         float(r.result_loc3),float(r.result_loc4))) for r in o_last]
-        self.result_DB = result_last
+        if r_last :
+            o_last = Object.objects.filter(result_id=r_last.id)
+            result_last = [(r.result_object.encode(), float(r.result_prob),
+                            (float(r.result_loc1),float(r.result_loc2),
+                             float(r.result_loc3),float(r.result_loc4))) for r in o_last]
+            self.result_DB = result_last
+        else :
+            self.result_DB = []
+
 
     def run(self):
         """code run when the thread is started"""
@@ -110,12 +112,12 @@ class ProcessCamera(Thread):
                 pass
             t=time.time()
             if request_OK:
-                self.event_list[self.cam_id].wait()
-                logger.debug('cam {} alive'.format(self.cam_id))
+                event_list[self.event_ind].wait()
+                logger.debug('cam {} alive'.format(self.cam.id))
 
                 with lock:
                    result_darknet = dn.detect(net, meta, self.img_temp.encode(),
-                                               thresh=self.threshold-0.4,
+                                               thresh=self.threshold-0.1,
                                                hier_thresh = 0.4)
                    logger.info('get brut result from darknet : {} in {}s\n'.format(
                    result_darknet,time.time()-t))
@@ -135,8 +137,8 @@ class ProcessCamera(Thread):
                         ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
                         ))))
                         logger.debug('box calculated : {}'.format(box))
-                        arr = cv2.rectangle(arr,box[0],box[1],(0,255,0),3)
-                        arr = cv2.putText(arr,r[0].decode(),box[1],
+                        cv2.rectangle(arr,box[0],box[1],(0,255,0),3)
+                        cv2.putText(arr,r[0].decode(),box[1],
                         cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
                         object_DB = Object(result = result_DB, 
                                            result_object=r[0].decode(),
@@ -153,9 +155,11 @@ class ProcessCamera(Thread):
                     '-------------<<<<<<<<<<<<<<<<<<<<<\n')
                     self.result_DB = result_filtered    
                 logger.info('brut result process in {}s '.format(time.time()-t))
-            self.event_list[((self.cam_id)+1)%self.nb_cam].set()
-            logger.debug('cam {} set'.format((self.cam_id+1)%self.nb_cam))
-            self.event_list[self.cam_id].clear()
+            event_list[self.event_ind].clear()
+            logger.debug('cam {} clear -> so wait !'.format(self.cam.id))
+            self.event_list[((self.event_ind)+1)%nb_cam].set()
+            logger.debug('event {} set'.format((self.event_ind+1)%nb_cam))
+            
 
     def base_condition(self,new):
     # are the detected objects not the same
@@ -199,21 +203,24 @@ class ProcessCamera(Thread):
         return new_list
               
 # get all the cameras in the DB
-cameras = Camera.objects.all()
+cameras = Camera.objects.filter(active=True)
 nb_cam = len(cameras)
 
-# create one event for each camera. So the thread will be able to communicate
+# create one event and one thread for each camera. So the thread will be able to communicate
 # between each other using this event. It is necesary to tell other threads
 # when the darknet process is over. 
-event_list = [Event() for _ in range(nb_cam)]
+thread_list = []
+event_list = []
+for c in cameras:
+    event_list.append = Event()
+    thread_list.append(ProcessCamera(c,len(event_list)-1))
 
-# create one thread per camera
-thread_list = [ ProcessCamera(c,event_list, nb_cam) for c in cameras]
+
 
 # load the Neural Network and the meta
 path = Info.objects.get().darknet_path
-cfg = os.path.join(path,'cfg/yolov3.cfg').encode()
-weights = os.path.join(path,'yolov3.weights').encode()
+cfg = os.path.join(path,'cfg/yolov2.cfg').encode()
+weights = os.path.join(path,'yolov2.weights').encode()
 data = os.path.join(path,'cfg/coco.data').encode()
 
 net = dn.load_net(cfg,weights, 0)

@@ -14,22 +14,38 @@
     <link rel="stylesheet" href="{% static "app1/css/style.css" %}">
   </head>
   <body>
+  
 
     <nav class="top-bar" role="navigation">
-      <div class="top-bar-title">
+      <div class="top-bar-left">
+	  
         <a href="/">
-          <img width="100" height="38" data-interchange="[{% get_static_prefix %}app1/img/neural_network.gif, retina]" src="{% get_static_prefix %}app1/img/neural_network.gif" alt="NNvision">
+          <img  width="120" height="50" data-interchange="[{% get_static_prefix %}app1/img/neural_network.gif, retina]" src="{% get_static_prefix %}app1/img/neural_network.gif" alt="NNvision">
         </a>
-      </div>
+      
+	  </div>
+	      
+	  
+            <h1 id="top_bar_page_title" style="text-align:center"></h1>
+       
+	  
+	  
+	  
+	  
+	  
       <div class="top-bar-right">
         <ul class="menu">
 		  
-          <li><a href="http://www.roboticia.com" target="_blank">Help center</a></li>
-          <li><span class="version">v{{ info.version}}</span></li>
+          <a href="http://www.roboticia.com" target="_blank">Help center</a>
+          <span class="version">v{{ info.version}}</span>
         </ul>
 		<ul class="menu">
-		<li><a href="/accounts/logout/" >Logout</a></li>
+		<a href="/darknet" >Servers logs</a>
 		</ul>
+		<ul class="menu">
+		<a href="/accounts/logout/" >Logout</a>
+		</ul>
+		
       </div>
     </nav>
 
@@ -38,19 +54,49 @@
     
 
 <div class="row wrap" data-equalizer data-equalize-on="medium">
-
-  <div class="large-4 medium-6 columns menu-tile">
-    <a href="/darknet" data-equalizer-watch>
-      <h3>
+{% if running %}
+  <div class="large-4 medium-6 columns menu-tile border-on"  >
+  <form action="/" method="post"><input type='hidden' name='d_action' value='stop' />{% csrf_token %}
+	<a href="#" onclick="$(this).closest('form').submit()" data-equalizer-watch>
+      <h4 style="color: green" >
         <svg class="pp-icon pp-icon-stats">
           <title>Darknet</title>
           <use xlink:href="#pp-icon-stats"></use>
         </svg>
+      
+      <p  >Protection is ON</p></h4>
+	  
+	  <p style="color: green" >>> click to stop the protection <<</p>
+    </a></form>
+  </div>
+  {% endif %}
+{% if not running %}
+	<div class="large-4 medium-6 columns menu-tile border-off"  >
+	<form action="/" method="post"><input type='hidden' name='d_action' value='start' />{% csrf_token %}
+	<a href="#" onclick="$(this).closest('form').submit()" data-equalizer-watch>
+	  <h4 style="color: red" >
+		<svg class="pp-icon pp-icon-stats">
+		  <title>Darknet</title>
+		  <use xlink:href="#pp-icon-stats"></use>
+		</svg>
+	  
+	  <p  >Protection is OFF</p></h4>
+	  
+	  <p style="color: red" >>> click to start the protection <<</p>
+	</a></form>
+	</div>
+{% endif %}
+  
+  <div class="large-4 medium-6 columns menu-tile">
+    <a href="/panel/0/0" data-equalizer-watch>
+      <h3>
+        <img width="110" height="62" src="{% static "app1/img/logo-vol.png" %}" data-interchange="[{% static "app1/img/logo-vol-large.png" %}, retina]" src="{% static "app1/img/logo.png" %}" alt="Rest">
       </h3>
-      <p>Server management</p>
+      <p>Images detection</p>
     </a>
   </div>
-
+  
+  
   <div class="large-4 medium-6 columns menu-tile">
     <a href="/camera" data-equalizer-watch>
       <h3>
@@ -62,17 +108,10 @@
 
   
   
-  <div class="large-4 medium-6 columns menu-tile">
-    <a href="/panel/0" data-equalizer-watch>
-      <h3>
-        <img width="110" height="62" src="{% static "app1/img/logo-vol.png" %}" data-interchange="[{% static "app1/img/logo-vol-large.png" %}, retina]" src="{% static "app1/img/logo.png" %}" alt="Rest">
-      </h3>
-      <p>Images detection</p>
-    </a>
-  </div>
+  
 
   <div class="large-4 medium-6 columns menu-tile">
-    <a href="/alert" data-equalizer-watch>
+    <a href="/alert/" data-equalizer-watch>
       <h3>
         <svg class="pp-icon pp-icon-build">
           <title>Alert</title>
@@ -95,8 +134,7 @@
     </a>
   </div>
 
-  
-
+ 
 </div>
 
 <svg style="position: absolute; width: 0; height: 0;" width="0" height="0" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">

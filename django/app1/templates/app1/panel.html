@@ -9,18 +9,18 @@
 </div>
 
 <div class="row">
-  <div class="large-15 columns">
-    <h3> Last detection :  </h3>
+  <div class="large-15 columns" style="border: 1px solid #466d98;">
+    <h3> Last alert :  </h3>
 	<div align="right">
-	{% if first >= 30 %}<a href="/panel/{{first|add:-30}}" class="button tiny">&laquo; previous</a>{% endif %}
-	<a href="/panel/{{first|add:30}}" class="button tiny">next &raquo;</a></div>
-	{% for row in img_array %}
+	{% if first_alert >= 3 %}<a href="/panel/{{first}}/{{first_alert|add:-3}}" class="button tiny">&laquo; previous</a>{% endif %}
+	<a href="/panel/{{first}}/{{first_alert|add:3}}" class="button tiny">next &raquo;</a></div>
+	{% for row_alert in img_alert_array %}
 	<div class="row">
 
-		{% for img in row %}
+		{% for img_alert in row_alert %}
 		<div class="large-4 columns">
-		<a href="/panel/detail/{{img.id}}">
-			<img src="{{img.file2.url}}" alt="" height="100" >{{img.time|date:'Y-m-d H:i:s'}}
+		<a class="th" href="/panel/detail/{{img_alert.id}}">
+			<img  style="border:5px solid red" src="{{img_alert.file2.url}}" alt="" height="100" >{{img_alert.time|date:'Y-m-d H:i:s'}}
 		</a>
 		</div>
 		{% endfor %}
@@ -28,10 +28,36 @@
 	</div><br>
 	{% endfor %}
 	<div align="right">
-	{% if first >= 30 %}<a href="/panel/{{first|add:-30}}" class="button tiny">&laquo; previous</a>{% endif %}
-	<a href="/panel/{{first|add:30}}" class="button tiny">next &raquo;</a></div>
+	{% if first_alert >= 3 %}<a href="/panel/{{first}}/{{first_alert|add:-3}}" class="button tiny">&laquo; previous</a>{% endif %}
+	<a href="/panel/{{first}}/{{first_alert|add:3}}" class="button tiny">next &raquo;</a></div>
   </div>
 </div>
+<br>
+<div class="row">
+  <div class="large-15 columns" style="border: 1px solid #466d98;">
+    <h3> Last detection :  </h3>
+	<div align="right">
+	{% if first >= 12 %}<a href="/panel/{{first|add:-12}}/{{first_alert}}" class="button tiny">&laquo; previous</a>{% endif %}
+	<a href="/panel/{{first|add:12}}/{{first_alert}}" class="button tiny">next &raquo;</a></div>
+	{% for row in img_array %}
+	<div class="row">
+
+		{% for img in row %}
+		<div class="large-4 columns">
+		<a href="/panel/detail/{{img.id}}">
+			<img {% if img.alert == True %} style="border:5px solid red" {% endif %} src="{{img.file2.url}}" alt="" height="100" >{{img.time|date:'Y-m-d H:i:s'}}
+		</a>
+		</div>
+		{% endfor %}
+
+	</div><br>
+	{% endfor %}
+	<div align="right">
+	{% if first >= 12 %}<a href="/panel/{{first|add:-12}}/{{first_alert}}" class="button tiny">&laquo; previous</a>{% endif %}
+	<a href="/panel/{{first|add:12}}/{{first_alert}}" class="button tiny">next &raquo;</a></div>
+  </div>
+</div>
+<br>
 
 
 

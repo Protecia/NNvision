@@ -31,7 +31,7 @@
 
 {% block endscript %}
 <script>
-
+document.getElementById('img').src = "{{ img }}?random="+new Date().getTime();
 window.setInterval(function()
 {
     document.getElementById('img').src = "{{ img }}?random="+new Date().getTime();

@@ -16,10 +16,10 @@ class Profile(models.Model):
         ordering = ['user']
         verbose_name = 'user'
         verbose_name_plural = 'users'
-        
+
     def __str__(self):
         return 'user : {} - phone_number : {} - alert : {}'.format(self.user, self.phone_number, self.alert)
-        
+
 # Create your models here.
 
 # Informations about the camera you are using
@@ -31,7 +31,7 @@ class Camera(models.Model):
     name = models.CharField(max_length=20)
     active = models.BooleanField()
     url = models.URLField()
-    auth_type = models.CharField(choices=AUTH_CHOICES, default='B')
+    auth_type = models.CharField(max_length=1, choices=AUTH_CHOICES, default='B')
     username = models.CharField(max_length=20)
     password = models.CharField(max_length=20)
 

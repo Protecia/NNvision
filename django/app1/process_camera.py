@@ -17,7 +17,7 @@ from threading import Thread, Lock, Event
 from logging.handlers import RotatingFileHandler
 from io import BytesIO
 from django.core.files import File
-from collections import Counter 
+from collections import Counter
 
 
 #------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ django.setup()
 # a simple config to create a file log - change the level to warning in
 # production
 #------------------------------------------------------------------------------
-level= logging.WARNING
+level= logging.DEBUG
 logger = logging.getLogger()
 logger.setLevel(level)
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')

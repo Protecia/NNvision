@@ -119,6 +119,7 @@ class ProcessCamera(Thread):
                 logger.debug('cam {} alive'.format(self.cam.id))
 
                 with lock:
+                   arr = cv2.imread(self.img_temp)
                    result_darknet = dn.detect(net, meta, self.img_temp.encode(),
                                                thresh=self.threshold-0.1,
                                                hier_thresh = 0.4)
@@ -132,7 +133,7 @@ class ProcessCamera(Thread):
                     logger.debug('>>> Result have changed <<< ')
                     result_DB = Result(camera=self.cam,brut=result_darknet)
                     date = time.strftime("%Y-%m-%d-%H-%M-%S")
-                    arr = cv2.imread(self.img_temp)
+                    
                     img_bytes = BytesIO(cv2.imencode('.jpg', arr)[1].tobytes())
                     result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes)) 
                     for r in result_filtered:

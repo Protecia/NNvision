@@ -31,7 +31,7 @@ class Camera(models.Model):
     name = models.CharField(max_length=20)
     active = models.BooleanField()
     url = models.URLField()
-    auth_type = models.Charfield(choices=AUTH_CHOICES, default='B')
+    auth_type = models.CharField(choices=AUTH_CHOICES, default='B')
     username = models.CharField(max_length=20)
     password = models.CharField(max_length=20)
 

@@ -89,7 +89,7 @@ class ProcessCamera(Thread):
             self.auth = requests.auth.HTTPBasicAuth(cam.username,cam.password)
         if cam.auth_type == 'D' :
             self.auth = requests.auth.HTTPDigestAuth(cam.username,cam.password)
-        
+
 
 
     def run(self):

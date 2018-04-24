@@ -100,11 +100,11 @@ class ProcessCamera(Thread):
             t=time.time()
             request_OK = True
             try :
-                r = requests.get(self.cam.url, auth=self.auth, stream=True, timeout=4)
+                r = requests.get(self.cam.url, auth=self.auth, stream=False, timeout=4)
                 if r.status_code == 200 :
                     with open(self.img_temp, 'wb') as fd:
-                        for chunk in r.iter_content(chunk_size=128):
-                            fd.write(chunk)
+                        #for chunk in r.iter_content(chunk_size=128):
+                         fd.write(r.content)
                     logger.info('image saved to temp folder for darknet in {}s '.format(
                                  time.time()-t))
                 else:

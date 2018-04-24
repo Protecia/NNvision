@@ -222,9 +222,9 @@ for c in cameras:
 
 # load the Neural Network and the meta
 path = Info.objects.get().darknet_path
-cfg = os.path.join(path,'cfg/yolov2.cfg').encode()
-weights = os.path.join(path,'yolov2.weights').encode()
-data = os.path.join(path,'cfg/coco.data').encode()
+cfg = os.path.join(path,settings.CFG).encode()
+weights = os.path.join(path,settings.WEIGHTS).encode()
+data = os.path.join(path,settings.DATA).encode()
 
 net = dn.load_net(cfg,weights, 0)
 meta = dn.load_meta(data)

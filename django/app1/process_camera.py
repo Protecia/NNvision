@@ -85,6 +85,11 @@ class ProcessCamera(Thread):
             self.result_DB = result_last
         else :
             self.result_DB = []
+        if cam.auth_type == 'B':
+            self.auth = requests.auth.HTTPBasicAuth(cam.username,cam.password)
+        if cam.auth_type == 'D' :
+            self.auth = requests.auth.HTTPDigestAuth(cam.username,cam.password)
+        
 
 
     def run(self):
@@ -94,9 +99,7 @@ class ProcessCamera(Thread):
             t=time.time()
             request_OK = True
             try :
-                r = requests.get(self.cam.url, auth=(self.cam.username,
-                                                 self.cam.password
-                                                 ), stream=True, timeout=4)
+                r = requests.get(self.cam.url, auth=self.auth, stream=True, timeout=4)
                 if r.status_code == 200 :
                     with open(self.img_temp, 'wb') as fd:
                         for chunk in r.iter_content(chunk_size=128):

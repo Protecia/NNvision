@@ -128,3 +128,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, '../media_root')
 
 LOGOUT_REDIRECT_URL = '/'
+
+CFG = 'cfg/yolov3.cfg'
+WEIGHTS = 'yolov3.weights'
+DATA = 'cfg/coco.data'
+PYTHON = 'python3'

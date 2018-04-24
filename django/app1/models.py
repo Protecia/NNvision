@@ -25,9 +25,13 @@ class Profile(models.Model):
 # Informations about the camera you are using
 @python_2_unicode_compatible  # only if you need to support Python 2
 class Camera(models.Model):
+    AUTH_CHOICES = (
+        ('B', 'Basic'),
+        ('D', 'Digest'))
     name = models.CharField(max_length=20)
     active = models.BooleanField()
     url = models.URLField()
+    auth_type = models.Charfield(choices=AUTH_CHOICES, default='B')
     username = models.CharField(max_length=20)
     password = models.CharField(max_length=20)
 

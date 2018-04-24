@@ -134,10 +134,11 @@ class ProcessCamera(Thread):
                     box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
                     ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
                     ))))
-                    cv2.rectangle(arr,box[0],box[1],(0,255,0),3)
-                    cv2.putText(arr,r[0].decode(),box[1],
+                    arrb = arr
+                    cv2.rectangle(arrb,box[0],box[1],(0,255,0),3)
+                    cv2.putText(arrb,r[0].decode(),box[1],
                     cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
-                cv2.imwrite(self.img_temp_box,arr)
+                cv2.imwrite(self.img_temp_box,arrb)
                 if self.base_condition(result_filtered):
                     logger.debug('>>> Result have changed <<< ')
                     result_DB = Result(camera=self.cam,brut=result_darknet)
@@ -154,7 +155,7 @@ class ProcessCamera(Thread):
                                            result_loc3=r[2][2],
                                            result_loc4=r[2][3])
                         object_DB.save()
-                    img_bytes_rect = BytesIO(cv2.imencode('.jpg', arr)[1].tobytes())
+                    img_bytes_rect = BytesIO(cv2.imencode('.jpg', arrb)[1].tobytes())
                     result_DB.file2.save('detect_box_'+date+'.jpg',File(img_bytes_rect))
                     result_DB.save()
                     logger.info('>>>>>>>>>>>>>>>--------- Result store in DB '

@@ -30,8 +30,8 @@ def process():
 def index(request):
     d_action = request.POST.get('d_action')
     if d_action == 'start':
-        subprocess.Popen(['python',os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
-        subprocess.Popen(['python',os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
+        subprocess.Popen(['python3',os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
+        subprocess.Popen(['python3',os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
         time.sleep(2)
     if d_action == 'stop' :
         p = process()
@@ -45,7 +45,7 @@ def index(request):
     else : 
         [ item.kill() for sublist in p for item in sublist]
         running = False
-        
+
     context = {'info' : Info.objects.get(), 'url_for_index' : '/','running':running}
     return render(request, 'app1/index.html',context)
 
@@ -62,8 +62,8 @@ def darknet(request):
     if d_action == 'start':
         if len(p[0])>0 : message = "Darknet already running, stop ip if you want to restart"
         else :
-            subprocess.Popen(['python',os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
-            subprocess.Popen(['python',os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
+            subprocess.Popen(['python3',os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
+            subprocess.Popen(['python3',os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
             time.sleep(2)
     if d_action == 'stop' :
         if len(p[0])==0 and len(p[1])==0 : message = "Servers are not running !" 

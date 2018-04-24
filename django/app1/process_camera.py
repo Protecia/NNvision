@@ -70,7 +70,7 @@ class ProcessCamera(Thread):
         self.cam = cam
         self.event_ind = event_ind
         self.running = False
-        self.img_temp = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam_id))
+        self.img_temp = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id))
         self.threshold = 0.8
         self.pos_sensivity = 80
         self.black_list=(b'pottedplant',b'cell phone')
@@ -157,9 +157,8 @@ class ProcessCamera(Thread):
                 logger.info('brut result process in {}s '.format(time.time()-t))
             event_list[self.event_ind].clear()
             logger.debug('cam {} clear -> so wait !'.format(self.cam.id))
-            self.event_list[((self.event_ind)+1)%nb_cam].set()
+            event_list[((self.event_ind)+1)%nb_cam].set()
             logger.debug('event {} set'.format((self.event_ind+1)%nb_cam))
-            
 
     def base_condition(self,new):
     # are the detected objects not the same
@@ -201,7 +200,7 @@ class ProcessCamera(Thread):
         logger.debug('the filtered list of detected objects is {}'.format(
         new_list))
         return new_list
-              
+
 # get all the cameras in the DB
 cameras = Camera.objects.filter(active=True)
 nb_cam = len(cameras)
@@ -212,24 +211,24 @@ nb_cam = len(cameras)
 thread_list = []
 event_list = []
 for c in cameras:
-    event_list.append = Event()
+    event_list.append(Event())
     thread_list.append(ProcessCamera(c,len(event_list)-1))
 
 
 
 # load the Neural Network and the meta
 path = Info.objects.get().darknet_path
-cfg = os.path.join(path,'cfg/yolov2.cfg').encode()
-weights = os.path.join(path,'yolov2.weights').encode()
+cfg = os.path.join(path,'cfg/yolov3.cfg').encode()
+weights = os.path.join(path,'yolov3.weights').encode()
 data = os.path.join(path,'cfg/coco.data').encode()
 
 net = dn.load_net(cfg,weights, 0)
 meta = dn.load_meta(data)
-   
+
 def main():
     for t in thread_list:
         t.start()
-    thread_list[0].event_list[0].set()
+    event_list[0].set()
     print('darknet is running...')
     # Just run4ever (until Ctrl-c...)
     try:
@@ -237,11 +236,11 @@ def main():
             time.sleep(1000)
     except KeyboardInterrupt:
         print("Bye bye!")
-    
+
 def stop():
     for t in thread_list:
         t.running=False
-        
+
 def start():
     for t in thread_list:
         t.running=True

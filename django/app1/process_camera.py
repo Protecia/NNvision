@@ -39,7 +39,7 @@ django.setup()
 # a simple config to create a file log - change the level to warning in
 # production
 #------------------------------------------------------------------------------
-level= logging.WARNING
+level= logging.DEBUG
 logger = logging.getLogger()
 logger.setLevel(level)
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
@@ -71,7 +71,7 @@ class ProcessCamera(Thread):
         self.event_ind = event_ind
         self.running = False
         self.img_temp = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id))
-        self.img_temp_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'_box')
+        self.img_temp_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'_box.jpg')
         self.threshold = 0.8
         self.pos_sensivity = 80
         self.black_list=(b'pottedplant',b'cell phone')

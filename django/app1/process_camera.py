@@ -121,7 +121,7 @@ class ProcessCamera(Thread):
                 with lock:
                    arr = cv2.imread(self.img_temp)
                    result_darknet = dn.detect(net, meta, self.img_temp.encode(),
-                                               thresh=self.threshold-0.1,
+                                               thresh=self.threshold-0.3,
                                                hier_thresh = 0.4)
                    logger.info('get brut result from darknet : {} in {}s\n'.format(
                    result_darknet,time.time()-t))

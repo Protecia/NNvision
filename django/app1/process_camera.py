@@ -39,7 +39,7 @@ django.setup()
 # a simple config to create a file log - change the level to warning in
 # production
 #------------------------------------------------------------------------------
-level= logging.DEBUG
+level= logging.WARNING
 logger = logging.getLogger()
 logger.setLevel(level)
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
@@ -71,6 +71,7 @@ class ProcessCamera(Thread):
         self.event_ind = event_ind
         self.running = False
         self.img_temp = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id))
+        self.img_temp_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'_box')
         self.threshold = 0.8
         self.pos_sensivity = 80
         self.black_list=(b'pottedplant',b'cell phone')
@@ -129,6 +130,14 @@ class ProcessCamera(Thread):
                 t=time.time()
                 result_filtered = self.check_thresh(result_darknet)
                 # compare with last result to check if different
+                for r in result_filtered:
+                    box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
+                    ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
+                    ))))
+                    cv2.rectangle(arr,box[0],box[1],(0,255,0),3)
+                    cv2.putText(arr,r[0].decode(),box[1],
+                    cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
+                cv2.imwrite(self.img_temp_box,arr)
                 if self.base_condition(result_filtered):
                     logger.debug('>>> Result have changed <<< ')
                     result_DB = Result(camera=self.cam,brut=result_darknet)
@@ -137,13 +146,6 @@ class ProcessCamera(Thread):
                     img_bytes = BytesIO(cv2.imencode('.jpg', arr)[1].tobytes())
                     result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes)) 
                     for r in result_filtered:
-                        box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
-                        ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
-                        ))))
-                        logger.debug('box calculated : {}'.format(box))
-                        cv2.rectangle(arr,box[0],box[1],(0,255,0),3)
-                        cv2.putText(arr,r[0].decode(),box[1],
-                        cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
                         object_DB = Object(result = result_DB, 
                                            result_object=r[0].decode(),
                                            result_prob=r[1],

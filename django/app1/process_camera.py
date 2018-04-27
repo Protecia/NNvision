@@ -59,6 +59,18 @@ from app1.darknet_python import darknet as dn
 # locking process to avoid threads calling darknet more than once at a time
 lock = Lock()
 
+# function to extract same objects in 2 lists
+def get_list_diff (l_old,l_under):
+    new_element = []
+    for e_under in l_under :
+        for e_old in l_old:
+            if e_under[0]==e_old[0] :
+                diff_pos = abs(sum([ i-j for i,j in zip(e_under[2],e_old[2])]))
+                if diff_pos < 80 :
+                    new_element.append(e_old)
+    return new_element
+
+
 # the base condition to store the image is : is there a new objects detection
 # or a change in the localisation of the objects. It is not necessary to store
 # billions of images but only the different one.
@@ -191,22 +203,14 @@ class ProcessCamera(Thread):
         #result = [(e1,e2,e3) if e1 not in self.clone else (self.clone[e1],e2,e3)
         #for (e1,e2,e3) in result]
         rp = [r for r in result if r[1]>=self.threshold]
-        rm = sorted([r for r in result if r[1]<self.threshold],reverse=True)
+        rm = [r for r in result if r[1]<self.threshold]
         if len(rm)>0:        
-            diff_objects = list((Counter([r[0] for r in self.result_DB])-
-                         Counter([r[0] for r in rp])).elements())
-            logger.debug('objects lost since last detection is :{} '
-            'with objects {} under threshold'.format(diff_objects,[r for r in
-            result if r[1]<self.threshold and  r[0] in diff_objects]))
-            for d in diff_objects :
-                rd = next(((i,r) for i,r in enumerate(rm) if r[0]==d),False)
-                if rd : 
-                    rp.append(rd[1])
-                    del rm[rd[0]]
-        new_list = sorted(rp)
-        logger.debug('the filtered list of detected objects is {}'.format(
-        new_list))
-        return new_list
+            diff_objects = get_list_diff(self.result_DB,rm)
+            logger.debug('objects from last detection now under treshold :{} '
+            .format(diff_objects)
+            rp.append(diff_objects)
+        logger.debug('the filtered list of detected objects is {}'.format(rp))
+        return rp
 
 # get all the cameras in the DB
 cameras = Camera.objects.filter(active=True)

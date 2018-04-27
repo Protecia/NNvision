@@ -61,13 +61,15 @@ lock = Lock()
 
 # function to extract same objects in 2 lists
 def get_list_diff (l_old,l_under):
+    l_old_w = l_old[:]
     new_element = []
     for e_under in l_under :
-        for e_old in l_old:
+        for e_old in l_old_w:
             if e_under[0]==e_old[0] :
                 diff_pos = abs(sum([ i-j for i,j in zip(e_under[2],e_old[2])]))
                 if diff_pos < 80 :
                     new_element.append(e_old)
+                    l_old_w.remove(e_old)
     return new_element
 
 

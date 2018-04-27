@@ -17,8 +17,6 @@ from threading import Thread, Lock, Event
 from logging.handlers import RotatingFileHandler
 from io import BytesIO
 from django.core.files import File
-from collections import Counter
-
 
 #------------------------------------------------------------------------------
 # Because this script have to be run in a separate process from manage.py
@@ -209,7 +207,7 @@ class ProcessCamera(Thread):
         if len(rm)>0:        
             diff_objects = get_list_diff(self.result_DB,rm)
             logger.debug('objects from last detection now under treshold :{} '
-            .format(diff_objects)
+            .format(diff_objects))
             rp.append(diff_objects)
         logger.debug('the filtered list of detected objects is {}'.format(rp))
         return rp

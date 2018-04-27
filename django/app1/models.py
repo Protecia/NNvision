@@ -34,6 +34,8 @@ class Camera(models.Model):
     auth_type = models.CharField(max_length=1, choices=AUTH_CHOICES, default='B')
     username = models.CharField(max_length=20)
     password = models.CharField(max_length=20)
+    width = models.IntegerField(default=800)
+    height = models.IntegerField(default=600)
 
     def __str__(self):
         return 'id : {} - name : {} - url : {}'.format(self.id, self.name, self.url)

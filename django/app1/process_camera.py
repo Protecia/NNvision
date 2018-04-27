@@ -131,13 +131,18 @@ class ProcessCamera(Thread):
                 event_list[self.event_ind].wait()
                 logger.debug('cam {} alive'.format(self.cam.id))
 
+                arr = cv2.imread(self.img_temp)
                 with lock:
-                   arr = cv2.imread(self.img_temp)
                    result_darknet = dn.detect(net, meta, self.img_temp.encode(),
                                                thresh=self.threshold-0.3,
                                                hier_thresh = 0.4)
-                   logger.info('get brut result from darknet : {} in {}s\n'.format(
-                   result_darknet,time.time()-t))
+                logger.info('get brut result from darknet : {} in {}s\n'.format(
+                result_darknet,time.time()-t))
+                event_list[self.event_ind].clear()
+                logger.debug('cam {} clear -> so wait !'.format(self.cam.id))
+                event_list[((self.event_ind)+1)%nb_cam].set()
+                logger.debug('event {} set'.format((self.event_ind+1)%nb_cam))
+                
                 # get only result above trheshlod or previously valid
                 t=time.time()
                 result_filtered = self.check_thresh(result_darknet)
@@ -174,10 +179,11 @@ class ProcessCamera(Thread):
                     '-------------<<<<<<<<<<<<<<<<<<<<<\n')
                     self.result_DB = result_filtered    
                 logger.info('brut result process in {}s '.format(time.time()-t))
-            event_list[self.event_ind].clear()
-            logger.debug('cam {} clear -> so wait !'.format(self.cam.id))
-            event_list[((self.event_ind)+1)%nb_cam].set()
-            logger.debug('event {} set'.format((self.event_ind+1)%nb_cam))
+            else :
+                event_list[self.event_ind].clear()
+                logger.debug('cam {} clear -> so wait !'.format(self.cam.id))
+                event_list[((self.event_ind)+1)%nb_cam].set()
+                logger.debug('event {} set'.format((self.event_ind+1)%nb_cam))
 
     def base_condition(self,new):
     # are the detected objects not the same

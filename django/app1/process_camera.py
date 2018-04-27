@@ -39,7 +39,7 @@ django.setup()
 # a simple config to create a file log - change the level to warning in
 # production
 #------------------------------------------------------------------------------
-level= logging.DEBUG
+level= logging.WARNING
 logger = logging.getLogger()
 logger.setLevel(level)
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
@@ -72,7 +72,7 @@ class ProcessCamera(Thread):
         self.running = False
         self.img_temp = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id))
         self.img_temp_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'_box.jpg')
-        self.threshold = 0.8
+        self.threshold = 0.9
         self.pos_sensivity = 80
         self.black_list=(b'pottedplant',b'cell phone')
         self.clone={b'cell phone':b'car'}
@@ -130,11 +130,11 @@ class ProcessCamera(Thread):
                 t=time.time()
                 result_filtered = self.check_thresh(result_darknet)
                 # compare with last result to check if different
+                arrb = arr.copy()
                 for r in result_filtered:
                     box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
                     ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
                     ))))
-                    arrb = arr
                     cv2.rectangle(arrb,box[0],box[1],(0,255,0),3)
                     cv2.putText(arrb,r[0].decode(),box[1],
                     cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
@@ -143,7 +143,7 @@ class ProcessCamera(Thread):
                     logger.debug('>>> Result have changed <<< ')
                     result_DB = Result(camera=self.cam,brut=result_darknet)
                     date = time.strftime("%Y-%m-%d-%H-%M-%S")
-                    
+
                     img_bytes = BytesIO(cv2.imencode('.jpg', arr)[1].tobytes())
                     result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes)) 
                     for r in result_filtered:

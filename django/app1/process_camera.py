@@ -208,7 +208,7 @@ class ProcessCamera(Thread):
             diff_objects = get_list_diff(self.result_DB,rm)
             logger.debug('objects from last detection now under treshold :{} '
             .format(diff_objects))
-            rp.append(diff_objects)
+            rp+=diff_objects
         logger.debug('the filtered list of detected objects is {}'.format(rp))
         return rp
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import cv2
 import time
 import psutil as ps
 import socket
@@ -215,4 +216,22 @@ def last(request, cam):
     img = '/media/tempimg_cam'+str(cam)+'_box.jpg'
     return render(request, 'app1/last_img.html', {'img':img})
 
-
+@login_required
+def get_last_analyse_img(request,cam_id):
+    path_img_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(cam_id)+'_box.jpg')
+    try :
+        age = os.path.getmtime(path_img_box)
+    except FileNotFoundError :
+        path_img_broken = os.path.join(settings.STATIC_ROOT,'app1','img','image-not-found.jpg')
+        image_data = open(path_img_broken, "rb").read()
+        return HttpResponse(image_data, content_type="image/jpg")
+    if age > 60 :
+        path_img_wait = os.path.join(settings.STATIC_ROOT,'app1','img','gifwait.gif')
+        image_data = open(path_img_wait, "rb").read()
+        return HttpResponse(image_data, content_type="image/gif")
+    cam = Camera.objects.get(id=cam_id)
+    while cv2.imread(path_img_box,0).shape[:2] < (cam.height,cam.width):
+        time.sleep(0.1)
+    return HttpResponse(image_data, content_type="image/jpg")
+        
+    

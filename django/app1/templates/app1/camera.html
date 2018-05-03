@@ -13,8 +13,12 @@
     
 	
 	<div class="row">
-	<div class="large-9 columns">
-	<code id="robot-state" class="accesslog hljs">{% for res in camera %} {{ res.name }} - {{ res.url}} &nbsp;&nbsp;<u><a href='/camera/last/{{ res.id }}'>image</a></u> &nbsp;&nbsp;   <u><a href='#'>video</a></u>  <br>   {% endfor %}</code>
+	<div class="large-12 columns">
+	{% for res in camera %}
+	<code id="robot-state" class="accesslog hljs"> {{ res.name }} - {{ res.url}} <br>
+	<a href='/camera/last/{{ res.id }}'><img src="/img/last/{{ res.id }}" id="img{{ res.id }}" height="300" width="300"></a>  
+	</code><br>
+	 {% endfor %}
 	</div>
 	
 	</div>
@@ -33,5 +37,14 @@
 {% endblock content %}
 
 {% block endscript %}
+<script>
+{% for res in camera %}
+document.getElementById('img{{ res.id }}').src = "/img/last/{{ res.id }}?random="+new Date().getTime();
+window.setInterval(function()
+{
+    document.getElementById('img{{ res.id }}').src = "/img/last/{{ res.id }}?random="+new Date().getTime();
+}, 3000);
+{% endfor %}
 
+</script>
 {% endblock endscript %}

@@ -37,7 +37,7 @@ django.setup()
 # a simple config to create a file log - change the level to warning in
 # production
 #------------------------------------------------------------------------------
-level= logging.DEBUG
+level= logging.WARNING
 logger = logging.getLogger()
 logger.setLevel(level)
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
@@ -58,18 +58,30 @@ from app1.darknet_python import darknet as dn
 lock = Lock()
 
 # function to extract same objects in 2 lists
-def get_list_diff (l_old,l_under):
+def get_list_same (l_old,l_under,thresh):
     l_old_w = l_old[:]
     new_element = []
     for e_under in l_under :
         for e_old in l_old_w:
             if e_under[0]==e_old[0] :
                 diff_pos = abs(sum([ i-j for i,j in zip(e_under[2],e_old[2])]))
-                if diff_pos < 80 :
+                if diff_pos < thresh :
                     new_element.append(e_old)
                     l_old_w.remove(e_old)
     return new_element
 
+def get_list_diff (l_new,l_old, thresh):
+    l_new_w = l_new[:]
+    l_old_w = l_old[:]
+    for e_new in l_new :
+        for e_old in l_old:
+            if e_new[0]==e_old[0] :
+                diff_pos = abs(sum([ i-j for i,j in zip(e_new[2],e_old[2])]))
+                if diff_pos < thresh :
+                    l_new_w.remove(e_new)
+                    l_old_w.remove(e_old)
+                    break
+    return l_new_w,l_old_w
 
 # the base condition to store the image is : is there a new objects detection
 # or a change in the localisation of the objects. It is not necessary to store
@@ -86,7 +98,8 @@ class ProcessCamera(Thread):
         self.img_temp_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'_box.jpg')
         self.threshold = 0.9
         self.pos_sensivity = 80
-        self.black_list=(b'pottedplant',b'cell phone')
+        #self.black_list=(b'pottedplant',b'cell phone')
+        self.black_list=()
         self.clone={b'cell phone':b'car'}
         ###  getting last object in db for camera to avoid writing same images at each restart
         r_last = Result.objects.filter(camera=cam).last()
@@ -134,7 +147,7 @@ class ProcessCamera(Thread):
                 arr = cv2.imread(self.img_temp)
                 with lock:
                    result_darknet = dn.detect(net, meta, self.img_temp.encode(),
-                                               thresh=self.threshold-0.3,
+                                               thresh=self.threshold-0.7,
                                                hier_thresh = 0.4)
                 logger.info('get brut result from darknet : {} in {}s\n'.format(
                 result_darknet,time.time()-t))
@@ -142,7 +155,7 @@ class ProcessCamera(Thread):
                 logger.debug('cam {} clear -> so wait !'.format(self.cam.id))
                 event_list[((self.event_ind)+1)%nb_cam].set()
                 logger.debug('event {} set'.format((self.event_ind+1)%nb_cam))
-                
+
                 # get only result above trheshlod or previously valid
                 t=time.time()
                 result_filtered = self.check_thresh(result_darknet)
@@ -186,23 +199,13 @@ class ProcessCamera(Thread):
                 logger.debug('event {} set'.format((self.event_ind+1)%nb_cam))
 
     def base_condition(self,new):
-    # are the detected objects not the same
-        if not ([i[0] for i in self.result_DB]  == [i[0] for i in new] ):
-            logger.info('Change in objects detected : list1={} list2={} diff={}'
-            .format([i[0] for i in self.result_DB],[i[0] for i in new],set([i[0] 
-            for i in self.result_DB])^set([i[0] for i in new])))
+        compare = get_list_diff(new,self.result_DB,self.pos_sensivity)
+        if len(compare[0])==0 and len(compare[1])==0 :
+            return False
+        else:
+            logger.info('Change in objects detected : new={} lost={}'
+            .format(compare[0], compare[1]))
             return True
-    # are the location different
-        if abs(sum([i-j for i,j in zip(
-        [i for j in self.result_DB  for i in j[2]], [i for j in new for i in
-        j[2]])])
-        )>self.pos_sensivity*len(new):
-            logger.info('New position detected - change of : {}'.format(abs(
-            sum([i-j for i,j in zip([i for j in self.result_DB for i in j[2]],
-                                    [i for j in new for i in j[2]])]))))
-            return True
-        return False
-
 
     def check_thresh(self,resultb):
         result = [r for r in resultb if r[0] not in self.black_list]
@@ -210,8 +213,8 @@ class ProcessCamera(Thread):
         #for (e1,e2,e3) in result]
         rp = [r for r in result if r[1]>=self.threshold]
         rm = [r for r in result if r[1]<self.threshold]
-        if len(rm)>0:        
-            diff_objects = get_list_diff(self.result_DB,rm)
+        if len(rm)>0:
+            diff_objects = get_list_same(self.result_DB,rm,self.pos_sensivity)
             logger.debug('objects from last detection now under treshold :{} '
             .format(diff_objects))
             rp+=diff_objects

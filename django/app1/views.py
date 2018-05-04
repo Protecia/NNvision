@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from .models import Camera, Result, Info, Alert
 from.forms import AlertForm
+from PIL import Image
 
 # Create your views here.
 
@@ -52,6 +53,9 @@ def index(request):
 
 @login_required
 def camera(request):
+    p = process()
+    if len(p[0])==0 :
+        subprocess.Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
     context = {'camera' : Camera.objects.all(), 'info' : Info.objects.get(), 'url_for_index' : '/',}
     return render(request, 'app1/camera.html',context)
 
@@ -220,7 +224,7 @@ def last(request, cam):
 def get_last_analyse_img(request,cam_id):
     path_img_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(cam_id)+'_box.jpg')
     try :
-        age = os.path.getmtime(path_img_box)
+        age = time.time()-os.path.getmtime(path_img_box)
     except FileNotFoundError :
         path_img_broken = os.path.join(settings.STATIC_ROOT,'app1','img','image-not-found.jpg')
         image_data = open(path_img_broken, "rb").read()
@@ -229,9 +233,18 @@ def get_last_analyse_img(request,cam_id):
         path_img_wait = os.path.join(settings.STATIC_ROOT,'app1','img','gifwait.gif')
         image_data = open(path_img_wait, "rb").read()
         return HttpResponse(image_data, content_type="image/gif")
-    cam = Camera.objects.get(id=cam_id)
-    while cv2.imread(path_img_box,0).shape[:2] < (cam.height,cam.width):
-        time.sleep(0.1)
-    return HttpResponse(image_data, content_type="image/jpg")
-        
-    
+    #cam = Camera.objects.get(id=cam_id)
+    while True :
+        try :
+            im = Image.open(path_img_box)
+        except OSError:
+            continue
+        response = HttpResponse(content_type='image/jpg')
+        try:
+            im.save(response, 'JPEG')
+            break
+        except OSError:
+            continue
+    return response
+
+

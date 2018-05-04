@@ -98,8 +98,8 @@ class ProcessCamera(Thread):
         self.img_temp_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'_box.jpg')
         self.threshold = 0.9
         self.pos_sensivity = 80
-        #self.black_list=(b'pottedplant',b'cell phone')
-        self.black_list=()
+        self.black_list=(b'pottedplant',b'cell phone')
+        #self.black_list=()
         self.clone={b'cell phone':b'car'}
         ###  getting last object in db for camera to avoid writing same images at each restart
         r_last = Result.objects.filter(camera=cam).last()

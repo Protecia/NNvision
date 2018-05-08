@@ -64,7 +64,7 @@ def get_list_same (l_old,l_under,thresh):
     for e_under in l_under :
         for e_old in l_old_w:
             if e_under[0]==e_old[0] :
-                diff_pos = abs(sum([ i-j for i,j in zip(e_under[2],e_old[2])]))
+                diff_pos = (sum([abs(i-j) for i,j in zip(e_under[2],e_old[2])]))
                 if diff_pos < thresh :
                     new_element.append(e_old)
                     l_old_w.remove(e_old)
@@ -76,7 +76,7 @@ def get_list_diff (l_new,l_old, thresh):
     for e_new in l_new :
         for e_old in l_old:
             if e_new[0]==e_old[0] :
-                diff_pos = abs(sum([ i-j for i,j in zip(e_new[2],e_old[2])]))
+                diff_pos = (sum([abs(i-j) for i,j in zip(e_new[2],e_old[2])]))
                 if diff_pos < thresh :
                     l_new_w.remove(e_new)
                     l_old_w.remove(e_old)
@@ -97,7 +97,7 @@ class ProcessCamera(Thread):
         self.img_temp = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id))
         self.img_temp_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'_box.jpg')
         self.threshold = 0.9
-        self.pos_sensivity = 80
+        self.pos_sensivity = 110
         self.black_list=(b'pottedplant',b'cell phone')
         #self.black_list=()
         self.clone={b'cell phone':b'car'}

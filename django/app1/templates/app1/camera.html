@@ -14,13 +14,13 @@
 	
 	<div class="row">
 	<div class="large-12 columns">
-	{% for row in camera_array %}
+	{% for row in camera %}
 	<div class="row">
 	{% for res in row %}
 	<div class="large-4 columns">
-	<code id="robot-state" class="accesslog hljs"><h6> {{ res.name }}<small> - {{ res.url}}</small></h6> <br>
+	<code id="robot-state" class="accesslog hljs"><h6><small>{{ res.name }} - {{ res.url}}</small></h6><br>
 	<a href='/camera/last/{{ res.id }}'><img src="/img/last/{{ res.id }}" id="img{{ res.id }}" height="150" ></a>  
-	</code>
+	</code>&nbsp;
 	</div>
 	 {% endfor %}
 	</div>

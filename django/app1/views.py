@@ -56,7 +56,9 @@ def camera(request):
     p = process()
     if len(p[0])==0 :
         subprocess.Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
-    context = {'camera' : Camera.objects.all(), 'info' : Info.objects.get(), 'url_for_index' : '/',}
+    camera = Camera.objects.all()
+    camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]
+    context = {'camera' :camera_array, 'info' : Info.objects.get(), 'url_for_index' : '/',}
     return render(request, 'app1/camera.html',context)
 
 @login_required

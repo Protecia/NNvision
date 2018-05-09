@@ -96,7 +96,7 @@ class Process_alert(object):
                 to = u.phone_number
                 sender ="+33757916187"
                 body = " A {} just {}. Check the image : {} - {}".format(Alert.stuffs_d[alert.stuffs],
-                           Alert.actions_d[alert.actions], self.info.public_site, t)
+                           Alert.actions_d[alert.actions], self.info.public_site, t.astimezone(pytz.timezone('Europe/Paris')))
                 client.messages.create(to=to, from_=sender,body=body)
                 logger.warning('sms send to : {}'.format(to))
                 alert.when = t

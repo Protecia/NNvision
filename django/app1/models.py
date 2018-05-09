@@ -5,6 +5,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from datetime import datetime
+import pytz
 
 @python_2_unicode_compatible
 class Profile(models.Model):
@@ -52,7 +53,7 @@ class Result(models.Model):
     brut = models.TextField(default='')
     alert = models.BooleanField(default=False)
     def __str__(self):
-        return 'Camera : {} - at {}'.format(self.camera.name, self.time)
+        return 'Camera : {} - at {}'.format(self.camera.name, self.time.astimezone(pytz.timezone('Europe/Paris'))
 
 @python_2_unicode_compatible  # only if you need to support Python 2
 class Object(models.Model):

@@ -169,7 +169,8 @@ class ProcessCamera(Thread):
                     cv2.putText(arrb,r[0].decode(),box[1],
                     cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
                 cv2.imwrite(self.img_temp_box,arrb)
-                if self.base_condition(result_filtered):
+                if self.base_condition(result_filtered) and Camera.objects.get(id=
+                                      self.cam.id).active:
                     logger.debug('>>> Result have changed <<< ')
                     result_DB = Result(camera=self.cam,brut=result_darknet)
                     date = time.strftime("%Y-%m-%d-%H-%M-%S")

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import cv2
 import time
 import psutil as ps
 import socket
@@ -32,6 +31,7 @@ def process():
 def index(request):
     d_action = request.POST.get('d_action')
     if d_action == 'start':
+        Camera.objects.all().update(rec=True)
         subprocess.Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
         subprocess.Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
         time.sleep(2)
@@ -55,8 +55,8 @@ def index(request):
 def camera(request):
     p = process()
     if len(p[0])==0 :
+        Camera.objects.all().update(rec=False)
         subprocess.Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
-    camera = Camera.objects.all()
     camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]
     context = {'camera' :camera_array, 'info' : Info.objects.get(), 'url_for_index' : '/',}
     return render(request, 'app1/camera.html',context)
@@ -69,6 +69,7 @@ def darknet(request):
     if d_action == 'start':
         if len(p[0])>0 : message = "Darknet already running, stop ip if you want to restart"
         else :
+            Camera.objects.all().update(rec=True)
             subprocess.Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
             subprocess.Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
             time.sleep(2)

@@ -14,12 +14,17 @@
 	
 	<div class="row">
 	<div class="large-12 columns">
-	{% for res in camera %}
-	<code id="robot-state" class="accesslog hljs"> {{ res.name }} - {{ res.url}} <br>
-	<a href='/camera/last/{{ res.id }}'><img src="/img/last/{{ res.id }}" id="img{{ res.id }}" height="300" width="300"></a>  
-	</code><br>
+	{% for row in camera_array %}
+	<div class="row">
+	{% for res in row %}
+	<div class="large-4 columns">
+	<code id="robot-state" class="accesslog hljs"><h6> {{ res.name }}<small> - {{ res.url}}</small></h6> <br>
+	<a href='/camera/last/{{ res.id }}'><img src="/img/last/{{ res.id }}" id="img{{ res.id }}" height="150" ></a>  
+	</code>
+	</div>
 	 {% endfor %}
 	</div>
+	{% endfor %}
 	
 	</div>
 	<div class="row" ><div class="large-9 columns"><br>To add new camera please go to <a href='/admin'>admin</a>

@@ -32,7 +32,7 @@ def index(request):
     d_action = request.POST.get('d_action')
     if d_action == 'start':
         Camera.objects.all().update(rec=True)
-        with open('process.log', 'w') as log:
+        with open(os.path.join(settings.BASE_DIR,'process.log'), 'w') as log:
             Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')], 
                   stdout=log, stderr=STDOUT)
         Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])

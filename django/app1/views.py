@@ -4,7 +4,7 @@ import os
 import time
 import psutil as ps
 import socket
-import subprocess
+from subprocess import Popen, STDOUT, call
 from wifi import Cell
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
@@ -32,8 +32,10 @@ def index(request):
     d_action = request.POST.get('d_action')
     if d_action == 'start':
         Camera.objects.all().update(rec=True)
-        subprocess.Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
-        subprocess.Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
+        with open('process.log', 'w') as log:
+            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')], 
+                  stdout=log, stderr=STDOUT)
+        Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
         time.sleep(2)
     if d_action == 'stop' :
         p = process()
@@ -56,7 +58,7 @@ def camera(request):
     p = process()
     if len(p[0])==0 :
         Camera.objects.all().update(rec=False)
-        subprocess.Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
+        Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
     camera = Camera.objects.all()
     camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]
     context = {'camera' :camera_array, 'info' : Info.objects.get(), 'url_for_index' : '/',}
@@ -71,8 +73,8 @@ def darknet(request):
         if len(p[0])>0 : message = "Darknet already running, stop ip if you want to restart"
         else :
             Camera.objects.all().update(rec=True)
-            subprocess.Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
-            subprocess.Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
+            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
+            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
             time.sleep(2)
     if d_action == 'stop' :
         if len(p[0])==0 and len(p[1])==0 : message = "Servers are not running !" 
@@ -212,7 +214,7 @@ def wifi_restart(request):
 def reboot(request):
     try :
         command = '(sleep 2 ; sudo reboot) &'
-        subprocess.call(command, shell=True)
+        call(command, shell=True)
     except :
     # return on fail (windows)
         pass

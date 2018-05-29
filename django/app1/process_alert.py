@@ -161,25 +161,25 @@ class Process_alert(object):
                             a.save()
                             list_action = []
                             if a.alarm :
-                                list_action.append((self.send_alarm,0,t))                                
+                                list_action.append([self.send_alarm,0,t])                                
                             if a.mail :
-                                list_action.append((self.send_mail,0,t))
+                                list_action.append([self.send_mail,0,t])
                                 t = t+timedelta(seconds=30)
                             if a.sms :
-                                list_action.append((self.send_sms,0,t))
+                                list_action.append([self.send_sms,0,t])
                                 t = t+timedelta(seconds=30)
                             if a.call :
-                                list_action.append((self.send_call,0,t))
+                                list_action.append([self.send_call,0,t])
                             if a.mass_alarm :
                                 t = t+timedelta(seconds=150)
                                 if a.mail :
-                                    list_action.append((self.send_mass_mail,0,t))
+                                    list_action.append([self.send_mass_mail,0,t])
                                     t = t+timedelta(seconds=60)
                                 if a.sms :
-                                    list_action.append((self.send_mass_sms,0,t))
+                                    list_action.append([self.send_mass_sms,0,t])
                                     t = t+timedelta(seconds=60)
                                 if a.call :
-                                    list_action.append((self.send_mass_call,0,t))
+                                    list_action.append([self.send_mass_call,0,t])
                             self.dict_alert[a]=list_action
                             logger.debug('new list_action : {}'.format(list_action))                    
                 disappear = c-cn
@@ -200,25 +200,25 @@ class Process_alert(object):
                             a.save()
                             list_action = []
                             if a.alarm :
-                                list_action.append((self.send_alarm,0,t))                                
+                                list_action.append([self.send_alarm,0,t])                                
                             if a.mail :
-                                list_action.append((self.send_mail,0,t))
+                                list_action.append([self.send_mail,0,t])
                                 t = t+timedelta(seconds=30)
                             if a.sms :
-                                list_action.append((self.send_sms,0,t))
+                                list_action.append([self.send_sms,0,t])
                                 t = t+timedelta(seconds=30)
                             if a.call :
-                                list_action.append((self.send_call,0,t))
+                                list_action.append([self.send_call,0,t])
                             if a.mass_alarm :
                                 t = t+timedelta(seconds=150)
                                 if a.mail :
-                                    list_action.append((self.send_mass_mail,0,t))
+                                    list_action.append([self.send_mass_mail,0,t])
                                     t = t+timedelta(seconds=60)
                                 if a.sms :
-                                    list_action.append((self.send_mass_sms,0,t))
+                                    list_action.append([self.send_mass_sms,0,t])
                                     t = t+timedelta(seconds=60)
                                 if a.call :
-                                    list_action.append((self.send_mass_call,0,t))
+                                    list_action.append((self.send_mass_call,0,t])
                             self.dict_alert[a]=list_action
                             logger.debug('new list_action : {}'.format(list_action))
                 logger.debug('dict alert is : {}'.format(self.dict_alert))

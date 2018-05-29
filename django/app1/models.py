@@ -127,7 +127,6 @@ class Alert(models.Model):
     mail = models.BooleanField(default=True)
     call = models.BooleanField()
     alarm = models.BooleanField()
-    patrol = models.BooleanField()
     active = models.BooleanField(default=False)
     mass_alarm = models.BooleanField(default=False)
     when = models.DateTimeField(default=datetime(year=2000,month=1,day=1))

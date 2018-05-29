@@ -2,15 +2,11 @@
 
 {% block content %}
 {% load static %}
-<div class="row">
-  <div class="columns">
-    <h1 class="section-title">Images</h1>
-  </div>
-</div>
 
 <div class="row">
   <div class="large-15 columns" style="border: 1px solid #466d98;">
-    <h3> Last alert :  </h3><img  src={% static "app1/img/warning.png" %} height="150" ><h2> The location is under Alert check carefully the images and call the police is needed. If you think it is a fake alarm, cancel it !  </h2>
+    <img  src={% static "app1/img/warning.png" %} height="50" ><h2> The location is under Alert.
+	Check carefully the images and call the police is needed. If you think it is a fake alarm, cancel it !  </h2><img  src={% static "app1/img/warning.png" %} height="50" >
 	<div align="right">
 	{% if first_alert >= 9 %}<a href="/warning/{{first_alert|add:-9}}" class="button tiny">&laquo; previous</a>{% endif %}
 	<a href="/warning/{{first_alert|add:9}}" class="button tiny">next &raquo;</a></div>

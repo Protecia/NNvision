@@ -60,7 +60,7 @@ def index(request):
 
 def warning(request, first_alert):
     alert = Alert.objects.filter(active=True).order_by('when').first()
-    if alert :
+    if not alert :
         return redirect('/')        
     first_alert=int(first_alert)
     imgs_alert = Result.objects.filter(alert=True).filter(time__gte=alert.when).order_by('-id')[first_alert:first_alert+9]

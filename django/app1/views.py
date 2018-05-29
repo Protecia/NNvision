@@ -31,33 +31,43 @@ def process():
 def index(request):
     alert = Alert.objects.filter(active=True)
     if len(alert) != 0:
-        return redirect('/alert')
-    elif not request.user.is_authenticated:
+        return redirect('/alert/0')
+    if not request.user.is_authenticated:
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-    else :
-        d_action = request.POST.get('d_action')
-        if d_action == 'start' and len(process()[0])==0:
-            Camera.objects.all().update(rec=True)
-            with open(os.path.join(settings.BASE_DIR,'process.log'), 'w') as log:
-                Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')], 
-                      stdout=log, stderr=STDOUT)
-            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
-            time.sleep(2)
-        if d_action == 'stop' :
-            p = process()
-            [ item.kill() for sublist in p for item in sublist]
-            time.sleep(2)
+    d_action = request.POST.get('d_action')
+    if d_action == 'start' and len(process()[0])==0:
+        Camera.objects.all().update(rec=True)
+        with open(os.path.join(settings.BASE_DIR,'process.log'), 'w') as log:
+            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')], 
+                  stdout=log, stderr=STDOUT)
+        Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
+        time.sleep(2)
+    if d_action == 'stop' :
         p = process()
-        if len(p[0])>0 and len(p[1])>0 :
-            running = True
-        elif len(p[0])==0 and len(p[1])==0:
-            running = False
-        else : 
-            [ item.kill() for sublist in p for item in sublist]
-            running = False
+        [ item.kill() for sublist in p for item in sublist]
+        time.sleep(2)
+    p = process()
+    if len(p[0])>0 and len(p[1])>0 :
+        running = True
+    elif len(p[0])==0 and len(p[1])==0:
+        running = False
+    else : 
+        [ item.kill() for sublist in p for item in sublist]
+        running = False
+
+    context = {'info' : Info.objects.get(), 'url_for_index' : '/','running':running}
+    return render(request, 'app1/index.html',context)
+
+def warning(request, first_alert):
+    alert = Alert.objects.filter(active=True).order_by('when').first()
+    if len(alert) == 0:
+        return redirect('/')        
+    first_alert=int(first_alert)
+    imgs_alert = Result.objects.filter(alert=True).filter(time__gte=alert.when).order_by('-id')[first_alert:first_alert+9]
+    img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
+    context = { 'first_alert' : first_alert, 'img_alert_array' : img_alert_array}
+    return render(request, 'app1/warning.html', context)
     
-        context = {'info' : Info.objects.get(), 'url_for_index' : '/','running':running}
-        return render(request, 'app1/index.html',context)
 
 @login_required
 def camera(request):

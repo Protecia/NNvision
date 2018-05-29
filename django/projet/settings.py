@@ -133,3 +133,10 @@ CFG = 'cfg/yolov3.cfg'
 WEIGHTS = 'yolov3.weights'
 DATA = 'cfg/coco.data'
 PYTHON = 'python3'
+
+EMAIL_HOST = 'ssl0.ovh.net'
+EMAIL_PORT = '465'
+EMAIL_HOST_USER = 'contact@protecia.com'
+EMAIL_HOST_PASSWORD = '25011975*jJ'
+EMAIL_USE_SSL = True
+ 

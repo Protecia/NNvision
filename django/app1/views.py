@@ -30,7 +30,7 @@ def process():
 @login_required
 def index(request):
     d_action = request.POST.get('d_action')
-    if d_action == 'start':
+    if d_action == 'start' and len(process()[0])==0:
         Camera.objects.all().update(rec=True)
         with open(os.path.join(settings.BASE_DIR,'process.log'), 'w') as log:
             Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')], 

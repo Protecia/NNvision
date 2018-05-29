@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
-from django.core.validators import RegexValidator
+from django.core.validators import RegexValidator, EmailValidator
 from datetime import datetime
 import pytz
 
@@ -17,9 +17,33 @@ class Profile(models.Model):
         ordering = ['user']
         verbose_name = 'user'
         verbose_name_plural = 'users'
+        
+    email_0 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)
+    email_1 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)
+    email_2 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)
+    email_3 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)
+    email_4 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)
+    email_5 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)
+    email_6 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)
+    email_7 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)
+    email_8 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)
+    email_9 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)
+    
+    phone_number_0 = models.CharField(validators=[phone_regex], max_length=17, blank=True)
+    phone_number_1 = models.CharField(validators=[phone_regex], max_length=17, blank=True)
+    phone_number_2 = models.CharField(validators=[phone_regex], max_length=17, blank=True)
+    phone_number_3 = models.CharField(validators=[phone_regex], max_length=17, blank=True)
+    phone_number_4 = models.CharField(validators=[phone_regex], max_length=17, blank=True)
+    phone_number_5 = models.CharField(validators=[phone_regex], max_length=17, blank=True)
+    phone_number_6 = models.CharField(validators=[phone_regex], max_length=17, blank=True)
+    phone_number_7 = models.CharField(validators=[phone_regex], max_length=17, blank=True)
+    phone_number_8 = models.CharField(validators=[phone_regex], max_length=17, blank=True)
+    phone_number_9 = models.CharField(validators=[phone_regex], max_length=17, blank=True)
+    
 
     def __str__(self):
         return 'user : {} - phone_number : {} - alert : {}'.format(self.user, self.phone_number, self.alert)
+
 
 # Create your models here.
 
@@ -99,10 +123,13 @@ class Alert(models.Model):
     
     stuffs = models.IntegerField(choices=STUFFS_CHOICES, default=1)
     actions = models.IntegerField(choices=ACTIONS_CHOICES, default=1)
-    sms = models.BooleanField(default=True)
+    sms = models.BooleanField()
+    mail = models.BooleanField(default=True)
     call = models.BooleanField()
     alarm = models.BooleanField()
     patrol = models.BooleanField()
+    active = models.BooleanField(default=False)
+    mass_alarm = models.BooleanField(default=False)
     when = models.DateTimeField(default=datetime(year=2000,month=1,day=1))
     key = models.CharField(max_length=10, default='')
     class Meta:
@@ -112,5 +139,17 @@ class Alert(models.Model):
         return 'action : {} / object : {} '.format(Alert.actions_d[self.actions],
                          Alert.stuffs_d[self.stuffs])
 
+ALERT_CHOICES = (('mail','mail'),
+                   ('sms','sms'),
+                   ('mass_mail','mass_mail'),
+                   ('mass_sms','mass_sms'),
+                   ('mass_call','mass_call'),
+                   ('call','call'),
+                   ('alarm','alarm'),
+                   ('patrol','patrol')
+                   )
 
+class Alert_when(models.Model):
+    what = models.CharField(max_length=10, choices=ALERT_CHOICES)
+    when = models.DateTimeField(auto_now=True)
     

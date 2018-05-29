@@ -14,7 +14,7 @@
 	
 	<div class="row">
 	<div class="large-10 columns">Alert settled :
-	<code id="robot-state" class="accesslog hljs">{% for res in alert %} {{ res.get_stuffs_display }} {{ res.get_actions_display }} -> {% if res.sms %}Sms{% endif %} {% if res.call %}call{% endif %} {% if res.alarm %}Alarm{% endif %} {% if res.patrol %}Patrol{% endif %} &nbsp <a href=/alert/suppr/{{ res.id }} >delete</a> <br>   {% endfor %}</code>
+	<code id="robot-state" class="accesslog hljs">{% for res in alert %} {{ res.get_stuffs_display }} {{ res.get_actions_display }} ->  {% if res.mail %}Mail{% endif %} {% if res.sms %}Sms{% endif %} {% if res.call %}call{% endif %} {% if res.alarm %}Alarm{% endif %}  &nbsp <a href=/alert/suppr/{{ res.id }} >delete</a> <br>   {% endfor %}</code>
 	</div>
 	
 	</div>

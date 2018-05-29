@@ -70,6 +70,10 @@ class Process_alert(object):
         self.running=True
         self.result = Result.objects.all().last()
         self.dict_alert = {}
+        alert = Alert.objects.filter(active = True)
+        for a in alert :
+            a.active = False
+            a.save()
 
     def wait(self,_time):
         i=0
@@ -91,8 +95,8 @@ class Process_alert(object):
         t = datetime.now(pytz.utc)
         logger.debug('warn in action at {} / alert timer is {} / timedelta : {}'.format(t
                     ,alert.when,t-alert.when))
-        logger.debug('sms : {} / call : {} / alarm : {} / patrol : {}'.format(
-                alert.sms,alert.call,alert.alarm,alert.patrol))
+        logger.debug('sms : {} / call : {} / alarm : {} / mail : {}'.format(
+                alert.sms,alert.call,alert.alarm,alert.mail))
         
         for a in self.dict_alert[alert]:
             if not a[1] and t>a[2] :

@@ -13,7 +13,7 @@ from .models import Alert
 class AlertForm(ModelForm):
     class Meta:
         model = Alert
-        fields = ['stuffs', 'actions','sms','call','alarm','patrol']
+        fields = ['stuffs', 'actions','sms','call','alarm','mail']
         widgets = {
             'actions': RadioSelect(),
         }

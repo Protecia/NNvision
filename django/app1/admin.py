@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import Camera, Result, Info, Object, Profile, Alert
+from .models import Camera, Result, Info, Object, Profile, Alert, Alert_when
 
 admin.site.register(Camera)
 admin.site.register(Result)
@@ -10,6 +10,7 @@ admin.site.register(Info)
 admin.site.register(Object)
 admin.site.register(Profile)
 admin.site.register(Alert)
+admin.site.register(Alert_when)
 
 
 from django.contrib.auth.admin import UserAdmin

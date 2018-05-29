@@ -31,7 +31,7 @@ def process():
 def index(request):
     alert = Alert.objects.filter(active=True)
     if len(alert) != 0:
-        return redirect('/alert/0')
+        return redirect('/warning/0')
     if not request.user.is_authenticated:
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
     d_action = request.POST.get('d_action')

@@ -6,7 +6,7 @@ import psutil as ps
 import socket
 from subprocess import Popen, STDOUT, call
 from wifi import Cell
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -27,31 +27,37 @@ def process():
             pass
     return _process
 
-@login_required
-def index(request):
-    d_action = request.POST.get('d_action')
-    if d_action == 'start' and len(process()[0])==0:
-        Camera.objects.all().update(rec=True)
-        with open(os.path.join(settings.BASE_DIR,'process.log'), 'w') as log:
-            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')], 
-                  stdout=log, stderr=STDOUT)
-        Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
-        time.sleep(2)
-    if d_action == 'stop' :
-        p = process()
-        [ item.kill() for sublist in p for item in sublist]
-        time.sleep(2)
-    p = process()
-    if len(p[0])>0 and len(p[1])>0 :
-        running = True
-    elif len(p[0])==0 and len(p[1])==0:
-        running = False
-    else : 
-        [ item.kill() for sublist in p for item in sublist]
-        running = False
 
-    context = {'info' : Info.objects.get(), 'url_for_index' : '/','running':running}
-    return render(request, 'app1/index.html',context)
+def index(request):
+    alert = Alert.objects.filter(active=True)
+    if len(alert) != 0:
+        return redirect('/alert')
+    elif not request.user.is_authenticated:
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
+    else :
+        d_action = request.POST.get('d_action')
+        if d_action == 'start' and len(process()[0])==0:
+            Camera.objects.all().update(rec=True)
+            with open(os.path.join(settings.BASE_DIR,'process.log'), 'w') as log:
+                Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')], 
+                      stdout=log, stderr=STDOUT)
+            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
+            time.sleep(2)
+        if d_action == 'stop' :
+            p = process()
+            [ item.kill() for sublist in p for item in sublist]
+            time.sleep(2)
+        p = process()
+        if len(p[0])>0 and len(p[1])>0 :
+            running = True
+        elif len(p[0])==0 and len(p[1])==0:
+            running = False
+        else : 
+            [ item.kill() for sublist in p for item in sublist]
+            running = False
+    
+        context = {'info' : Info.objects.get(), 'url_for_index' : '/','running':running}
+        return render(request, 'app1/index.html',context)
 
 @login_required
 def camera(request):

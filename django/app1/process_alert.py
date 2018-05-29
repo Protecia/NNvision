@@ -218,7 +218,7 @@ class Process_alert(object):
                                     list_action.append([self.send_mass_sms,0,t])
                                     t = t+timedelta(seconds=60)
                                 if a.call :
-                                    list_action.append((self.send_mass_call,0,t])
+                                    list_action.append([self.send_mass_call,0,t])
                             self.dict_alert[a]=list_action
                             logger.debug('new list_action : {}'.format(list_action))
                 logger.debug('dict alert is : {}'.format(self.dict_alert))

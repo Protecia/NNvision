@@ -59,9 +59,18 @@ def index(request):
     return render(request, 'app1/index.html',context)
 
 def warning(request, first_alert):
-    alert = Alert.objects.filter(active=True).order_by('when').first()
+    alert = Alert.objects.filter(active=True).order_by('when')
+    action = request.POST.get('alert')
+    if action == 'cancel':
+        for a in alert :
+            a.active = False
+            a.save()
+        return redirect('/')
+    
+    alert = alert.first() 
     if not alert :
-        return redirect('/')        
+        return redirect('/')    
+    
     first_alert=int(first_alert)
     imgs_alert = Result.objects.filter(alert=True).filter(time__gte=alert.when).order_by('-id')[first_alert:first_alert+9]
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]

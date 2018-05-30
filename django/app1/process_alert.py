@@ -236,7 +236,7 @@ def main():
     process_alert.wait(30)
     print("Alert are running !")
     try:
-        process_alert.run(3)
+        process_alert.run(1)
     except KeyboardInterrupt:
         print("Bye bye!")
 

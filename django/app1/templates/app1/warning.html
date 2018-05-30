@@ -47,12 +47,12 @@
   
   <div class="row">
     <div class="small-3 small-centered columns menu-tile">
-	<form action="/warning" method="post"><input type='hidden' name='alert' value='cancel' />{% csrf_token %}
+	<form action="/warning/0" method="post"><input type='hidden' name='alert' value='cancel' />{% csrf_token %}
 	<a href="#" onclick="$(this).closest('form').submit()" data-equalizer-watch>
 	<div class="row">
     
       <h3>
-        <img width="113" height="62" src="{% static "app1/img/cancel.png" %}" data-interchange="[{% static "app1/img/cancel.png" %}, retina]" src="{% static "app1/img/logo.png" %}" alt="Camera">
+        <img width="113" height="62" src="{% static "app1/img/cancel.png" %}" data-interchange="[{% static "app1/img/cancel.png" %}, retina]" src="{% static "app1/img/logo.png" %}" alt="Stop Alarm">
       </h3>
       <p>Stop Alarm</p>
     

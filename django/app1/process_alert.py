@@ -154,8 +154,8 @@ class Process_alert(object):
                     if a : 
                         r.alert= True
                         r.save()
+                        t = r.time
                         if not a.active:
-                            t = datetime.now(pytz.utc)
                             a.active = True
                             a.when = t
                             a.save()
@@ -193,8 +193,8 @@ class Process_alert(object):
                     if a : 
                         r.alert= True
                         r.save()
+                        t = r.time
                         if not a.active:
-                            t = datetime.now(pytz.utc)
                             a.active = True
                             a.when = t
                             a.save()

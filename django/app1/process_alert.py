@@ -110,10 +110,10 @@ class Process_alert(object):
             list_mail.append(u.user.email)
         sender ="contact@protecia.com"
         body = " A {} just {}. Check the image : {} - {}".format(Alert.stuffs_d[alert.stuffs],
-                   Alert.actions_d[alert.actions], self.info.public_site+'/warning', t.astimezone(pytz.timezone('Europe/Paris')))
+                   Alert.actions_d[alert.actions], self.info.public_site+'/warning/0', t.astimezone(pytz.timezone('Europe/Paris')))
         send_mail('Subject here',body, sender,list_mail,fail_silently=False,)
         logger.warning('mail send to : {}'.format(list_mail))
-        Alert_when(what='mail').save()
+        Alert_when(what='mail', who=list_mail).save()
             
     def send_sms(self, alert,t):
         for u in self.user :
@@ -123,7 +123,7 @@ class Process_alert(object):
                        Alert.actions_d[alert.actions], self.info.public_site, t.astimezone(pytz.timezone('Europe/Paris')))
             client.messages.create(to=to, from_=sender,body=body)
             logger.warning('sms send to : {}'.format(to))
-        Alert_when(what='sms').save()
+        Alert_when(what='sms', who=to).save()
                 
 
 

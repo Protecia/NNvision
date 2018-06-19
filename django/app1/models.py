@@ -151,4 +151,7 @@ ALERT_CHOICES = (('mail','mail'),
 class Alert_when(models.Model):
     what = models.CharField(max_length=10, choices=ALERT_CHOICES)
     when = models.DateTimeField(auto_now=True)
+    who = models.CharField(max_length=200, blank=True)
+    def __str__(self):
+        return '{} at {} to {}'.format(self.what, self.when, self.who)
     

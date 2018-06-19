@@ -123,13 +123,24 @@ class Process_alert(object):
                        Alert.actions_d[alert.actions], self.info.public_site, t.astimezone(pytz.timezone('Europe/Paris')))
             client.messages.create(to=to, from_=sender,body=body)
             logger.warning('sms send to : {}'.format(to))
-        Alert_when(what='sms', who=to).save()
+            Alert_when(what='sms', who=to).save()
                 
 
 
 
     def run(self,_time):
         while(self.running):
+             ##### check the space on disk to avoid filling the sd card #######
+            sb = os.statvfs(settings.MEDIA_ROOT)
+            sm = sb.f_bavail * sb.f_frsize / 1024 / 1024
+            if sm < 100 :
+                r_to_delete = Result.objects.all()[:100]
+                for im_d in r_to_delete:
+                    im_d.file1.delete()
+                    im_d.file2.delete()
+                    im_d.delete()
+            ###################################################################    
+                 
             #get last objects
             o = Object.objects.filter(result=self.result)
             c = Counter([i.result_object for i in o])

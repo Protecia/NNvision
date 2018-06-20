@@ -124,6 +124,9 @@ class ProcessCamera(Thread):
         while self.running :
             t=time.time()
             request_OK = True
+            # Special stop point for dahua nvcr which can not answer multiple fast http requests
+            if not threated_requests : event_list[self.event_ind].wait()
+            #-----------------------------------------------------------------------------------
             try :
                 r = requests.get(self.cam.url, auth=self.auth, stream=False, timeout=4)
                 if r.status_code == 200 and len(r.content)>10 :
@@ -141,7 +144,9 @@ class ProcessCamera(Thread):
                 pass
             t=time.time()
             if request_OK:
-                event_list[self.event_ind].wait()
+                # Normal stop point for ip camera-------------------------------
+                if threated_requests : event_list[self.event_ind].wait()
+                #---------------------------------------------------------------
                 logger.debug('cam {} alive'.format(self.cam.id))
 
                 arr = cv2.imread(self.img_temp)
@@ -225,6 +230,9 @@ class ProcessCamera(Thread):
 # get all the cameras in the DB
 cameras = Camera.objects.filter(active=True)
 nb_cam = len(cameras)
+
+# choose if you want to download the image in parallel thread. 
+threated_requests = Info.objects.get().threated_requests
 
 # create one event and one thread for each camera. So the thread will be able to communicate
 # between each other using this event. It is necesary to tell other threads

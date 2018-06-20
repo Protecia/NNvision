@@ -99,6 +99,7 @@ class Info(models.Model):
     board = models.CharField(max_length=200, default='Tegra X1')
     darknet_path = models.CharField(max_length=50)
     public_site = models.URLField(default='http://')
+    threated_requests = models.BooleanField(default=True)
     def __str__(self):
         return 'v{} on {}'.format(self.version, self.board)
     

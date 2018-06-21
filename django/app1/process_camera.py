@@ -96,7 +96,6 @@ class ProcessCamera(Thread):
         self.running = False
         self.img_temp = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id))
         self.img_temp_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'_box.jpg')
-        self.threshold = 0.9
         self.pos_sensivity = 110
         self.black_list=(b'pottedplant',b'cell phone')
         #self.black_list=()
@@ -152,7 +151,7 @@ class ProcessCamera(Thread):
                 arr = cv2.imread(self.img_temp)
                 with lock:
                    result_darknet = dn.detect(net, meta, self.img_temp.encode(),
-                                               thresh=self.threshold-0.7,
+                                               thresh=self.cam.threshold*(1-(self.cam.gap/100)),
                                                hier_thresh = 0.4)
                 logger.info('get brut result from darknet : {} in {}s\n'.format(
                 result_darknet,time.time()-t))

@@ -81,7 +81,7 @@ class Process_alert(object):
         while wait:
             logger.info('start waiting for no detection : {}s'.format(i))
             rn = Result.objects.all().last()
-            if rn.id == self.result.id :
+            if rn == None or rn.id == self.result.id :
                 i+=1
             else :
                 i=0
@@ -147,7 +147,7 @@ class Process_alert(object):
             logger.info('getting last object : {}'.format(c))
 
             # Is there new result
-            rn = Result.objects.filter(pk__gt=self.result.id)
+            rn = Result.objects.filter(pk__gt=getattr(self.result,'id',0))
             for r in rn:
                 logger.info('new result in databases : {}'.format(r))
                 on = Object.objects.filter(result=r)

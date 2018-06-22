@@ -124,7 +124,9 @@ class ProcessCamera(Thread):
             t=time.time()
             request_OK = True
             # Special stop point for dahua nvcr which can not answer multiple fast http requests
-            if not threated_requests : event_list[self.event_ind].wait()
+            if not threated_requests :
+                event_list[self.event_ind].wait()
+                logger.debug('cam {} alive'.format(self.cam.id))
             #-----------------------------------------------------------------------------------
             try :
                 r = requests.get(self.cam.url, auth=self.auth, stream=False, timeout=4)
@@ -144,10 +146,10 @@ class ProcessCamera(Thread):
             t=time.time()
             if request_OK:
                 # Normal stop point for ip camera-------------------------------
-                if threated_requests : event_list[self.event_ind].wait()
+                if threated_requests :
+                    event_list[self.event_ind].wait()
+                    logger.debug('cam {} alive'.format(self.cam.id))
                 #---------------------------------------------------------------
-                logger.debug('cam {} alive'.format(self.cam.id))
-
                 arr = cv2.imread(self.img_temp)
                 with lock:
                    result_darknet = dn.detect(net, meta, self.img_temp.encode(),

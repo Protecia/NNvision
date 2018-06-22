@@ -70,18 +70,18 @@ def get_list_same (l_old,l_under,thresh):
                     l_old_w.remove(e_old)
     return new_element
 
-def get_list_diff (l_new,l_old, thresh):
-    l_new_w = l_new[:]
-    l_old_w = l_old[:]
-    for e_new in l_new :
-        for e_old in l_old:
+def get_list_diff(l_new,l_old,thresh, flag):
+    while flag :
+        flag=False
+        for e_new, e_old  in ((w1, w2) for w1 in l_new for w2 in l_old) :
             if e_new[0]==e_old[0] :
                 diff_pos = (sum([abs(i-j) for i,j in zip(e_new[2],e_old[2])]))
                 if diff_pos < thresh :
-                    l_new_w.remove(e_new)
-                    l_old_w.remove(e_old)
+                    flag = True
+                    l_new.remove(e_new)
+                    l_old.remove(e_old)
                     break
-    return l_new_w,l_old_w
+    return l_new,l_old
 
 # the base condition to store the image is : is there a new objects detection
 # or a change in the localisation of the objects. It is not necessary to store
@@ -206,7 +206,9 @@ class ProcessCamera(Thread):
                 logger.debug('event {} set'.format((self.event_ind+1)%nb_cam))
 
     def base_condition(self,new):
-        compare = get_list_diff(new,self.result_DB,self.pos_sensivity)
+        l_new_w = new[:]
+        l_old_w = self.result_DB[:]
+        compare = get_list_diff(l_new_w,l_old_w,self.pos_sensivity,True)
         if len(compare[0])==0 and len(compare[1])==0 :
             return False
         else:

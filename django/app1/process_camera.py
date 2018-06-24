@@ -130,7 +130,7 @@ class ProcessCamera(Thread):
             #-----------------------------------------------------------------------------------
             try :
                 r = requests.get(self.cam.url, auth=self.auth, stream=False, timeout=4)
-                if r.status_code == 200 and len(r.content)>10 :
+                if r.status_code == 200 and len(r.content)>1000 :
                     with open(self.img_temp, 'wb') as fd:
                         #for chunk in r.iter_content(chunk_size=128):
                          fd.write(r.content)

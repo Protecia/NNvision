@@ -223,7 +223,9 @@ class ProcessCamera(Thread):
         rp = [r for r in result if r[1]>=self.cam.threshold]
         rm = [r for r in result if r[1]<self.cam.threshold]
         if len(rm)>0:
-            diff_objects = get_list_same(self.result_DB,rm,self.pos_sensivity)
+            rs = get_list_same(self.result_DB,rp,self.pos_sensivity)
+            ro = [item for item in self.result_DB if item not in rs]
+            diff_objects = get_list_same(ro,rm,self.pos_sensivity)
             logger.debug('objects from last detection now under treshold :{} '
             .format(diff_objects))
             rp+=diff_objects

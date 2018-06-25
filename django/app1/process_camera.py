@@ -115,7 +115,7 @@ class ProcessCamera(Thread):
         if cam.auth_type == 'D' :
             self.auth = requests.auth.HTTPDigestAuth(cam.username,cam.password)
         if cam.stream :
-            self.vcap = cv2.VideoCapture("rtsp://"+cam.username+":"+cam.password+"@"+cam.rtsp)
+            self.vcap = cv2.VideoCapture(cam.rtsp)
 
 
 

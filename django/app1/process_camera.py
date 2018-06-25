@@ -94,7 +94,7 @@ class ProcessCamera(Thread):
         self.cam = cam
         self.event_ind = event_ind
         self.running = False
-        self.img_temp = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id))
+        self.img_temp = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'.jpg')
         self.img_temp_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'_box.jpg')
         self.pos_sensivity = 110
         self.black_list=(b'pottedplant',b'cell phone')
@@ -114,6 +114,8 @@ class ProcessCamera(Thread):
             self.auth = requests.auth.HTTPBasicAuth(cam.username,cam.password)
         if cam.auth_type == 'D' :
             self.auth = requests.auth.HTTPDigestAuth(cam.username,cam.password)
+        if cam.stream :
+            self.vcap = cv2.VideoCapture("rtsp://"+cam.username+":"+cam.password+"@"+cam.rtsp)
 
 
 
@@ -123,33 +125,58 @@ class ProcessCamera(Thread):
         while self.running :
             t=time.time()
             request_OK = True
+            
             # Special stop point for dahua nvcr which can not answer multiple fast http requests
             if not threated_requests :
                 event_list[self.event_ind].wait()
                 logger.debug('cam {} alive'.format(self.cam.id))
             #-----------------------------------------------------------------------------------
-            try :
-                r = requests.get(self.cam.url, auth=self.auth, stream=False, timeout=4)
-                if r.status_code == 200 and len(r.content)>1000 :
-                    with open(self.img_temp, 'wb') as fd:
-                        #for chunk in r.iter_content(chunk_size=128):
-                         fd.write(r.content)
-                    logger.info('image saved to temp folder for darknet in {}s '.format(
-                                 time.time()-t))
-                else:
+            
+            
+            #******************************Grab images in http ********************************
+            if not self.cam.stream :
+                try :
+                    r = requests.get(self.cam.url, auth=self.auth, stream=False, timeout=4)
+                    if r.status_code == 200 and len(r.content)>1000 :
+                        with open(self.img_temp, 'wb') as fd:
+                            #for chunk in r.iter_content(chunk_size=128):
+                             fd.write(r.content)
+                        logger.info('image saved to temp folder for darknet in {}s '.format(
+                                     time.time()-t))
+                    else:
+                        request_OK = False
+                        logger.warning('bad camera download on {} \n'.format(self.cam.name))    
+                except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
                     request_OK = False
-                    logger.warning('bad camera download on {} \n'.format(self.cam.name))    
-            except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
-                request_OK = False
-                logger.warning('network error on {} \n'.format(self.cam.name))
-                pass
+                    logger.warning('network error on {} \n'.format(self.cam.name))
+                    pass
+            #*****************************Grab image in rtsp **********************************
+            else :
+                try :
+                    ret, frame = self.vcap.read()
+                    if ret and len(frame)>10 :
+                        cv2.imwrite(self.img_temp,frame)
+                        logger.info('image from rtsp  saved to temp folder for darknet in {}s '.format(
+                                     time.time()-t))
+                    else:
+                        request_OK = False
+                        logger.warning('bad rtsp camera download on {} \n'.format(self.cam.name))    
+                except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+                    request_OK = False
+                    logger.warning('rtsp network error on {} \n'.format(self.cam.name))
+                    pass
+            #*************************************************************************************    
+                
+            
             t=time.time()
             if request_OK:
+                
                 # Normal stop point for ip camera-------------------------------
                 if threated_requests :
                     event_list[self.event_ind].wait()
                     logger.debug('cam {} alive'.format(self.cam.id))
                 #---------------------------------------------------------------
+                
                 arr = cv2.imread(self.img_temp)
                 with lock:
                    result_darknet = dn.detect(net, meta, self.img_temp.encode(),

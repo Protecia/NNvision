@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
-from django.core.validators import RegexValidator, EmailValidator, MaxValueValidator, MinValueValidator
+from django.core.validators import RegexValidator, EmailValidator, MaxValueValidator, MinValueValidator, URLValidator
 from datetime import datetime
 import pytz
 
@@ -57,11 +57,12 @@ class Camera(models.Model):
     active = models.BooleanField()
     rec = models.BooleanField(default=True)
     url = models.URLField()
+    rtsp = models.CharField(validators=[URLValidator(schemes=('rtsp',)),],max_length=200,blank=True) 
+    stream = models.BooleanField(default=False)
     auth_type = models.CharField(max_length=1, choices=AUTH_CHOICES, default='B')
     username = models.CharField(max_length=20)
     password = models.CharField(max_length=20)
-    width = models.IntegerField(default=800)
-    height = models.IntegerField(default=600)
+    
     threshold = models.FloatField(validators=[MinValueValidator(0.20), MaxValueValidator(0.99)],default=0.9)
     gap = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(90)], default=70)
 

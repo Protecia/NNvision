@@ -114,7 +114,8 @@ STUFFS_CHOICES = ((1,'person'),
                   (6,'dog'))
 
 ACTIONS_CHOICES = ((1,'appear'),
-                   (2,'disappear'))
+                   (2,'disappear'),
+                   (3,'present'))
 
     
 @python_2_unicode_compatible  # only if you need to support Python 2

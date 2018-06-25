@@ -151,6 +151,46 @@ class Process_alert(object):
             for r in rn:
                 logger.info('new result in databases : {}'.format(r))
                 on = Object.objects.filter(result=r)
+                for s in on :
+                    a=False
+                    object_present = Alert.stuffs_reverse.get(s)
+                    if object_present :
+                        a = Alert.objects.filter(stuffs=object_present, 
+                                             actions=Alert.actions_reverse['present']).first()
+                    if a :
+                        logger.info('present alert : {}'.format(a))
+                        r.alert= True
+                        r.save()
+                        t = r.time
+                        if not a.active:
+                            a.active = True
+                            a.when = t
+                            a.save()
+                            list_action = []
+                            if a.alarm :
+                                list_action.append([self.send_alarm,0,t])                                
+                            if a.mail :
+                                list_action.append([self.send_mail,0,t])
+                                t = t+timedelta(seconds=30)
+                            if a.sms :
+                                list_action.append([self.send_sms,0,t])
+                                t = t+timedelta(seconds=30)
+                            if a.call :
+                                list_action.append([self.send_call,0,t])
+                            if a.mass_alarm :
+                                t = t+timedelta(seconds=150)
+                                if a.mail :
+                                    list_action.append([self.send_mass_mail,0,t])
+                                    t = t+timedelta(seconds=60)
+                                if a.sms :
+                                    list_action.append([self.send_mass_sms,0,t])
+                                    t = t+timedelta(seconds=60)
+                                if a.call :
+                                    list_action.append([self.send_mass_call,0,t])
+                            self.dict_alert[a]=list_action
+                            logger.debug('new list_action : {}'.format(list_action))              
+                    
+                
                 cn = Counter([i.result_object for i in on])
                 logger.debug('getting objects in databases : {}'.format(cn))
                 
@@ -160,9 +200,9 @@ class Process_alert(object):
                     object_appear = Alert.stuffs_reverse.get(s)
                     if object_appear :
                         a = Alert.objects.filter(stuffs=object_appear, 
-                                             actions=Alert.actions_reverse['appear']).first()
+                                             actions=Alert.actions_reverse['appear']).first()    
+                    if a :
                         logger.info('appear alert : {}'.format(a))
-                    if a : 
                         r.alert= True
                         r.save()
                         t = r.time

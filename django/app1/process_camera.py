@@ -94,6 +94,7 @@ class ProcessCamera(Thread):
         self.cam = cam
         self.event_ind = event_ind
         self.running = False
+        self.running_rtsp = False
         self.img_temp = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'.jpg')
         self.img_temp_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'_box.jpg')
         self.pos_sensivity = 110
@@ -114,9 +115,28 @@ class ProcessCamera(Thread):
             self.auth = requests.auth.HTTPBasicAuth(cam.username,cam.password)
         if cam.auth_type == 'D' :
             self.auth = requests.auth.HTTPDigestAuth(cam.username,cam.password)
-        if cam.stream :
-            self.vcap = cv2.VideoCapture(cam.rtsp)
-
+        
+        self.lock = Lock()
+    
+    def grab(self):
+        self.vcap = cv2.VideoCapture(self.cam.rtsp)
+        i=15
+        j=0
+        while self.running_rtsp :
+            if i==15:
+                date = time.strftime("%Y-%m-%d-%H-%M-%S")
+                ret, frame = self.vcap.read()
+                self.running_rtsp = ret
+                logger.debug("resultat de la lecture {} rtsp : {} ".format(j,ret))
+                logger.debug('*** {}'.format(date))
+                t = time.time()
+                with self.lock:
+                    ww = cv2.imwrite(self.img_temp, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                logger.debug("resultat de l'écriture du fichier jpg : {} en {} ".format(ww,time.time()-t))
+                i=0
+            i+=1
+            j+=1
+            self.vcap.grab()
 
 
     def run(self):
@@ -152,19 +172,11 @@ class ProcessCamera(Thread):
                     pass
             #*****************************Grab image in rtsp **********************************
             else :
-                try :
-                    ret, frame = self.vcap.read()
-                    if ret and len(frame)>10 :
-                        cv2.imwrite(self.img_temp,frame)
-                        logger.info('image from rtsp  saved to temp folder for darknet in {}s '.format(
-                                     time.time()-t))
-                    else:
-                        request_OK = False
-                        logger.warning('bad rtsp camera download on {} \n'.format(self.cam.name))    
-                except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
+                if not self.running_rtsp:
+                    self.runnig_rtsp = True
+                    _thread = Thread(target=self.grab())
+                    _thread.start()
                     request_OK = False
-                    logger.warning('rtsp network error on {} \n'.format(self.cam.name))
-                    pass
             #*************************************************************************************    
                 
             
@@ -177,7 +189,8 @@ class ProcessCamera(Thread):
                     logger.debug('cam {} alive'.format(self.cam.id))
                 #---------------------------------------------------------------
                 
-                arr = cv2.imread(self.img_temp)
+                with self.lock :
+                    arr = cv2.imread(self.img_temp)
                 with lock:
                    result_darknet = dn.detect(net, meta, self.img_temp.encode(),
                                                thresh=self.cam.threshold*(1-(self.cam.gap/100)),

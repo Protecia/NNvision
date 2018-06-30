@@ -130,9 +130,10 @@ class ProcessCamera(Thread):
                 logger.debug("resultat de la lecture {} rtsp : {} ".format(j,ret))
                 logger.debug('*** {}'.format(date))
                 t = time.time()
-                with self.lock:
-                    ww = cv2.imwrite(self.img_temp, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
-                logger.debug("resultat de l'écriture du fichier jpg : {} en {} ".format(ww,time.time()-t))
+                if ret and len(frame)>100 :
+                    with self.lock:
+                        ww = cv2.imwrite(self.img_temp, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                    logger.debug("resultat de l'écriture du fichier jpg : {} en {} ".format(ww,time.time()-t))
                 i=0
             i+=1
             j+=1

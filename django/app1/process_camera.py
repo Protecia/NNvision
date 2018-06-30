@@ -37,7 +37,7 @@ django.setup()
 # a simple config to create a file log - change the level to warning in
 # production
 #------------------------------------------------------------------------------
-level= logging.WARNING
+level= logging.DEBUG
 logger = logging.getLogger()
 logger.setLevel(level)
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
@@ -173,8 +173,10 @@ class ProcessCamera(Thread):
             #*****************************Grab image in rtsp **********************************
             else :
                 if not self.running_rtsp:
+                    logger.info('rtsp not running, so launch '.format(
+                                     time.time()-t))
                     self.running_rtsp = True
-                    _thread = Thread(target=self.grab())
+                    _thread = Thread(target=self.grab
                     _thread.start()
                     request_OK = False
             #*************************************************************************************    

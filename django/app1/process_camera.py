@@ -83,6 +83,15 @@ def get_list_diff(l_new,l_old,thresh, flag):
                     break
     return l_new,l_old
 
+def read_write(rw,*args):
+    if rw=='r':
+        im = cv2.imread(*args)
+        return len(im)
+    if rw=='w':
+        r = cv2.imwrite(*args)
+        return r
+
+
 # the base condition to store the image is : is there a new objects detection
 # or a change in the localisation of the objects. It is not necessary to store
 # billions of images but only the different one.
@@ -132,7 +141,7 @@ class ProcessCamera(Thread):
                 t = time.time()
                 if ret and len(frame)>100 :
                     with self.lock:
-                        ww = cv2.imwrite(self.img_temp, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                        ww = read_write('w',self.img_temp, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
                     logger.debug("resultat de l'écriture du fichier jpg : {} en {} ".format(ww,time.time()-t))
                 i=0
             i+=1
@@ -193,7 +202,7 @@ class ProcessCamera(Thread):
                 #---------------------------------------------------------------
                 
                 with self.lock :
-                    arr = cv2.imread(self.img_temp)
+                    arr = read_write('r',self.img_temp)
                 with lock:
                    result_darknet = dn.detect(net, meta, self.img_temp.encode(),
                                                thresh=self.cam.threshold*(1-(self.cam.gap/100)),

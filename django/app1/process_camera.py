@@ -173,7 +173,7 @@ class ProcessCamera(Thread):
             #*****************************Grab image in rtsp **********************************
             else :
                 if not self.running_rtsp:
-                    self.runnig_rtsp = True
+                    self.running_rtsp = True
                     _thread = Thread(target=self.grab())
                     _thread.start()
                     request_OK = False

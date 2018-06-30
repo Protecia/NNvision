@@ -86,7 +86,7 @@ def get_list_diff(l_new,l_old,thresh, flag):
 def read_write(rw,*args):
     if rw=='r':
         im = cv2.imread(*args)
-        return len(im)
+        return im
     if rw=='w':
         r = cv2.imwrite(*args)
         return r

@@ -176,7 +176,7 @@ class ProcessCamera(Thread):
                     logger.info('rtsp not running, so launch '.format(
                                      time.time()-t))
                     self.running_rtsp = True
-                    _thread = Thread(target=self.grab
+                    _thread = Thread(target=self.grab)
                     _thread.start()
                     request_OK = False
             #*************************************************************************************    

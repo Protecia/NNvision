@@ -141,7 +141,7 @@ class ProcessCamera(Thread):
                 if ret and len(frame)>100 :
                     with self.lock:
                         ww = read_write('w',self.img_temp, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
-                    logger.debug("resultat de l'écriture du fichier jpg : {} en {} ".format(ww,time.time()-t))
+                    logger.debug("resultat de l'ecriture du fichier jpg : {} en {} ".format(ww,time.time()-t))
                 i=0
             i+=1
             j+=1

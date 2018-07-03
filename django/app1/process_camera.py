@@ -190,8 +190,8 @@ class ProcessCamera(Thread):
                     _thread.start()
                     request_OK = False
             #*************************************************************************************    
-            with self.lock :
-                arr = read_write('r',self.img_temp)   
+            lock.acquire()
+            arr = read_write('r',self.img_temp)   
             if arr is None:
                 logger.debug('image {} not exists'.format(self.img_temp))
                 request_OK = False
@@ -202,10 +202,10 @@ class ProcessCamera(Thread):
                     event_list[self.event_ind].wait()
                     logger.debug('cam {} alive'.format(self.cam.id))
                 #---------------------------------------------------------------
-                with self.lock:
-                    result_darknet = dn.detect(net, meta, self.img_temp.encode(),
+                result_darknet = dn.detect(net, meta, self.img_temp.encode(),
                                                thresh=self.cam.threshold*(1-(self.cam.gap/100)),
                                                hier_thresh = 0.4)
+                lock.release()
                 logger.info('get brut result from darknet : {} in {}s\n'.format(
                 result_darknet,time.time()-t))
                 event_list[self.event_ind].clear()

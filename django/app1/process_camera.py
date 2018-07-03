@@ -193,7 +193,7 @@ class ProcessCamera(Thread):
             with self.lock :
                 arr = read_write('r',self.img_temp)   
             if arr is None:
-                logger.debug('image {} not exists, type: {}'.format(self.img_temp,type(arr)))
+                logger.debug('image {} not exists'.format(self.img_temp))
                 request_OK = False
             t=time.time()
             if request_OK:

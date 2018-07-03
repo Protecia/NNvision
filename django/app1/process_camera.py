@@ -54,8 +54,7 @@ logger.addHandler(file_handler)
 from app1.models import Camera, Result, Object, Info
 from app1.darknet_python import darknet as dn
 
-# locking process to avoid threads calling darknet more than once at a time
-lock = Lock()
+
 
 # function to extract same objects in 2 lists
 def get_list_same (l_old,l_under,thresh):
@@ -203,8 +202,7 @@ class ProcessCamera(Thread):
                 
                 with self.lock :
                     arr = read_write('r',self.img_temp)
-                with lock:
-                   result_darknet = dn.detect(net, meta, self.img_temp.encode(),
+                    result_darknet = dn.detect(net, meta, self.img_temp.encode(),
                                                thresh=self.cam.threshold*(1-(self.cam.gap/100)),
                                                hier_thresh = 0.4)
                 logger.info('get brut result from darknet : {} in {}s\n'.format(

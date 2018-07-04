@@ -106,6 +106,7 @@ class ProcessCamera(Thread):
         self.img_temp = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'.jpg')
         self.img_temp_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'_box.jpg')
         self.pos_sensivity = 110
+        self.request_OK = False
         self.black_list=(b'pottedplant',b'cell phone')
         #self.black_list=()
         self.clone={b'cell phone':b'car'}
@@ -140,8 +141,9 @@ class ProcessCamera(Thread):
                 t = time.time()
                 if ret and len(frame)>100 :
                     with self.lock:
-                        ww = read_write('w',self.img_temp, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
-                    logger.debug("resultat de l'ecriture du fichier jpg : {} en {} ".format(ww,time.time()-t))
+                        self.request_OK = read_write('w',self.img_temp, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
+                    logger.debug("resultat de l'ecriture du fichier jpg : {} en {} ".format(
+                            self.request_OK,time.time()-t))
                 i=0
             i+=1
             j+=1
@@ -153,7 +155,7 @@ class ProcessCamera(Thread):
         self.running = True
         while self.running :
             t=time.time()
-            request_OK = True
+            
             
             # Special stop point for dahua nvcr which can not answer multiple fast http requests
             if not threated_requests :
@@ -164,6 +166,7 @@ class ProcessCamera(Thread):
             
             #******************************Grab images in http ********************************
             if not self.cam.stream :
+                self.request_OK = True
                 try :
                     r = requests.get(self.cam.url, auth=self.auth, stream=False, timeout=4)
                     if r.status_code == 200 and len(r.content)>1000 :
@@ -173,10 +176,10 @@ class ProcessCamera(Thread):
                         logger.info('image saved to temp folder for darknet in {}s '.format(
                                      time.time()-t))
                     else:
-                        request_OK = False
+                        self.request_OK = False
                         logger.warning('bad camera download on {} \n'.format(self.cam.name))    
                 except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
-                    request_OK = False
+                    self.request_OK = False
                     logger.warning('network error on {} \n'.format(self.cam.name))
                     pass
                 
@@ -188,24 +191,19 @@ class ProcessCamera(Thread):
                     self.running_rtsp = True
                     _thread = Thread(target=self.grab)
                     _thread.start()
-                    request_OK = False
             #*************************************************************************************    
-            lock.acquire()
-            arr = read_write('r',self.img_temp)   
-            if arr is None:
-                logger.debug('image {} not exists'.format(self.img_temp))
-                request_OK = False
             t=time.time()
-            if request_OK:
+            if self.request_OK:
                 # Normal stop point for ip camera-------------------------------
                 if threated_requests :
                     event_list[self.event_ind].wait()
                     logger.debug('cam {} alive'.format(self.cam.id))
                 #---------------------------------------------------------------
-                result_darknet = dn.detect(net, meta, self.img_temp.encode(),
+                with self.lock:
+                    arr = read_write('r',self.img_temp)   
+                    result_darknet = dn.detect(net, meta, self.img_temp.encode(),
                                                thresh=self.cam.threshold*(1-(self.cam.gap/100)),
                                                hier_thresh = 0.4)
-                lock.release()
                 logger.info('get brut result from darknet : {} in {}s\n'.format(
                 result_darknet,time.time()-t))
                 event_list[self.event_ind].clear()

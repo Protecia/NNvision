@@ -37,10 +37,16 @@ def index(request):
     d_action = request.POST.get('d_action')
     if d_action == 'start' and len(process()[0])==0:
         Camera.objects.all().update(rec=True)
-        with open(os.path.join(settings.BASE_DIR,'process.log'), 'w') as log:
-            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')], 
-                  stdout=log, stderr=STDOUT)
-        Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
+        if settings.DEBUG:
+            with open(os.path.join(settings.BASE_DIR,'process_camera.log'), 'w') as log:
+                Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')], 
+                      stdout=log, stderr=STDOUT)
+            with open(os.path.join(settings.BASE_DIR,'process_alert.log'), 'w') as loga:
+                Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')], 
+                      stdout=loga, stderr=STDOUT)
+        else:
+            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
+            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
         time.sleep(2)
     if d_action == 'stop' :
         p = process()

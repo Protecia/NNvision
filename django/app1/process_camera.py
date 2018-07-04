@@ -196,12 +196,13 @@ class ProcessCamera(Thread):
                     _thread.start()
             #*************************************************************************************    
             t=time.time()
+            # Normal stop point for ip camera-------------------------------
+            if threated_requests :
+                event_list[self.event_ind].wait()
+                logger.debug('cam {} alive'.format(self.cam.id))
+            #---------------------------------------------------------------
             if self.request_OK:
-                # Normal stop point for ip camera-------------------------------
-                if threated_requests :
-                    event_list[self.event_ind].wait()
-                    logger.debug('cam {} alive'.format(self.cam.id))
-                #---------------------------------------------------------------
+                
                 with self.lock:
                     arr = read_write('r',self.img_temp)   
                     result_darknet = dn.detect(net, meta, self.img_temp.encode(),
@@ -256,6 +257,7 @@ class ProcessCamera(Thread):
                 logger.debug('cam {} clear -> so wait !'.format(self.cam.id))
                 event_list[((self.event_ind)+1)%nb_cam].set()
                 logger.debug('event {} set'.format((self.event_ind+1)%nb_cam))
+                time.sleep(0.5)
 
     def base_condition(self,new):
         l_new_w = new[:]

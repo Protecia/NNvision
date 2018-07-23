@@ -108,7 +108,7 @@ class ProcessCamera(Thread):
         self.running_rtsp = False
         self.img_temp = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'.jpg')
         self.img_temp_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(self.cam.id)+'_box.jpg')
-        self.pos_sensivity = 110
+        self.pos_sensivity = cam.pos_sensivity
         self.request_OK = False
         self.black_list=(b'pottedplant',b'cell phone')
         #self.black_list=()
@@ -143,6 +143,8 @@ class ProcessCamera(Thread):
                 logger.debug('*** {}'.format(date))
                 t = time.time()
                 if ret and len(frame)>100 :
+                    if frame.shape[0]!=self.cam.height or frame.shape[1]!=self.cam.width:
+                        frame = cv2.resize(frame,(self.cam.height, self.cam.width), interpolation = cv2.INTER_CUBIC)
                     with self.lock:
                         self.request_OK = read_write('w',self.img_temp, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
                     logger.debug("resultat de l'ecriture du fichier jpg : {} en {} ".format(

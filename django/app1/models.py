@@ -64,6 +64,9 @@ class Camera(models.Model):
     stream = models.BooleanField(default=False)
     threshold = models.FloatField(validators=[MinValueValidator(0.20), MaxValueValidator(0.99)],default=0.9)
     gap = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(90)], default=70)
+    width = models.IntegerField(default = 1280)
+    height = models.IntegerField(default = 720)
+    pos_sensivity = models.IntegerField(default = 150)
 
     def __str__(self):
         return 'id : {} - name : {} - url : {}'.format(self.id, self.name, self.url)

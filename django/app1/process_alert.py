@@ -154,7 +154,11 @@ class Process_alert(object):
             for r in rn:
                 logger.info('new result in databases : {}'.format(r))
                 on = Object.objects.filter(result=r)
-                for s in on :
+                
+                cn = Counter([i.result_object for i in on])
+                logger.debug('getting objects in databases : {}'.format(cn))
+                
+                for s in cn :
                     a=False
                     object_present = Alert.stuffs_reverse.get(s)
                     if object_present :
@@ -194,8 +198,7 @@ class Process_alert(object):
                             logger.debug('new list_action : {}'.format(list_action))              
                     
                 
-                cn = Counter([i.result_object for i in on])
-                logger.debug('getting objects in databases : {}'.format(cn))
+                
                 
                 appear = cn-c
                 for s in appear :

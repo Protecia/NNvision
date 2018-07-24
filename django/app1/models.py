@@ -64,6 +64,7 @@ class Camera(models.Model):
     stream = models.BooleanField(default=False)
     threshold = models.FloatField(validators=[MinValueValidator(0.20), MaxValueValidator(0.99)],default=0.9)
     gap = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(90)], default=70)
+    reso = models.BooleanField(default=False)
     width = models.IntegerField(default = 1280)
     height = models.IntegerField(default = 720)
     pos_sensivity = models.IntegerField(default = 150)

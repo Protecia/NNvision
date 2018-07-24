@@ -143,8 +143,9 @@ class ProcessCamera(Thread):
                 logger.debug('*** {}'.format(date))
                 t = time.time()
                 if ret and len(frame)>100 :
-                    if frame.shape[0]!=self.cam.height or frame.shape[1]!=self.cam.width:
-                        frame = cv2.resize(frame,(self.cam.width, self.cam.height), interpolation = cv2.INTER_CUBIC)
+                    if self.cam.reso:
+                        if frame.shape[0]!=self.cam.height or frame.shape[1]!=self.cam.width:
+                            frame = cv2.resize(frame,(self.cam.width, self.cam.height), interpolation = cv2.INTER_CUBIC)
                     with self.lock:
                         self.request_OK = read_write('w',self.img_temp, frame, [cv2.IMWRITE_JPEG_QUALITY, 90])
                     logger.debug("resultat de l'ecriture du fichier jpg : {} en {} ".format(

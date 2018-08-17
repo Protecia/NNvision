@@ -208,7 +208,7 @@ class ProcessCamera(Thread):
                 
                 with self.lock:
                     arr = read_write('r',self.img_temp)   
-                    th = self.cam.threshold*(1-(self.cam.gap/100))
+                    th = self.cam.threshold*(1-(float(self.cam.gap)/100))
                     result_darknet = dn.detect(net, meta, self.img_temp.encode(),
                                                thresh=th,
                                                hier_thresh = 0.4)

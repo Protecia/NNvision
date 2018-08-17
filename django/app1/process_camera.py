@@ -208,9 +208,11 @@ class ProcessCamera(Thread):
                 
                 with self.lock:
                     arr = read_write('r',self.img_temp)   
+                    th = self.cam.threshold*(1-(self.cam.gap/100))
                     result_darknet = dn.detect(net, meta, self.img_temp.encode(),
-                                               thresh=self.cam.threshold*(1-(self.cam.gap/100)),
+                                               thresh=th,
                                                hier_thresh = 0.4)
+                logger.debug('thresh set to {}'.format(th))
                 logger.info('get brut result from darknet : {} in {}s\n'.format(
                 result_darknet,time.time()-t))
                 event_list[self.event_ind].clear()

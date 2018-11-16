@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator, EmailValidator, MaxValueValidator, MinValueValidator, URLValidator
 from datetime import datetime
 import pytz
+from django.utils.translation import ugettext_lazy as _
 
 @python_2_unicode_compatible
 class Profile(models.Model):
@@ -134,9 +135,10 @@ STUFFS_CHOICES = ((1,'person'),
                   (22,'clock'),)
 
 
-ACTIONS_CHOICES = ((1,'appear'),
-                   (2,'disappear'),
-                   (3,'present'))
+ACTIONS_CHOICES = ((1,_('appear')),
+                   (2,_('disappear')),
+                   (3,_('present'))
+                   )
 
     
 @python_2_unicode_compatible  # only if you need to support Python 2

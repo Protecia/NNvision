@@ -1,0 +1,123 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-11-16 15:35+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: .\app1\forms.py:22
+msgid "Every days"
+msgstr "Tous les jours"
+
+#: .\app1\forms.py:23
+msgid "Monday"
+msgstr "Lundi"
+
+#: .\app1\forms.py:24
+msgid "Tuesday"
+msgstr "Mardi"
+
+#: .\app1\forms.py:25
+msgid "Wednesday"
+msgstr "Mercredi"
+
+#: .\app1\forms.py:26
+msgid "Thursday"
+msgstr "Jeudi"
+
+#: .\app1\forms.py:27
+msgid "Friday"
+msgstr "Vendredi"
+
+#: .\app1\forms.py:28
+msgid "Saturday"
+msgstr "Samedi"
+
+#: .\app1\forms.py:29
+msgid "Sunday"
+msgstr "Dimanche"
+
+#: .\app1\forms.py:46
+msgid "Start"
+msgstr "Démarrer"
+
+#: .\app1\forms.py:47
+msgid "Stop"
+msgstr "Arrêter"
+
+#: .\app1\models.py:138
+msgid "appear"
+msgstr "apparait"
+
+#: .\app1\models.py:139
+msgid "disappear"
+msgstr "disparait"
+
+#: .\app1\models.py:140
+msgid "present"
+msgstr "est présent"
+
+#: .\app1\templates\app1\alert.html:7
+msgid "Alert"
+msgstr "Alertes"
+
+#: .\app1\templates\app1\alert.html:16
+msgid "Alert settled"
+msgstr "Liste des alertes paramétrées"
+
+#: .\app1\templates\app1\alert.html:25
+msgid "Select objects"
+msgstr "Selectionnez l'objet à détecter"
+
+#: .\app1\templates\app1\alert.html:45
+msgid "Add Alert"
+msgstr "Ajouter une alerte"
+
+#: .\app1\templates\app1\alert.html:60
+msgid "Automatic launch"
+msgstr "Démarrage et arrêt automatique"
+
+#: .\app1\templates\app1\alert.html:69
+msgid "List of automat settled :"
+msgstr "Liste des automatismes configurés:"
+
+#: .\app1\templates\app1\alert.html:78
+msgid "Hour :"
+msgstr "Heure"
+
+#: .\app1\templates\app1\alert.html:83
+msgid "Minute :"
+msgstr "Minute"
+
+#: .\app1\templates\app1\alert.html:88
+msgid "Day of the week :"
+msgstr "Jour de la Semaine"
+
+#: .\app1\templates\app1\alert.html:93
+msgid "Action :"
+msgstr "Action :"
+
+#: .\app1\templates\app1\alert.html:99
+msgid "Add automat"
+msgstr "Ajouter un automatisme"
+
+#: .\projet\settings.py:112
+msgid "English"
+msgstr "Anglais"
+
+#: .\projet\settings.py:113
+msgid "French"
+msgstr "Français"

@@ -11,8 +11,13 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from .models import Camera, Result, Info, Alert
-from.forms import AlertForm
+from.forms import AlertForm, AutomatForm
 from PIL import Image
+from django.utils import translation
+
+
+
+
 
 # Create your views here.
 
@@ -29,6 +34,9 @@ def process():
 
 
 def index(request):
+    user_language = 'fr'
+    translation.activate(user_language)
+    request.session[translation.LANGUAGE_SESSION_KEY] = user_language
     alert = Alert.objects.filter(active=True)
     if len(alert) != 0:
         return redirect('/warning/0')
@@ -159,11 +167,12 @@ def alert(request, id=0):
     # if a GET (or any other method) we'll create a blank form
     else:
         form = AlertForm()
+        aform = AutomatForm()
     if id !=0 :
         Alert.objects.get(pk=id).delete()     
     
     alert = Alert.objects.all()
-    return render(request, 'app1/alert.html', {'message' : form.errors, 'category' : 'warning','form': form, 'alert':alert})
+    return render(request, 'app1/alert.html', {'message' : form.errors, 'category' : 'warning','form': form, 'alert':alert, 'aform':aform})
 
 @login_required
 def configuration(request):

@@ -18,6 +18,9 @@ class AlertForm(forms.ModelForm):
             'actions': forms.RadioSelect(),
         }
         
+DAY_CODE_STR= {'*':_('Every days'),
+               '0':_('Monday'),
+               }
 
 DAY_CHOICES =   ((7,_('Every days')),
                  (0,_('Monday')),

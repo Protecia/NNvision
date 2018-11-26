@@ -67,24 +67,24 @@
 
  <div class="row">
 	<div class="large-10 columns">{% trans 'List of automat settled :' %}
-	<code id="robot-state" class="accesslog hljs">{% for res in auto %} {{ res.get_stuffs_display }} {{ res.get_actions_display }} ->  {% if res.mail %}Mail{% endif %} {% if res.sms %}Sms{% endif %} {% if res.call %}call{% endif %} {% if res.alarm %}Alarm{% endif %}  &nbsp <a href=/alert/suppr/{{ res.id }} >delete</a> <br>   {% endfor %}</code>
+	<code id="robot-state" class="accesslog hljs">{% for res in auto %} {{ res }} &nbsp <a href=/alert/suppr_auto/{{ res.id }} >delete</a> <br>   {% endfor %}</code>
 	</div>
 	
 	</div>
   <br><br><br>
   <div class="row" style="border: 1px solid #466d98;">
   <form action="/alert/" method="post">{% csrf_token %}
-    <div class="large-2 columns">
+    <div class="large-1 columns">
       <label>{% trans 'Hour :' %}
         {{aform.hour}}
       </label>
     </div>
-	<div class="large-2 columns">
+	<div class="large-1 columns">
       {% trans 'Minute :' %}
         {{aform.minute}}
 	  
     </div>
-	<div class="large-2 columns">
+	<div class="large-3 columns">
      {% trans 'Day of the week :' %}
         {{aform.day}}
       

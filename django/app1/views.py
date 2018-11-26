@@ -14,7 +14,7 @@ from .models import Camera, Result, Info, Alert
 from.forms import AlertForm, AutomatForm
 from PIL import Image
 from django.utils import translation
-
+from crontab import CronTab
 
 
 
@@ -171,8 +171,12 @@ def alert(request, id=0):
     if id !=0 :
         Alert.objects.get(pk=id).delete()     
     
+    # get all the alert and all the automatism 
     alert = Alert.objects.all()
-    return render(request, 'app1/alert.html', {'message' : form.errors, 'category' : 'warning','form': form, 'alert':alert, 'aform':aform})
+    cron = CronTab(user=True)
+    auto = [c.render().split(' ') for c in cron]
+    auto = [a[0:2]+a[4:5]+a[-1:] for a in auto]
+    return render(request, 'app1/alert.html', {'message' : form.errors, 'category' : 'warning','form': form, 'alert':alert, 'aform':aform, 'auto':auto})
 
 @login_required
 def configuration(request):

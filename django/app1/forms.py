@@ -19,14 +19,14 @@ class AlertForm(forms.ModelForm):
         }
         
 
-DAY_CHOICES =   ((0,_('Every days')),
-                 (1,_('Monday')),
-                 (2,_('Tuesday')),
-                 (3,_('Wednesday')),
-                 (4,_('Thursday')),
-                 (5,_('Friday')),
-                 (6,_('Saturday')),
-                 (7,_('Sunday')),
+DAY_CHOICES =   ((7,_('Every days')),
+                 (0,_('Monday')),
+                 (1,_('Tuesday')),
+                 (2,_('Wednesday')),
+                 (3,_('Thursday')),
+                 (4,_('Friday')),
+                 (5,_('Saturday')),
+                 (6,_('Sunday')),
                  )
 HOUR_CHOICES=[(i,str(i)) for i in range(24)]
            

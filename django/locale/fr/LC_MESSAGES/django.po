@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-16 15:35+0100\n"
+"POT-Creation-Date: 2018-11-26 21:01+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,6 +57,94 @@ msgstr "Démarrer"
 #: .\app1\forms.py:47
 msgid "Stop"
 msgstr "Arrêter"
+
+#: .\app1\models.py:114
+msgid "person"
+msgstr "personne"
+
+#: .\app1\models.py:115
+msgid "bike"
+msgstr "vélo"
+
+#: .\app1\models.py:116
+msgid "car"
+msgstr "voiture"
+
+#: .\app1\models.py:117
+msgid "motorbike"
+msgstr "moto"
+
+#: .\app1\models.py:118
+msgid "cat"
+msgstr "chat"
+
+#: .\app1\models.py:119
+msgid "dog"
+msgstr "chien"
+
+#: .\app1\models.py:120
+msgid "aeroplane"
+msgstr "avion"
+
+#: .\app1\models.py:121
+msgid "bus"
+msgstr "bus"
+
+#: .\app1\models.py:122
+msgid "train"
+msgstr "train"
+
+#: .\app1\models.py:123
+msgid "truck"
+msgstr "camion"
+
+#: .\app1\models.py:124
+msgid "boat"
+msgstr "bateau"
+
+#: .\app1\models.py:125
+msgid "bird"
+msgstr "oiseau"
+
+#: .\app1\models.py:126
+msgid "backpack"
+msgstr "sac à dos"
+
+#: .\app1\models.py:127
+msgid "umbrella"
+msgstr "parapluie"
+
+#: .\app1\models.py:128
+msgid "chair"
+msgstr "chaise"
+
+#: .\app1\models.py:129
+msgid "sofa"
+msgstr "fauteuil"
+
+#: .\app1\models.py:130
+msgid "tvmonitor"
+msgstr "télé"
+
+#: .\app1\models.py:131
+msgid "laptop"
+msgstr "ordinateur portable"
+
+#: .\app1\models.py:132
+msgid "mouse"
+msgstr "souris d'ordinateur"
+
+#: .\app1\models.py:133
+msgid "keyboard"
+msgstr "clavier d'ordinateur"
+
+#: .\app1\models.py:134
+msgid "book"
+msgstr "livre"
+
+#: .\app1\models.py:135
+msgid "clock"
+msgstr "horloge"
 
 #: .\app1\models.py:138
 msgid "appear"

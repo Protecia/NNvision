@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-11-26 21:01+0100\n"
+"POT-Creation-Date: 2018-11-28 14:19+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,43 +18,43 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: .\app1\forms.py:22
+#: .\app1\forms.py:21 .\app1\forms.py:32
 msgid "Every days"
 msgstr "Tous les jours"
 
-#: .\app1\forms.py:23
+#: .\app1\forms.py:22 .\app1\forms.py:33
 msgid "Monday"
 msgstr "Lundi"
 
-#: .\app1\forms.py:24
+#: .\app1\forms.py:23 .\app1\forms.py:34
 msgid "Tuesday"
 msgstr "Mardi"
 
-#: .\app1\forms.py:25
+#: .\app1\forms.py:24 .\app1\forms.py:35
 msgid "Wednesday"
 msgstr "Mercredi"
 
-#: .\app1\forms.py:26
+#: .\app1\forms.py:25 .\app1\forms.py:36
 msgid "Thursday"
 msgstr "Jeudi"
 
-#: .\app1\forms.py:27
+#: .\app1\forms.py:26 .\app1\forms.py:37
 msgid "Friday"
 msgstr "Vendredi"
 
-#: .\app1\forms.py:28
+#: .\app1\forms.py:27 .\app1\forms.py:38
 msgid "Saturday"
 msgstr "Samedi"
 
-#: .\app1\forms.py:29
+#: .\app1\forms.py:28 .\app1\forms.py:39
 msgid "Sunday"
 msgstr "Dimanche"
 
-#: .\app1\forms.py:46
+#: .\app1\forms.py:56
 msgid "Start"
 msgstr "Démarrer"
 
-#: .\app1\forms.py:47
+#: .\app1\forms.py:57
 msgid "Stop"
 msgstr "Arrêter"
 
@@ -166,6 +166,10 @@ msgstr "Alertes"
 msgid "Alert settled"
 msgstr "Liste des alertes paramétrées"
 
+#: .\app1\templates\app1\alert.html:17
+msgid "delete alert"
+msgstr "Supprimer l'alerte"
+
 #: .\app1\templates\app1\alert.html:25
 msgid "Select objects"
 msgstr "Selectionnez l'objet à détecter"
@@ -181,6 +185,10 @@ msgstr "Démarrage et arrêt automatique"
 #: .\app1\templates\app1\alert.html:69
 msgid "List of automat settled :"
 msgstr "Liste des automatismes configurés:"
+
+#: .\app1\templates\app1\alert.html:70
+msgid "delete automat"
+msgstr "Supprimer l'automatisme"
 
 #: .\app1\templates\app1\alert.html:78
 msgid "Hour :"

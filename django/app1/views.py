@@ -150,19 +150,26 @@ def panel_detail(request, id):
     return render(request, 'app1/panel_detail.html', {'img':img, 'id':id})
 
 @login_required
-def alert(request, id=0):
+def alert(request, id=0, id2=-1):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
+        typeForm = request.POST.get("type", "")
         # create a form instance and populate it with data from the request:
-        form = AlertForm(request.POST)
-        # check whether it's valid:
-        if form.is_valid():
-            form.save()
-            # process the data in form.cleaned_data as required
-            # ...
-            # redirect to a new URL:
-            return HttpResponseRedirect('/alert')
-
+        if typeForm == "alert": 
+            form = AlertForm(request.POST)
+            # check whether it's valid:
+            if form.is_valid():
+                form.save()
+                return HttpResponseRedirect('/alert')
+        elif typeForm ==  "auto":
+            form = AutomatForm(request.POST)
+            # check whether it's valid:
+            if form.is_valid():
+                # process the data in form.cleaned_data as required
+                # d = form.cleaned_data['day']
+                # redirect to a new URL:
+                return HttpResponseRedirect('/alert')
+        
 
     # if a GET (or any other method) we'll create a blank form
     else:
@@ -170,6 +177,10 @@ def alert(request, id=0):
         aform = AutomatForm()
     if id !=0 :
         Alert.objects.get(pk=id).delete()     
+    if id2 != -1:
+        cron = CronTab(user=True)
+        cron.remove(cron[id2])
+        cron.write()   
     
     # get all the alert and all the automatism 
     alert = Alert.objects.all()

@@ -20,7 +20,7 @@
 	</div>
 	<br><br><br>
 	<div class="row" style="border: 1px solid #466d98;">
-	<form action="/alert/" method="post">{% csrf_token %}
+	<form action="/alert/" method="post">{% csrf_token %}<input type="hidden" name="type" value="alert">
     <div class="large-3 columns">
       <label>{% trans 'Select objects' %}
         {{form.stuffs}}
@@ -73,7 +73,7 @@
 	</div>
   <br><br><br>
   <div class="row" style="border: 1px solid #466d98;">
-  <form action="/alert/" method="post">{% csrf_token %}
+  <form action="/alert/" method="post">{% csrf_token %}<input type="hidden" name="type" value="auto">
     <div class="large-1 columns">
       <label>{% trans 'Hour :' %}
         {{aform.hour}}

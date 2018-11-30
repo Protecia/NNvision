@@ -58,6 +58,14 @@ msgstr "Démarrer"
 msgid "Stop"
 msgstr "Arrêter"
 
+#: .\app1\forms.py:56
+msgid "start"
+msgstr "démarrer"
+
+#: .\app1\forms.py:57
+msgid "stop"
+msgstr "arrêter"
+
 #: .\app1\models.py:114
 msgid "person"
 msgstr "personne"

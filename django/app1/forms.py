@@ -53,8 +53,8 @@ MIN_CHOICES=((0,'0'),
               (50,'50'),
               (55,'55'),
               )
-ACTION_CHOICES=((0,_('Start')),
-                 (1,_('Stop')),
+ACTION_CHOICES=(('start',_('Start')),
+                 ('stop',_('Stop')),
                  )
 
 

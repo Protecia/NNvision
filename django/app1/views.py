@@ -166,7 +166,13 @@ def alert(request, id=0, id2=-1):
             # check whether it's valid:
             if form.is_valid():
                 # process the data in form.cleaned_data as required
-                # d = form.cleaned_data['day']
+                d = form.cleaned_data['day']
+                h = form.cleaned_data['hour']
+                m = form.cleaned_data['minute']
+                a = form.cleaned_data['action']
+                cron = CronTab(user=True)
+                command = os.path.join(settings.BASE_DIR,'app1/running.py '+a)
+                job  = cron.new(command='/usr/bin/echo')
                 # redirect to a new URL:
                 return HttpResponseRedirect('/alert')
         

@@ -29,7 +29,7 @@ DAY_CODE_STR= {'*':_('Every days'),
                }
 
 
-DAY_CHOICES =   ((7,_('Every days')),
+DAY_CHOICES =   (('*',_('Every days')),
                  (0,_('Monday')),
                  (1,_('Tuesday')),
                  (2,_('Wednesday')),

@@ -171,8 +171,12 @@ def alert(request, id=0, id2=-1):
                 m = form.cleaned_data['minute']
                 a = form.cleaned_data['action']
                 cron = CronTab(user=True)
-                command = os.path.join(settings.BASE_DIR,'app1/running.py '+a)
-                job  = cron.new(command='/usr/bin/echo')
+                cmd = os.path.join(settings.BASE_DIR,'app1/running.py '+a)
+                job  = cron.new(command=cmd)
+                job.minute.on(m)
+                job.hour.on(h)
+                job.dow.on(d)
+                cron.write()
                 # redirect to a new URL:
                 return HttpResponseRedirect('/alert')
         

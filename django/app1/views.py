@@ -173,9 +173,11 @@ def alert(request, id=0, id2=-1):
                 cron = CronTab(user=True)
                 cmd = os.path.join(settings.BASE_DIR,'app1/running.py '+a)
                 job  = cron.new(command=cmd)
-                job.minute.on(m)
-                job.hour.on(h)
-                job.dow.on(d)
+                
+                #job.minute.on(m)
+                #job.hour.on(h)
+                #job.dow.on(d)
+                job.setall(m, h, '*', '*', d)
                 cron.write()
                 # redirect to a new URL:
                 return HttpResponseRedirect('/alert')

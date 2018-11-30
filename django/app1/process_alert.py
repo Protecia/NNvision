@@ -139,8 +139,10 @@ class Process_alert(object):
             if sm < 100 :
                 r_to_delete = Result.objects.all()[:100]
                 for im_d in r_to_delete:
-                    im_d.file1.delete()
-                    im_d.file2.delete()
+                    if 'jpg' in  im_d.file1.name :
+                        im_d.file1.delete()
+                    if 'jpg' in  im_d.file2.name :
+                        im_d.file2.delete()
                     im_d.delete()
             ###################################################################    
                  

@@ -97,3 +97,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# migrations files
+app1/migrations/*

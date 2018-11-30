@@ -171,7 +171,7 @@ def alert(request, id=0, id2=-1):
                 m = form.cleaned_data['minute']
                 a = form.cleaned_data['action']
                 cron = CronTab(user=True)
-                cmd = os.path.join(settings.BASE_DIR,'app1/running.py '+a)
+                cmd = os.path.join(settings.BASE_DIR,'app1/_running.py '+a)
                 job  = cron.new(command=cmd)
                 job.minute.on(m)
                 job.hour.on(h)

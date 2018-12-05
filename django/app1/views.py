@@ -190,7 +190,7 @@ def alert(request, id=0, id2=-1):
         Alert.objects.get(pk=id).delete()     
     if id2 != -1:
         cron = CronTab(user=True)
-        cron.remove(cron[id2])
+        cron.remove(cron[int(id2)])
         cron.write()   
     
     # get all the alert and all the automatism 

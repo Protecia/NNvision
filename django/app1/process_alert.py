@@ -78,11 +78,11 @@ class Process_alert(object):
             a.active = False
             a.save()
 
-    def wait(self,_time):
+    def check_space(mo):
         ##### check the space on disk to avoid filling the sd card #######
         sb = os.statvfs(settings.MEDIA_ROOT)
         sm = sb.f_bavail * sb.f_frsize / 1024 / 1024
-        if sm < 100 :
+        while sm < mo :
             r_to_delete = Result.objects.all()[:100]
             for im_d in r_to_delete:
                 if 'jpg' in  im_d.file1.name :
@@ -90,7 +90,12 @@ class Process_alert(object):
                 if 'jpg' in  im_d.file2.name :
                     im_d.file2.delete()
                 im_d.delete()
+            sb = os.statvfs(settings.MEDIA_ROOT)
+            sm = sb.f_bavail * sb.f_frsize / 1024 / 1024
         ###################################################################  
+        
+    def wait(self,_time):
+        self.check_space(100)
         i=0
         wait=True
         while wait:
@@ -145,8 +150,7 @@ class Process_alert(object):
 
     def run(self,_time):
         while(self.running):
-               
-                 
+            self.check_space(100)   
             #get last objects
             o = Object.objects.filter(result=self.result)
             c = Counter([i.result_object for i in o])

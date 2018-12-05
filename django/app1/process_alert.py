@@ -82,6 +82,7 @@ class Process_alert(object):
         ##### check the space on disk to avoid filling the sd card #######
         sb = os.statvfs(settings.MEDIA_ROOT)
         sm = sb.f_bavail * sb.f_frsize / 1024 / 1024
+        logger.info('space left is  {} MO'.format(sm))
         while sm < mo :
             r_to_delete = Result.objects.all()[:100]
             for im_d in r_to_delete:
@@ -92,6 +93,7 @@ class Process_alert(object):
                 im_d.delete()
             sb = os.statvfs(settings.MEDIA_ROOT)
             sm = sb.f_bavail * sb.f_frsize / 1024 / 1024
+            logger.info('new space space left after delete is  {} MO'.format(sm))
         ###################################################################  
         
     def wait(self,_time):

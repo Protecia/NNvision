@@ -78,7 +78,7 @@ class Process_alert(object):
             a.active = False
             a.save()
 
-    def check_space(mo):
+    def check_space(self,mo):
         ##### check the space on disk to avoid filling the sd card #######
         sb = os.statvfs(settings.MEDIA_ROOT)
         sm = sb.f_bavail * sb.f_frsize / 1024 / 1024

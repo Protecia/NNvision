@@ -11,13 +11,14 @@ import os
 import sys
 import time
 import pytz
+import glob
 from django.conf import settings
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
 from collections import Counter
 from twilio.rest import Client
 from django.core.mail import send_mail
-
+from django.db import DatabaseError
 
 # Your Account SID from twilio.com/console
 account_sid = "AC445238ce002d1c440c77883963183c04"
@@ -65,6 +66,48 @@ logger.addHandler(file_handler)
 #logger.addHandler(stream_handler)
 #------------------------------------------------------------------------------
 
+def TryCatch(func):
+    def wrapper(*args, **kwargs):
+        try:
+           func(*args,**kwargs)
+        except DatabaseError :
+           logger.warning('>>>>>>>>> Error in database <<<<<<<<<<<')
+    return wrapper
+
+
+
+def purge_files():
+    r = Result.objects.all().order_by('time')[0]
+    time_older = r.time.timestamp()
+    path = settings.MEDIA_ROOT+'/'+r.file1.name.split('/')[0]
+    os.chdir(path)
+    for file in glob.glob("*.jpg"):
+         if os.path.getctime(file) < time_older :
+             os.remove(file)
+    path = settings.MEDIA_ROOT+'/'+r.file2.name.split('/')[0]
+    os.chdir(path)
+    for file in glob.glob("*.jpg"):
+         if os.path.getctime(file) < time_older :
+             os.remove(file)
+
+@TryCatch
+def check_space(mo):
+        ##### check the space on disk to avoid filling the sd card #######
+        sb = os.statvfs(settings.MEDIA_ROOT)
+        sm = sb.f_bavail * sb.f_frsize / 1024 / 1024
+        logger.info('space left is  {} MO'.format(sm))
+        while sm < mo :
+            r_to_delete = Result.objects.all()[:300]
+            for im_d in r_to_delete:
+                if 'jpg' in  im_d.file1.name :
+                    im_d.file1.delete()
+                if 'jpg' in  im_d.file2.name :
+                    im_d.file2.delete()
+                im_d.delete()
+            sb = os.statvfs(settings.MEDIA_ROOT)
+            sm = sb.f_bavail * sb.f_frsize / 1024 / 1024
+            logger.info('new space space left after delete is  {} MO'.format(sm))
+        ###################################################################  
 
 class Process_alert(object):
     def __init__(self):
@@ -78,29 +121,13 @@ class Process_alert(object):
             a.active = False
             a.save()
 
-    def check_space(self,mo):
-        ##### check the space on disk to avoid filling the sd card #######
-        sb = os.statvfs(settings.MEDIA_ROOT)
-        sm = sb.f_bavail * sb.f_frsize / 1024 / 1024
-        logger.info('space left is  {} MO'.format(sm))
-        while sm < mo :
-            r_to_delete = Result.objects.all()[:100]
-            for im_d in r_to_delete:
-                if 'jpg' in  im_d.file1.name :
-                    im_d.file1.delete()
-                if 'jpg' in  im_d.file2.name :
-                    im_d.file2.delete()
-                im_d.delete()
-            sb = os.statvfs(settings.MEDIA_ROOT)
-            sm = sb.f_bavail * sb.f_frsize / 1024 / 1024
-            logger.info('new space space left after delete is  {} MO'.format(sm))
-        ###################################################################  
-        
+    
+    @TryCatch    
     def wait(self,_time):
-        self.check_space(100)
         i=0
         wait=True
         while wait:
+            check_space(300)
             logger.info('start waiting for no detection : {}s'.format(i))
             rn = Result.objects.all().last()
             if rn == None or rn.id == self.result.id :
@@ -152,7 +179,7 @@ class Process_alert(object):
 
     def run(self,_time):
         while(self.running):
-            self.check_space(100)   
+            check_space(300)   
             #get last objects
             o = Object.objects.filter(result=self.result)
             c = Counter([i.result_object for i in o])
@@ -297,6 +324,11 @@ class Process_alert(object):
 
 
 def main():
+    purge_files()
+    sb = os.statvfs(settings.MEDIA_ROOT)
+    sm = sb.f_bavail * sb.f_frsize / 1024 / 1024
+    logger.warning('space left is  {} MO'.format(sm))
+    check_space(300)
     process_alert=Process_alert()
     print("Waiting...")
     process_alert.wait(30)
@@ -313,6 +345,5 @@ if __name__ == '__main__':
     
 
     
-
 
 

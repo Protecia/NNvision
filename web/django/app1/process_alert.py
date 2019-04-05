@@ -114,7 +114,7 @@ def check_space(mo):
 class Process_alert(object):
     def __init__(self):
         self.user = Profile.objects.filter(alert=True).select_related()
-        self.info = Info.objects.get(pk=1)
+        self.info = Info.objects.all().last()
         self.running=True
         self.result = Result.objects.all().last()
         self.dict_alert = {}

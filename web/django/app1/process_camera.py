@@ -17,6 +17,8 @@ from threading import Thread, Lock, Event
 from logging.handlers import RotatingFileHandler
 from io import BytesIO
 from django.core.files import File
+from django.db import transaction
+
 
 #------------------------------------------------------------------------------
 # Because this script have to be run in a separate process from manage.py
@@ -236,23 +238,23 @@ class ProcessCamera(Thread):
                 if self.base_condition(result_filtered) and Camera.objects.get(id=
                                       self.cam.id).rec:
                     logger.debug('>>> Result have changed <<< ')
-                    result_DB = Result(camera=self.cam,brut=result_darknet)
-                    date = time.strftime("%Y-%m-%d-%H-%M-%S")
-
-                    img_bytes = BytesIO(cv2.imencode('.jpg', arr)[1].tobytes())
-                    result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes)) 
-                    for r in result_filtered:
-                        object_DB = Object(result = result_DB, 
-                                           result_object=r[0].decode(),
-                                           result_prob=r[1],
-                                           result_loc1=r[2][0],
-                                           result_loc2=r[2][1],
-                                           result_loc3=r[2][2],
-                                           result_loc4=r[2][3])
-                        object_DB.save()
-                    img_bytes_rect = BytesIO(cv2.imencode('.jpg', arrb)[1].tobytes())
-                    result_DB.file2.save('detect_box_'+date+'.jpg',File(img_bytes_rect))
-                    result_DB.save()
+                    with transaction.atomic():
+        		           result_DB = Result(camera=self.cam,brut=result_darknet)
+        		           date = time.strftime("%Y-%m-%d-%H-%M-%S")
+        		           img_bytes = BytesIO(cv2.imencode('.jpg', arr)[1].tobytes())
+        		           result_DB.file1.save('detect_'+date+'.jpg',File(img_bytes)) 
+        		           for r in result_filtered:
+        		               object_DB = Object(result = result_DB, 
+        		                                  result_object=r[0].decode(),
+        		                                  result_prob=r[1],
+        		                                  result_loc1=r[2][0],
+        		                                  result_loc2=r[2][1],
+        		                                  result_loc3=r[2][2],
+        		                                  result_loc4=r[2][3])
+        		               object_DB.save()
+        		           img_bytes_rect = BytesIO(cv2.imencode('.jpg', arrb)[1].tobytes())
+        		           result_DB.file2.save('detect_box_'+date+'.jpg',File(img_bytes_rect))
+        		           result_DB.save()
                     logger.info('>>>>>>>>>>>>>>>--------- Result store in DB '
                     '-------------<<<<<<<<<<<<<<<<<<<<<\n')
                     self.result_DB = result_filtered    

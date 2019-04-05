@@ -3,7 +3,7 @@ FROM nnvision_base
 WORKDIR /NNvision
 COPY . /NNvision
 
-RUN rm Dockerfile
+RUN rm Dockerfile*
 
 # Activate django
 RUN cd django && python3 manage.py collectstatic && python3 manage.py makemigrations && python3 manage.py migrate && \

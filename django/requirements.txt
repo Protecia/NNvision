@@ -1,5 +1,0 @@
-Django
-requests
-psutil
-wifi-roboticia
-

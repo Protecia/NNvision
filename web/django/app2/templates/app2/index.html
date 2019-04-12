@@ -46,8 +46,8 @@
     function get_bb() {
         var bb = {{ bb }};
         for (var i=0; i < bb.length; i++){
-        bounding_box.push([Math.round(bb[i][1]*width-bb[i][3]*width/2+canvas.offsetLeft),
-                           Math.round(bb[i][2]*height-bb[i][4]*height/2+canvas.offsetTop),
+        bounding_box.push([Math.round(bb[i][1]*width+canvas.offsetLeft),
+                           Math.round(bb[i][2]*height+canvas.offsetTop),
                            Math.round(bb[i][3]*width),Math.round(bb[i][4]*height),bb[i][0]]);
         }
 		draw_box()
@@ -211,8 +211,8 @@
 	var bb = new Array();
 	for(var i=0; i < bounding_box.length; i++) {
 		bb.push([ bounding_box[i][4],
-		         (bounding_box[i][0]+bounding_box[i][2]/2-canvas.offsetLeft)/width,
-				 (bounding_box[i][1]+bounding_box[i][3]/2-canvas.offsetTop)/height,
+		         (bounding_box[i][0]-canvas.offsetLeft)/width,
+				 (bounding_box[i][1]-canvas.offsetTop)/height,
 				  bounding_box[i][2]/width,
 				  bounding_box[i][3]/height]);
 		}

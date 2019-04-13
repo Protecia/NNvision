@@ -43,7 +43,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projet.settings")
 import django
 django.setup()
 
-from app1.models import Profile, Result, Object, Alert, Info, Alert_when
+from app1.models import Profile, Result, Object, Alert, Alert_when
 #from django.contrib.auth.models import User
 
 #------------------------------------------------------------------------------
@@ -114,7 +114,7 @@ def check_space(mo):
 class Process_alert(object):
     def __init__(self):
         self.user = Profile.objects.filter(alert=True).select_related()
-        self.info = Info.objects.all().last()
+        self.public_site = settings.PUBLIC_SITE
         self.running=True
         self.result = Result.objects.all().last()
         self.dict_alert = {}
@@ -161,7 +161,7 @@ class Process_alert(object):
             list_mail.append(u.user.email)
         sender ="contact@protecia.com"
         body = " A {} just {}. Check the image : {} - {}".format(Alert.stuffs_d[alert.stuffs],
-                   Alert.actions_d[alert.actions], self.info.public_site+'/warning/0', t.astimezone(pytz.timezone('Europe/Paris')))
+                   Alert.actions_d[alert.actions], self.public_site+'/warning/0', t.astimezone(pytz.timezone('Europe/Paris')))
         send_mail('Subject here',body, sender,list_mail,fail_silently=False,)
         logger.warning('mail send to : {}'.format(list_mail))
         Alert_when(what='mail', who=list_mail).save()
@@ -171,7 +171,7 @@ class Process_alert(object):
             to = u.phone_number
             sender ="+33757916187"
             body = " A {} just {}. Check the image : {} - {}".format(Alert.stuffs_d[alert.stuffs],
-                       Alert.actions_d[alert.actions], self.info.public_site, t.astimezone(pytz.timezone('Europe/Paris')))
+                       Alert.actions_d[alert.actions], self.public_site, t.astimezone(pytz.timezone('Europe/Paris')))
             client.messages.create(to=to, from_=sender,body=body)
             logger.warning('sms send to : {}'.format(to))
             Alert_when(what='sms', who=to).save()

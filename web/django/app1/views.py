@@ -10,7 +10,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from .models import Camera, Result, Info, Alert
+from .models import Camera, Result, Alert
 from.forms import AlertForm, AutomatForm, DAY_CODE_STR
 from PIL import Image
 from django.utils import translation
@@ -69,7 +69,7 @@ def index(request):
         [ item.kill() for sublist in p for item in sublist]
         running = False
 
-    context = {'info' : Info.objects.get(), 'url_for_index' : '/','running':running}
+    context = {'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH}, 'url_for_index' : '/','running':running}
     return render(request, 'app1/index.html',context)
 
 def warning(request, first_alert):
@@ -100,7 +100,7 @@ def camera(request):
         Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
     camera = Camera.objects.filter(active=True)
     camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]
-    context = {'camera' :camera_array, 'info' : Info.objects.get(), 'url_for_index' : '/',}
+    context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH}, 'url_for_index' : '/',}
     return render(request, 'app1/camera.html',context)
 
 @login_required

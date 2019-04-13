@@ -155,4 +155,10 @@ EMAIL_PORT = '465'
 EMAIL_HOST_USER = 'contact@protecia.com'
 EMAIL_HOST_PASSWORD = '25011975*jJ'
 EMAIL_USE_SSL = True
+
+VERSION='1.0.1'
+DARKNET_PATH='/nnvision/darknet_alex_201903'
+THREATED_REQUESTS=True
+PUBLIC_SITE='http://'
+
  

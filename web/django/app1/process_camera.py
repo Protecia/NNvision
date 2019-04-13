@@ -56,7 +56,7 @@ logger.addHandler(file_handler)
 
 #------------------------------------------------------------------------------
 
-from app1.models import Camera, Result, Object, Info
+from app1.models import Camera, Result, Object
 from app1.darknet_python import darknet as dn
 
 
@@ -298,7 +298,7 @@ cameras = Camera.objects.filter(active=True)
 nb_cam = len(cameras)
 
 # choose if you want to download the image in parallel thread. 
-threated_requests = Info.objects.get().threated_requests
+threated_requests = settings.THREATED_REQUESTS
 
 # create one event and one thread for each camera. So the thread will be able to communicate
 # between each other using this event. It is necesary to tell other threads
@@ -312,7 +312,7 @@ for c in cameras:
 
 
 # load the Neural Network and the meta
-path = Info.objects.get().darknet_path
+path = settings.DARKNET_PATH
 cfg = os.path.join(path,settings.CFG).encode()
 weights = os.path.join(path,settings.WEIGHTS).encode()
 data = os.path.join(path,settings.DATA).encode()

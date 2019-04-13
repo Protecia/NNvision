@@ -98,17 +98,6 @@ class Object(models.Model):
     result_loc4 = models.DecimalField(default=0, max_digits=6, decimal_places=2)
     def __str__(self):
         return 'Objetc : {} with p={}'.format(self.result_object, self.result_prob)
-
-# Informations about the board you are using and the version of the webapp
-@python_2_unicode_compatible  # only if you need to support Python 2
-class Info(models.Model):
-    version = models.CharField(max_length=10)
-    board = models.CharField(max_length=200, default='Tegra X1')
-    darknet_path = models.CharField(max_length=50)
-    public_site = models.URLField(default='http://')
-    threated_requests = models.BooleanField(default=True)
-    def __str__(self):
-        return 'v{} on {}'.format(self.version, self.board)
     
 
 STUFFS_CHOICES = ((1,_('person')),

@@ -1,5 +1,12 @@
-import glob
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Apr 14 21:29:53 2019
+
+@author: julien
+"""
 import os
+import glob
+from subprocess import Popen
 from django.conf import settings
 from django.shortcuts import render
 from .models import Image, Config
@@ -9,11 +16,23 @@ import json
 from django.http import HttpResponse, HttpResponseRedirect
 
 def index(request):
-    img = Image.objects.filter(process=0)[:20]
+    directories = os.listdir(os.path.join(settings.MEDIA_ROOT,"training"))
+    return render(request, 'app2/index.html',{'list_dataset':directories})
+
+
+def dataset(request,dataset):
+    config = Config.objects.filter(dataset=dataset)
+    if len(config)==0:
+        source_path = os.path.join(settings.MEDIA_ROOT,"training",dataset)
+        files = glob.glob(source_path+"/*.jpg")
+        query = Config(dataset=dataset, size = len(files))
+        query.save()
+        Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app2/process_dataset.py')])
+    elif not config.valid:
+        Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app2/process_dataset.py')])
+        
     list_img = [i.name for i in img]
-    return render(request, 'app2/index.html',{'list_img':list_img})
-    
-    
+    return render(request, 'app2/dataset.html',{'list_img':list_img,'txt':txt})
     
 
 
@@ -58,14 +77,3 @@ def img(request,img_name):
                'classes' : classes, 'file' : file, 'bb' : bb }
     return render(request, 'app2/img.html',context)
 
-
-def insert_img(request):
-    source_path = os.path.join(settings.MEDIA_ROOT,"training","basket")
-    files = glob.glob(source_path+"/*.jpg")
-    
-    for f in files :
-        n = os.path.basename(f)
-        query = Image(name = n , process = 0)
-        query.save()
-        
-    return HttpResponse(files[0])

@@ -198,7 +198,9 @@ def alert(request, id=0, id2=-1):
     cron = CronTab(user=True)
     auto = [(c.minute.render(), c.hour.render(), DAY_CODE_STR[c.dow.render()], c.command.split()[2]) for c in cron]
     #auto = [(a[0],a[1],DAY_CODE_STR[a[4]],a[-1]) for a in auto]
-    return render(request, 'app1/alert.html', {'message' : form.errors, 'category' : 'warning','form': form, 'alert':alert, 'aform':aform, 'auto':auto})
+    return render(request, 'app1/alert.html', {'message' : form.errors,
+           'category' : 'warning','form': form, 'alert':alert, 'aform':aform,
+           'auto':auto, 'no_free':settings.ACCESS_NO_FREE})
 
 @login_required
 def configuration(request):

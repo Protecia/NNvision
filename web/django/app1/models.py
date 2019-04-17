@@ -156,7 +156,7 @@ class Alert(models.Model):
     mass_alarm_resent = models.DurationField(default=timedelta(seconds=300))
     active = models.BooleanField(default=False)
     when = models.DateTimeField(default=datetime(year=2000,month=1,day=1))
-    key = models.CharField(max_length=10, default='')
+    key = models.CharField(max_length=10, default='', blank=True)
     class Meta:
         unique_together = ('stuffs', 'actions')
         

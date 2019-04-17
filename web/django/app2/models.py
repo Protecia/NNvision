@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 
 class Config(models.Model):
-    dataset = models.CharField(max_length=50, unique=True,)
+    dataset = models.CharField(max_length=50, unique=True, blank=True, null=True )
     size = models.SmallIntegerField()
     name = models.CharField(max_length=200, blank=True )
     ratio = models.FloatField(default = 1)

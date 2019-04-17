@@ -21,13 +21,6 @@ from django.core.mail import send_mail
 from django.db import DatabaseError
 from socket import gaierror
 
-# Your Account SID from twilio.com/console
-account_sid = settings.ACCOUNT_SID
-# Your Auth Token from twilio.com/console
-auth_token  = settings.AUTH_TOKEN
-
-client = Client(account_sid, auth_token)
-
 
 #------------------------------------------------------------------------------
 # Because this script have to be run in a separate process from manage.py
@@ -45,6 +38,13 @@ import django
 django.setup()
 
 from app1.models import Profile, Result, Object, Alert, Alert_when
+
+# Your Account SID from twilio.com/console
+account_sid = settings.ACCOUNT_SID
+# Your Auth Token from twilio.com/console
+auth_token  = settings.AUTH_TOKEN
+
+client = Client(account_sid, auth_token)
 #from django.contrib.auth.models import User
 
 #------------------------------------------------------------------------------
@@ -158,20 +158,19 @@ class Process_alert(object):
                     ,alert.when,t-alert.when))
         logger.debug('sms : {} / call : {} / alarm : {} / mail : {}'.format(
                 alert.sms,alert.call,alert.alarm,alert.mail))
-        
-        
-        for a in alert:
-            if a.mail :
-                if a.mail_delay > t-a.when:
-                    last = old(Alert_when.objects.filter(what='mail').last())
-                    if t-last > a.mail_resent :
-                        send_mail(alert,t)
-            if a.sms :
-                if a.mail_delay > t-a.when:
-                    last = old(Alert_when.objects.filter(what='mail').last())
-                    if t-last > a.mail_resent :
-                        send_mail(alert,t)
-           
+        if alert.mail :
+            if alert.mail_delay < t-alert.when:
+                last = old(Alert_when.objects.filter(what='mail').last())
+                if t-last > alert.mail_resent :
+                    logger.debug('>>>>>>> go to send mail <<<<<<<<<<<')
+                    self.send_mail(alert,t)
+        if alert.sms :
+            if alert.sms_delay < t-alert.when:
+                last = old(Alert_when.objects.filter(what='sms').last())
+                if t-last > alert.sms_resent :
+                    logger.debug('>>>>>>> go to send sms <<<<<<<<<<<')
+                    self.send_sms(alert,t)
+#############################################################################################
                     
             
             
@@ -287,7 +286,7 @@ def main():
     check_space(300)
     process_alert=Process_alert()
     print("Waiting...")
-    process_alert.wait(30)
+    process_alert.wait(settings.WAIT_BEFORE_DETECTION)
     print("Alert are running !")
     try:
         process_alert.run(1)

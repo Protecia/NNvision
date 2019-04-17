@@ -156,9 +156,15 @@ EMAIL_HOST_USER = 'contact@protecia.com'
 EMAIL_HOST_PASSWORD = '25011975*jJ'
 EMAIL_USE_SSL = True
 
-VERSION='1.0.1'
+# Your Account SID from twilio.com/console
+ACCOUNT_SID = "AC445238ce002d1c440c77883963183c04"
+# Your Auth Token from twilio.com/console
+AUTH_TOKEN  = "97c36acf2c85e62436181e878305f982"
+
+VERSION='1.0.2'
 DARKNET_PATH='/NNvision/darknet_alex_201903'
 THREATED_REQUESTS=True
 PUBLIC_SITE='http://'
+ACCESS_NO_FREE = False
 
  

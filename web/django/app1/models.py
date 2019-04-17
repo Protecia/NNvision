@@ -4,7 +4,7 @@ from django.db import models
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator, EmailValidator, MaxValueValidator, MinValueValidator, URLValidator
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 from django.utils.translation import ugettext_lazy as _
 
@@ -140,11 +140,21 @@ class Alert(models.Model):
     stuffs = models.IntegerField(choices=STUFFS_CHOICES, default=1)
     actions = models.IntegerField(choices=ACTIONS_CHOICES, default=1)
     sms = models.BooleanField()
+    sms_delay = models.DurationField(default=timedelta(seconds=30))
+    sms_resent = models.DurationField(default=timedelta(seconds=300))
     mail = models.BooleanField(default=True)
+    mail_delay = models.DurationField(default=timedelta(seconds=0))
+    mail_resent = models.DurationField(default=timedelta(seconds=300))
     call = models.BooleanField()
+    call_delay = models.DurationField(default=timedelta(seconds=60))
+    call_resent = models.DurationField(default=timedelta(seconds=300))
     alarm = models.BooleanField()
-    active = models.BooleanField(default=False)
+    alarm_delay = models.DurationField(default=timedelta(seconds=0))
+    alarm_resent = models.DurationField(default=timedelta(seconds=300))
     mass_alarm = models.BooleanField(default=False)
+    mass_alarm_delay = models.DurationField(default=timedelta(seconds=500))
+    mass_alarm_resent = models.DurationField(default=timedelta(seconds=300))
+    active = models.BooleanField(default=False)
     when = models.DateTimeField(default=datetime(year=2000,month=1,day=1))
     key = models.CharField(max_length=10, default='')
     class Meta:

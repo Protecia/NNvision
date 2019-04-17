@@ -13,17 +13,18 @@ import time
 import pytz
 import glob
 from django.conf import settings
-from datetime import datetime, timedelta
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from collections import Counter
 from twilio.rest import Client
 from django.core.mail import send_mail
 from django.db import DatabaseError
+from socket import gaierror
 
 # Your Account SID from twilio.com/console
-account_sid = "AC445238ce002d1c440c77883963183c04"
+account_sid = settings.ACCOUNT_SID
 # Your Auth Token from twilio.com/console
-auth_token  = "97c36acf2c85e62436181e878305f982"
+auth_token  = settings.AUTH_TOKEN
 
 client = Client(account_sid, auth_token)
 
@@ -65,7 +66,13 @@ logger.addHandler(file_handler)
 #stream_handler.setLevel(level)
 #logger.addHandler(stream_handler)
 #------------------------------------------------------------------------------
-
+def old(query):
+    if query is not None :
+        return query.when
+    else:
+        return datetime(2000,1,1)
+    
+    
 def TryCatch(func):
     def wrapper(*args, **kwargs):
         try:
@@ -117,7 +124,6 @@ class Process_alert(object):
         self.public_site = settings.PUBLIC_SITE
         self.running=True
         self.result = Result.objects.all().last()
-        self.dict_alert = {}
         alert = Alert.objects.filter(active = True)
         for a in alert :
             a.active = False
@@ -132,7 +138,9 @@ class Process_alert(object):
             check_space(300)
             logger.info('start waiting for no detection : {}s'.format(i))
             rn = Result.objects.all().last()
-            if rn == None or rn.id == self.result.id :
+            if rn == None:
+                i+=1
+            elif rn.id == self.result.id :
                 i+=1
             else :
                 i=0
@@ -142,6 +150,8 @@ class Process_alert(object):
                 wait=False
                 logger.info('waiting {} s, end loop'.format(_time))
 
+#-------------------- this function send alert when necessary ----------------------------
+    # alert is retrieve from models.Alert
     def warn(self, alert):
         t = datetime.now(pytz.utc)
         logger.debug('warn in action at {} / alert timer is {} / timedelta : {}'.format(t
@@ -149,11 +159,22 @@ class Process_alert(object):
         logger.debug('sms : {} / call : {} / alarm : {} / mail : {}'.format(
                 alert.sms,alert.call,alert.alarm,alert.mail))
         
-        for a in self.dict_alert[alert]:
-            if not a[1] and t>a[2] :
-                a[0](alert,t)
-                a[1]=1
-                return
+        
+        for a in alert:
+            if a.mail :
+                if a.mail_delay > t-a.when:
+                    last = old(Alert_when.objects.filter(what='mail').last())
+                    if t-last > a.mail_resent :
+                        send_mail(alert,t)
+            if a.sms :
+                if a.mail_delay > t-a.when:
+                    last = old(Alert_when.objects.filter(what='mail').last())
+                    if t-last > a.mail_resent :
+                        send_mail(alert,t)
+           
+                    
+            
+            
             
     def send_mail(self, alert,t):
         list_mail = []
@@ -162,7 +183,11 @@ class Process_alert(object):
         sender ="contact@protecia.com"
         body = " A {} just {}. Check the image : {} - {}".format(Alert.stuffs_d[alert.stuffs],
                    Alert.actions_d[alert.actions], self.public_site+'/warning/0', t.astimezone(pytz.timezone('Europe/Paris')))
-        send_mail('Subject here',body, sender,list_mail,fail_silently=False,)
+        try:
+            send_mail('Subject here',body, sender,list_mail,fail_silently=False,)
+        except gaierror:
+            logger.warning('socket gaierror !!!! :')
+            pass
         logger.warning('mail send to : {}'.format(list_mail))
         Alert_when(what='mail', who=list_mail).save()
             
@@ -210,33 +235,7 @@ class Process_alert(object):
                         if not a.active:
                             a.active = True
                             a.when = t
-                            a.save()
-                            list_action = []
-                            if a.alarm :
-                                list_action.append([self.send_alarm,0,t])                                
-                            if a.mail :
-                                list_action.append([self.send_mail,0,t])
-                                t = t+timedelta(seconds=30)
-                            if a.sms :
-                                list_action.append([self.send_sms,0,t])
-                                t = t+timedelta(seconds=30)
-                            if a.call :
-                                list_action.append([self.send_call,0,t])
-                            if a.mass_alarm :
-                                t = t+timedelta(seconds=150)
-                                if a.mail :
-                                    list_action.append([self.send_mass_mail,0,t])
-                                    t = t+timedelta(seconds=60)
-                                if a.sms :
-                                    list_action.append([self.send_mass_sms,0,t])
-                                    t = t+timedelta(seconds=60)
-                                if a.call :
-                                    list_action.append([self.send_mass_call,0,t])
-                            self.dict_alert[a]=list_action
-                            logger.debug('new list_action : {}'.format(list_action))              
-                    
-                
-                
+                            a.save()           
                 
                 appear = cn-c
                 for s in appear :
@@ -254,29 +253,7 @@ class Process_alert(object):
                             a.active = True
                             a.when = t
                             a.save()
-                            list_action = []
-                            if a.alarm :
-                                list_action.append([self.send_alarm,0,t])                                
-                            if a.mail :
-                                list_action.append([self.send_mail,0,t])
-                                t = t+timedelta(seconds=30)
-                            if a.sms :
-                                list_action.append([self.send_sms,0,t])
-                                t = t+timedelta(seconds=30)
-                            if a.call :
-                                list_action.append([self.send_call,0,t])
-                            if a.mass_alarm :
-                                t = t+timedelta(seconds=150)
-                                if a.mail :
-                                    list_action.append([self.send_mass_mail,0,t])
-                                    t = t+timedelta(seconds=60)
-                                if a.sms :
-                                    list_action.append([self.send_mass_sms,0,t])
-                                    t = t+timedelta(seconds=60)
-                                if a.call :
-                                    list_action.append([self.send_mass_call,0,t])
-                            self.dict_alert[a]=list_action
-                            logger.debug('new list_action : {}'.format(list_action))                    
+                                 
                 disappear = c-cn
                 for s in disappear:
                     a=False
@@ -293,30 +270,7 @@ class Process_alert(object):
                             a.active = True
                             a.when = t
                             a.save()
-                            list_action = []
-                            if a.alarm :
-                                list_action.append([self.send_alarm,0,t])                                
-                            if a.mail :
-                                list_action.append([self.send_mail,0,t])
-                                t = t+timedelta(seconds=30)
-                            if a.sms :
-                                list_action.append([self.send_sms,0,t])
-                                t = t+timedelta(seconds=30)
-                            if a.call :
-                                list_action.append([self.send_call,0,t])
-                            if a.mass_alarm :
-                                t = t+timedelta(seconds=150)
-                                if a.mail :
-                                    list_action.append([self.send_mass_mail,0,t])
-                                    t = t+timedelta(seconds=60)
-                                if a.sms :
-                                    list_action.append([self.send_mass_sms,0,t])
-                                    t = t+timedelta(seconds=60)
-                                if a.call :
-                                    list_action.append([self.send_mass_call,0,t])
-                            self.dict_alert[a]=list_action
-                            logger.debug('new list_action : {}'.format(list_action))
-                logger.debug('dict alert is : {}'.format(self.dict_alert))
+                            
                 self.result = r
             
             alert = Alert.objects.filter(active = True)

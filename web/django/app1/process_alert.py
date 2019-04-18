@@ -13,7 +13,7 @@ import time
 import pytz
 import glob
 from django.conf import settings
-from datetime import datetime
+from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
 from collections import Counter
 from twilio.rest import Client
@@ -37,7 +37,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projet.settings")
 import django
 django.setup()
 
-from app1.models import Profile, Result, Object, Alert, Alert_when
+from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_delay
 
 # Your Account SID from twilio.com/console
 account_sid = settings.ACCOUNT_SID
@@ -153,21 +153,26 @@ class Process_alert(object):
 #-------------------- this function send alert when necessary ----------------------------
     # alert is retrieve from models.Alert
     def warn(self, alert):
+        delay = Alert_delay.objects.get()
         t = datetime.now(pytz.utc)
         logger.debug('warn in action at {} / alert timer is {} / timedelta : {}'.format(t
                     ,alert.when,t-alert.when))
         logger.debug('sms : {} / call : {} / alarm : {} / mail : {}'.format(
                 alert.sms,alert.call,alert.alarm,alert.mail))
         if alert.mail :
-            if alert.mail_delay < t-alert.when:
+            delta_d1 = delay.mail_post_wait
+            if delay.mail_delay < t-alert.when:
                 last = old(Alert_when.objects.filter(what='mail').last())
-                if t-last > alert.mail_resent :
+                if t-last > delay.mail_resent :
                     logger.debug('>>>>>>> go to send mail <<<<<<<<<<<')
                     self.send_mail(alert,t)
+        else :
+            delta_d1 = timedelta(seconds=0)
+       
         if alert.sms :
-            if alert.sms_delay < t-alert.when:
+            if delay.sms_delay + delta_d1 < t-alert.when:
                 last = old(Alert_when.objects.filter(what='sms').last())
-                if t-last > alert.sms_resent :
+                if t-last > delay.sms_resent :
                     logger.debug('>>>>>>> go to send sms <<<<<<<<<<<')
                     self.send_sms(alert,t)
 #############################################################################################

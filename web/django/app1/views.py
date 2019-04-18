@@ -10,7 +10,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from .models import Camera, Result, Alert
+from .models import Camera, Result, Alert, STUFFS_CHOICES
 from.forms import AlertForm, AutomatForm, DAY_CODE_STR
 from PIL import Image
 from django.utils import translation
@@ -135,13 +135,27 @@ def darknet_state(request):
 
 @login_required
 def panel(request, first, first_alert):
+    if request.method == 'POST':
+        actionForm = request.POST.get("valid_filter", "")
+        if actionForm == 'ok':
+            id_stuffs = request.POST.get("stuffs", "")
+            stuffs = Alert.stuffs_d.get(id_stuffs)
+            request.session['class']= stuffs
+        else :
+            request.session['class']= 'all'
+    filter_class = request.session.get("class","all")
     first=int(first)
     first_alert=int(first_alert)
-    imgs = Result.objects.all().order_by('-id')[first:first+12]
+    if filter_class == "all" :
+        imgs = Result.objects.all().order_by('-id')[first:first+12]
+        imgs_alert = Result.objects.filter(alert=True).order_by('-id')[first_alert:first_alert+3]
+    else :
+        imgs = Result.objects.filter(object__result_object__contains=filter_class).order_by('-id')[first:first+12]
+        imgs_alert = Result.objects.filter(alert=True, object__result_object__contains=filter_class).order_by('-id')[first_alert:first_alert+3]
     img_array = [imgs[i:i + 3] for i in range(0, len(imgs), 3)]
-    imgs_alert = Result.objects.filter(alert=True).order_by('-id')[first_alert:first_alert+3]
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
-    context = { 'first' : first, 'first_alert' : first_alert, 'img_array' : img_array, 'img_alert_array' : img_alert_array}
+    form = AlertForm()
+    context = { 'form':form, 'first' : first, 'first_alert' : first_alert, 'img_array' : img_array, 'img_alert_array' : img_alert_array}
     return render(request, 'app1/panel.html', context)
 
 @login_required

@@ -136,24 +136,13 @@ class Alert(models.Model):
     stuffs_reverse = dict((v, k) for k, v in STUFFS_CHOICES)
     stuffs_d = dict((k, v) for k, v in STUFFS_CHOICES)
     actions_d = dict((k, v) for k, v in ACTIONS_CHOICES)
-    
     stuffs = models.IntegerField(choices=STUFFS_CHOICES, default=1)
     actions = models.IntegerField(choices=ACTIONS_CHOICES, default=1)
-    sms = models.BooleanField()
-    sms_delay = models.DurationField(default=timedelta(seconds=30))
-    sms_resent = models.DurationField(default=timedelta(seconds=300))
     mail = models.BooleanField(default=True)
-    mail_delay = models.DurationField(default=timedelta(seconds=0))
-    mail_resent = models.DurationField(default=timedelta(seconds=300))
+    sms = models.BooleanField()
     call = models.BooleanField()
-    call_delay = models.DurationField(default=timedelta(seconds=60))
-    call_resent = models.DurationField(default=timedelta(seconds=300))
     alarm = models.BooleanField()
-    alarm_delay = models.DurationField(default=timedelta(seconds=0))
-    alarm_resent = models.DurationField(default=timedelta(seconds=300))
     mass_alarm = models.BooleanField(default=False)
-    mass_alarm_delay = models.DurationField(default=timedelta(seconds=500))
-    mass_alarm_resent = models.DurationField(default=timedelta(seconds=300))
     active = models.BooleanField(default=False)
     when = models.DateTimeField(default=datetime(year=2000,month=1,day=1))
     key = models.CharField(max_length=10, default='', blank=True)
@@ -166,9 +155,7 @@ class Alert(models.Model):
 
 ALERT_CHOICES = (('mail','mail'),
                    ('sms','sms'),
-                   ('mass_mail','mass_mail'),
-                   ('mass_sms','mass_sms'),
-                   ('mass_call','mass_call'),
+                   ('mass_alarm','mass_alarm'),
                    ('call','call'),
                    ('alarm','alarm'),
                    ('patrol','patrol')
@@ -180,4 +167,18 @@ class Alert_when(models.Model):
     who = models.CharField(max_length=200, blank=True)
     def __str__(self):
         return '{} at {} to {}'.format(self.what, self.when.astimezone(pytz.timezone('Europe/Paris')), self.who)
+
+class Alert_delay(models.Model):
+    mail_delay = models.DurationField(default=timedelta(seconds=0))
+    mail_resent = models.DurationField(default=timedelta(seconds=300))
+    mail_post_wait = models.DurationField(default=timedelta(seconds=60))
+    sms_delay = models.DurationField(default=timedelta(seconds=30))
+    sms_resent = models.DurationField(default=timedelta(seconds=300))
+    sms_post_wait = models.DurationField(default=timedelta(seconds=30))
+    call_delay = models.DurationField(default=timedelta(seconds=60))
+    call_resent = models.DurationField(default=timedelta(seconds=300))
+    call_post_wait = models.DurationField(default=timedelta(seconds=30))
+    alarm_delay = models.DurationField(default=timedelta(seconds=0))
+    alarm_resent = models.DurationField(default=timedelta(seconds=300))
+    alarm_post_wait = models.DurationField(default=timedelta(seconds=30))
     

@@ -1,12 +1,37 @@
 {% extends "app1/base.html" %}
 
 {% block content %}
-
+{% load i18n %}
 <div class="row">
-  <div class="columns">
+<div class="large-15 columns">
+  <div class="large-7 columns">
     <h1 class="section-title">Images</h1>
-  </div>
+  </div><br>
+<div class="large-5 columns" style="border: 1px solid #466d98;">
+
+<form action="/panel/0/0" method="post">{% csrf_token %}
+    <div class="small-7 columns" >
+<br>
+      <label>{% trans 'Select display object' %}
+        {{form.stuffs}}
+      </label>
+    </div>
+	<div class="small-2 columns" align="right">
+<br>
+	<button type="submit" name="valid_filter" value="ok" class="button medium">{% trans 'Add filter' %}</button>
+	</div>
+<div class="small-2 columns" align="right">
+<br>
+	<button type="submit" name="valid_filter" value="del" class="button medium">{% trans 'Reset filter' %}</button>
+	</div>
+	</form>
 </div>
+</div>
+</div>
+
+
+	
+
 
 <div class="row">
   <div class="large-15 columns" style="border: 1px solid #466d98;">
@@ -33,12 +58,12 @@
   </div>
 </div>
 <br>
-<div class="row">
+<div class="row"><a name="detection"></a>
   <div class="large-15 columns" style="border: 1px solid #466d98;">
     <h3> Last detection :  </h3>
 	<div align="right">
-	{% if first >= 12 %}<a href="/panel/{{first|add:-12}}/{{first_alert}}" class="button tiny">&laquo; previous</a>{% endif %}
-	<a href="/panel/{{first|add:12}}/{{first_alert}}" class="button tiny">next &raquo;</a></div>
+	{% if first >= 12 %}<a href="/panel/{{first|add:-12}}/{{first_alert}}#detection" class="button tiny">&laquo; previous</a>{% endif %}
+	<a href="/panel/{{first|add:12}}/{{first_alert}}#detection" class="button tiny">next &raquo;</a></div>
 	{% for row in img_array %}
 	<div class="row">
 
@@ -53,8 +78,8 @@
 	</div><br>
 	{% endfor %}
 	<div align="right">
-	{% if first >= 12 %}<a href="/panel/{{first|add:-12}}/{{first_alert}}" class="button tiny">&laquo; previous</a>{% endif %}
-	<a href="/panel/{{first|add:12}}/{{first_alert}}" class="button tiny">next &raquo;</a></div>
+	{% if first >= 12 %}<a href="/panel/{{first|add:-12}}/{{first_alert}}#detection" class="button tiny">&laquo; previous</a>{% endif %}
+	<a href="/panel/{{first|add:12}}/{{first_alert}}#detection" class="button tiny">next &raquo;</a></div>
   </div>
 </div>
 <br>

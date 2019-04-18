@@ -10,7 +10,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from .models import Camera, Result, Alert, STUFFS_CHOICES
+from .models import Camera, Result, Alert
 from.forms import AlertForm, AutomatForm, DAY_CODE_STR
 from PIL import Image
 from django.utils import translation
@@ -139,7 +139,8 @@ def panel(request, first, first_alert):
         actionForm = request.POST.get("valid_filter", "")
         if actionForm == 'ok':
             id_stuffs = request.POST.get("stuffs", "")
-            stuffs = Alert.stuffs_d.get(id_stuffs)
+            with translation.override('en'):
+                stuffs = str(Alert.stuffs_d.get(int(id_stuffs)))
             request.session['class']= stuffs
         else :
             request.session['class']= 'all'

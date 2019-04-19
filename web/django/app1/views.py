@@ -156,7 +156,8 @@ def panel(request, first, first_alert):
     img_array = [imgs[i:i + 3] for i in range(0, len(imgs), 3)]
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
     form = AlertForm()
-    context = { 'form':form, 'first' : first, 'first_alert' : first_alert, 'img_array' : img_array, 'img_alert_array' : img_alert_array}
+    context = { 'class':filter_class, 'form':form, 'first' : first,
+               'first_alert' : first_alert, 'img_array' : img_array, 'img_alert_array' : img_alert_array}
     return render(request, 'app1/panel.html', context)
 
 @login_required

@@ -37,7 +37,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projet.settings")
 import django
 django.setup()
 
-from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_delay
+from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_delay, Camera
 
 # Your Account SID from twilio.com/console
 account_sid = settings.ACCOUNT_SID
@@ -128,6 +128,28 @@ class Process_alert(object):
         for a in alert :
             a.active = False
             a.save()
+        # case where present alert is on at the launch
+        cam = Camera.objects.filter(active=True)
+        for c in cam:
+            result = Result.objects.filter(camera=c).last()  
+            o = Object.objects.filter(result=result)
+            c = Counter([i.result_object for i in o])
+            logger.info('getting last object init : {}'.format(c))
+            for s in c :
+                a=False
+                object_present = Alert.stuffs_reverse.get(s)
+                if object_present :
+                    a = Alert.objects.filter(stuffs=object_present, 
+                                         actions=Alert.actions_reverse['present']).first()
+                if a :
+                    logger.info('present init alert : {}'.format(a))
+                    result.alert= True
+                    result.save()
+                    t = result.time
+                    if not a.active:
+                        a.active = True
+                        a.when = t
+                        a.save()           
 
     
     @TryCatch    
@@ -214,8 +236,7 @@ class Process_alert(object):
             #get last objects
             o = Object.objects.filter(result=self.result)
             c = Counter([i.result_object for i in o])
-            logger.info('getting last object : {}'.format(c))
-
+            logger.info('getting last object : {}'.format(c))   
             # Is there new result
             rn = Result.objects.filter(pk__gt=getattr(self.result,'id',0))
             for r in rn:

@@ -1,15 +1,20 @@
 from django.contrib import admin
+from django.conf import settings
 
 # Register your models here.
 
-from .models import Camera, Result, Object, Profile, Alert, Alert_when
+from .models import Camera, Result, Object, Profile, Alert, Alert_when, Alert_delay
 
 admin.site.register(Camera)
-admin.site.register(Result)
-admin.site.register(Object)
 admin.site.register(Profile)
-admin.site.register(Alert)
-admin.site.register(Alert_when)
+admin.site.register(Alert_delay)
+
+if settings.DEBUG:
+    admin.site.register(Result)
+    admin.site.register(Object)
+    admin.site.register(Alert)
+    admin.site.register(Alert_when)
+
 
 
 from django.contrib.auth.admin import UserAdmin

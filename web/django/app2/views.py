@@ -17,6 +17,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 
 def index(request):
     directories = os.listdir(os.path.join(settings.MEDIA_ROOT,"training"))
+    directories = [ d for d in directories if d !="__init__.py"]
     return render(request, 'app2/index.html',{'list_dataset':directories})
 
 
@@ -27,12 +28,14 @@ def dataset(request,dataset):
         files = glob.glob(source_path+"/*.jpg")
         query = Config(dataset=dataset, size = len(files))
         query.save()
-        Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app2/process_dataset.py')])
-    elif not config.valid:
-        Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app2/process_dataset.py')])
-        
-    list_img = [i.name for i in img]
-    return render(request, 'app2/dataset.html',{'list_img':list_img,'txt':txt})
+        Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app2/process_dataset.py'), dataset])
+    elif not config[0].valid:
+        progress = len(Image.objects.all())/config[0].size
+        return HttpResponse('load images in progress : '+ progress)
+    else:
+        img = Image.objects.all()
+        list_img = [i.name for i in img]
+    return render(request, 'app2/dataset.html',{'list_img':list_img})
     
 
 

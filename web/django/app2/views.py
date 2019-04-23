@@ -21,7 +21,7 @@ def index(request):
     if not request.user.is_authenticated:
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
     directories = os.listdir(os.path.join(settings.MEDIA_ROOT,"training"))
-    directories = [ d for d in directories if d !="__init__.py"]
+    directories = [ d for d in directories if d !="change_right.sh"]
     return render(request, 'app2/index.html',{'list_dataset':directories})
 
 @login_required

@@ -13,6 +13,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Image, Config
 import datetime
 import json
+import time
 # Create your views here.
 from django.http import HttpResponse, HttpResponseRedirect
 
@@ -32,6 +33,9 @@ def dataset(request,dataset):
         query = Config(dataset=dataset, size = len(files))
         query.save()
         Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app2/process_dataset.py'), dataset])
+        time.sleep(2)
+        progress = len(Image.objects.all())/config[0].size
+        return HttpResponse('load images in progress : '+ str(progress)+'%')   
     elif not config[0].valid:
         progress = len(Image.objects.all())/config[0].size
         return HttpResponse('load images in progress : '+ str(progress)+'%')
@@ -56,7 +60,7 @@ def img(request, dataset, img_name):
         img.time = datetime.datetime.now()
         img.user = request.user
         img.save()
-        return HttpResponseRedirect('/train/'+dataset)
+        return HttpResponseRedirect('/train/dataset/'+dataset)
         #return HttpResponse(bb)
         
     try :

@@ -19,7 +19,7 @@
 <div id="legend2"><h2 id="element1">Make a bounding box around each :  </h2><h2 id ="element2">{% for cls in classes %}{{ cls }}, {% endfor %}</h2></div>
 <div id="legend2"><h3 id="element1">Keyboard control : w to delete box, a and z to change active class and e to change class of an already draw box. Show tutorial here. </h3></div>
 
-<form name='sendbox' id="sendbox" action="/train/{{dataset}}/{{img_name}}" method="post">{% csrf_token %}
+<form name='sendbox' id="sendbox" action="/train/dataset/{{dataset}}/{{img_name}}" method="post">{% csrf_token %}
 <input type="hidden" name="box" id="box" value="">
 <input type="hidden" name="file" value="{{ file }}">
 	</form>

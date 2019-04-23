@@ -15,7 +15,7 @@ import datetime
 import json
 import time
 # Create your views here.
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 
 def index(request):
     if not request.user.is_authenticated:
@@ -30,6 +30,8 @@ def dataset(request,dataset):
     if len(config)==0:
         source_path = os.path.join(settings.MEDIA_ROOT,"training",dataset)
         files = glob.glob(source_path+"/*.jpg")
+        if len(files)==0:
+            return HttpResponseNotFound('<h1>No Page Here</h1>')
         query = Config(dataset=dataset, size = len(files))
         query.save()
         Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app2/process_dataset.py'), dataset])

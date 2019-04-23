@@ -8,7 +8,8 @@ import os
 import glob
 from subprocess import Popen
 from django.conf import settings
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from .models import Image, Config
 import datetime
 import json
@@ -16,11 +17,13 @@ import json
 from django.http import HttpResponse, HttpResponseRedirect
 
 def index(request):
+    if not request.user.is_authenticated:
+        return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
     directories = os.listdir(os.path.join(settings.MEDIA_ROOT,"training"))
     directories = [ d for d in directories if d !="__init__.py"]
     return render(request, 'app2/index.html',{'list_dataset':directories})
 
-
+@login_required
 def dataset(request,dataset):
     config = Config.objects.filter(dataset=dataset)
     if len(config)==0:
@@ -31,15 +34,15 @@ def dataset(request,dataset):
         Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app2/process_dataset.py'), dataset])
     elif not config[0].valid:
         progress = len(Image.objects.all())/config[0].size
-        return HttpResponse('load images in progress : '+ progress)
+        return HttpResponse('load images in progress : '+ str(progress)+'%')
     else:
-        img = Image.objects.all()
+        img = Image.objects.filter(config=config[0], process=0)[:20]
         list_img = [i.name for i in img]
-    return render(request, 'app2/dataset.html',{'list_img':list_img})
+    return render(request, 'app2/dataset.html',{'list_img':list_img, 'list_dataset':dataset})
     
 
-
-def img(request,img_name):
+@login_required
+def img(request, dataset, img_name):
     if request.method == 'POST':
         bb = request.POST.get("box")
         file = request.POST.get("file")
@@ -48,19 +51,23 @@ def img(request,img_name):
             for b in box :
                 line = str(b[0])+" "+str(b[1])+" "+str(b[2])+" "+str(b[3])+" "+str(b[4])
                 f.write(line+"\n")
-        return HttpResponseRedirect('/train/')
+        img = Image.objects.get(name=(img_name))
+        img.process = 1
+        img.time = datetime.datetime.now()
+        img.user = request.user
+        img.save()
+        return HttpResponseRedirect('/train/'+dataset)
         #return HttpResponse(bb)
         
     try :
-        conf = Config.objects.get()
+        conf = Config.objects.get(dataset=dataset)
         classes = conf.name.split(',')
         ratio = conf.ratio
     except :
         return HttpResponse("no config in the admin")
+    
     img = Image.objects.get(name=(img_name))
-    img.process = 0
-    img.save()
-    file = os.path.join(settings.MEDIA_ROOT,"training","basket",img.name.split('.')[0]+'.txt')
+    file = os.path.join(settings.MEDIA_ROOT,"training",dataset,img.name.split('.')[0]+'.txt')
     
     
     
@@ -76,7 +83,7 @@ def img(request,img_name):
     except FileNotFoundError : 
         pass
         
-    context = {'img' : "/media/training/basket/"+img.name, 'ratio' : ratio,
-               'classes' : classes, 'file' : file, 'bb' : bb }
+    context = {'img' : "/media/training/"+dataset+"/"+img.name, 'ratio' : ratio,
+               'classes' : classes, 'file' : file, 'bb' : bb, 'dataset' : dataset, 'img_name' : img.name  }
     return render(request, 'app2/img.html',context)
 

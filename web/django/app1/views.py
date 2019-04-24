@@ -9,7 +9,7 @@ from wifi import Cell
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from .models import Camera, Result, Alert
 from.forms import AlertForm, AutomatForm, DAY_CODE_STR
 from PIL import Image
@@ -40,7 +40,7 @@ def index(request):
     alert = Alert.objects.filter(active=True)
     if len(alert) != 0:
         return redirect('/warning/0')
-    if not request.user.is_authenticated:
+    if not request.user.is_authenticated or not request.user.has_perm('app1.camera'):
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
     d_action = request.POST.get('d_action')
     if d_action == 'start' and len(process()[0])==0:
@@ -93,6 +93,7 @@ def warning(request, first_alert):
     
 
 @login_required
+@permission_required('app1.camera')
 def camera(request):
     p = process()
     if len(p[0])==0 :
@@ -104,6 +105,7 @@ def camera(request):
     return render(request, 'app1/camera.html',context)
 
 @login_required
+@permission_required('app1.camera')
 def darknet(request):
     d_action = request.POST.get('d_action')
     p = process()
@@ -134,6 +136,7 @@ def darknet_state(request):
     return HttpResponse(raw)
 
 @login_required
+@permission_required('app1.camera')
 def panel(request, first, first_alert):
     if request.method == 'POST':
         actionForm = request.POST.get("valid_filter", "")
@@ -161,11 +164,13 @@ def panel(request, first, first_alert):
     return render(request, 'app1/panel.html', context)
 
 @login_required
+@permission_required('app1.camera')
 def panel_detail(request, id):
     img = Result.objects.get(id=id)
     return render(request, 'app1/panel_detail.html', {'img':img, 'id':id})
 
 @login_required
+@permission_required('app1.camera')
 def alert(request, id=0, id2=-1):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
@@ -219,6 +224,7 @@ def alert(request, id=0, id2=-1):
            'auto':auto, 'no_free':settings.ACCESS_NO_FREE})
 
 @login_required
+@permission_required('app1.camera')
 def configuration(request):
     try:
         connect = subprocess.check_output(['iwgetid', '-r'])
@@ -244,6 +250,7 @@ def configuration(request):
 
 
 @login_required
+@permission_required('app1.camera')
 def wifi_add(request):
     try :
     # works only on linux system
@@ -265,6 +272,7 @@ def wifi_add(request):
     return HttpResponseRedirect('/settings')
 
 @login_required
+@permission_required('app1.camera')
 def wifi_suppr(request):
     try :
     # works only on linux system
@@ -281,6 +289,7 @@ def wifi_suppr(request):
     return HttpResponseRedirect('/settings')
 
 @login_required
+@permission_required('app1.camera')
 def wifi_restart(request):
     try :
         res1 = subprocess.call(['sudo', 'ifdown', 'wlan0'])
@@ -295,6 +304,7 @@ def wifi_restart(request):
     return HttpResponseRedirect('/settings')
 
 @login_required
+@permission_required('app1.camera')
 def reboot(request):
     try :
         command = '(sleep 2 ; sudo reboot) &'
@@ -306,11 +316,13 @@ def reboot(request):
 
 
 @login_required
+@permission_required('app1.camera')
 def last(request, cam):
     img = '/media/tempimg_cam'+str(cam)+'_box.jpg'
     return render(request, 'app1/last_img.html', {'img':img})
 
 @login_required
+@permission_required('app1.camera')
 def get_last_analyse_img(request,cam_id):
     path_img_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(cam_id)+'_box.jpg')
     try :

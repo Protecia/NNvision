@@ -9,7 +9,7 @@ import glob
 from subprocess import Popen
 from django.conf import settings
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from .models import Image, Config
 import datetime
 import json
@@ -17,14 +17,16 @@ import time
 # Create your views here.
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 
+
 def index(request):
-    if not request.user.is_authenticated:
+    if not request.user.is_authenticated or not request.user.has_perm('app1.dataset'):
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
     directories = os.listdir(os.path.join(settings.MEDIA_ROOT,"training"))
     directories = [ d for d in directories if d !="change_right.sh"]
     return render(request, 'app2/index.html',{'list_dataset':directories})
 
 @login_required
+@permission_required('app1.dataset')
 def dataset(request,dataset):
     config = Config.objects.filter(dataset=dataset)
     if len(config)==0:
@@ -36,18 +38,22 @@ def dataset(request,dataset):
         query.save()
         Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app2/process_dataset.py'), dataset])
         time.sleep(2)
-        progress = len(Image.objects.all())/config[0].size
-        return HttpResponse('load images in progress : '+ str(progress)+'%')   
+        progress = len(Image.objects.all())/len(files)
+        return HttpResponse('load images in progress : '+ str(progress*100)+'% - please refresh page')   
     elif not config[0].valid:
         progress = len(Image.objects.all())/config[0].size
         return HttpResponse('load images in progress : '+ str(progress)+'%')
     else:
-        img = Image.objects.filter(config=config[0], process=0)[:20]
+        if settings.DATASET_TEST :
+            img = Image.objects.filter(config=config[0])[:100]
+        else :  
+            img = Image.objects.filter(config=config[0], process=0)[:20]
         list_img = [i.name for i in img]
     return render(request, 'app2/dataset.html',{'list_img':list_img, 'list_dataset':dataset})
     
 
 @login_required
+@permission_required('app1.dataset')
 def img(request, dataset, img_name):
     if request.method == 'POST':
         bb = request.POST.get("box")

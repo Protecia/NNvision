@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'i5dbw16+)@q7s-lgi#+do!j8f)u2#qvy1inhu&ib&#s%)ko%-t'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -167,5 +167,6 @@ THREATED_REQUESTS=True
 PUBLIC_SITE='http://'
 ACCESS_NO_FREE = False
 WAIT_BEFORE_DETECTION = 20
+DATASET_TEST = False
 
  

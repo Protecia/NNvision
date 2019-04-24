@@ -18,6 +18,7 @@ class Profile(models.Model):
         ordering = ['user']
         verbose_name = 'user'
         verbose_name_plural = 'users'
+        permissions = [('camera','>>> Can view camera'),('dataset','>>> Can make dataset')]
         
     email_0 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)
     email_1 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)

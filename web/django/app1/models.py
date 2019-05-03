@@ -130,6 +130,26 @@ ACTIONS_CHOICES = ((1,_('appear')),
                    (3,_('present'))
                    )
 
+ADAM_CHANNEL = ((1,1),
+                (2,2),
+                (3,3),
+                (4,4),
+                (5,5),
+                (6,6),
+                   )
+
+
+class Alert_adam(models.Model):
+    ip = models.GenericIPAddressField(null=True, unique=True)
+    auth = models.CharField(max_length=20, null=True)
+    password = models.CharField(max_length=20, null=True)    
+    delay = models.DurationField(default=timedelta(seconds=20))
+    duration = models.DurationField(default=timedelta(seconds=3600))
+    
+    def __str__(self):
+        return '{} '.format(self.ip)
+
+
     
 @python_2_unicode_compatible  # only if you need to support Python 2
 class Alert(models.Model):
@@ -140,9 +160,16 @@ class Alert(models.Model):
     stuffs = models.IntegerField(choices=STUFFS_CHOICES, default=1)
     actions = models.IntegerField(choices=ACTIONS_CHOICES, default=1)
     mail = models.BooleanField(default=True)
-    sms = models.BooleanField()
-    call = models.BooleanField()
-    alarm = models.BooleanField()
+    sms = models.BooleanField(default=False)
+    call = models.BooleanField(default=False)
+    alarm = models.BooleanField(default=False)
+    adam = models.ForeignKey(Alert_adam, on_delete=models.CASCADE, null =True, blank=True)
+    adam_channel_0 = models.BooleanField(default=False)
+    adam_channel_1 = models.BooleanField(default=False)
+    adam_channel_2 = models.BooleanField(default=False)
+    adam_channel_3 = models.BooleanField(default=False)
+    adam_channel_4 = models.BooleanField(default=False)
+    adam_channel_5 = models.BooleanField(default=False)
     mass_alarm = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
     when = models.DateTimeField(default=datetime(year=2000,month=1,day=1))
@@ -159,6 +186,7 @@ ALERT_CHOICES = (('mail','mail'),
                    ('mass_alarm','mass_alarm'),
                    ('call','call'),
                    ('alarm','alarm'),
+                   ('adam','adam'),
                    ('patrol','patrol')
                    )
 
@@ -169,17 +197,20 @@ class Alert_when(models.Model):
     def __str__(self):
         return '{} at {} to {}'.format(self.what, self.when.astimezone(pytz.timezone('Europe/Paris')), self.who)
 
-class Alert_delay(models.Model):
+class Alert_info(models.Model):
     mail_delay = models.DurationField(default=timedelta(seconds=0))
     mail_resent = models.DurationField(default=timedelta(seconds=300))
     mail_post_wait = models.DurationField(default=timedelta(seconds=60))
     sms_delay = models.DurationField(default=timedelta(seconds=30))
     sms_resent = models.DurationField(default=timedelta(seconds=300))
-    sms_post_wait = models.DurationField(default=timedelta(seconds=30))
+    sms_post_wait = models.DurationField(default=timedelta(seconds=60))
     call_delay = models.DurationField(default=timedelta(seconds=60))
     call_resent = models.DurationField(default=timedelta(seconds=300))
-    call_post_wait = models.DurationField(default=timedelta(seconds=30))
+    call_post_wait = models.DurationField(default=timedelta(seconds=60))
     alarm_delay = models.DurationField(default=timedelta(seconds=0))
     alarm_resent = models.DurationField(default=timedelta(seconds=300))
-    alarm_post_wait = models.DurationField(default=timedelta(seconds=30))
+    
+    
+
+    
     

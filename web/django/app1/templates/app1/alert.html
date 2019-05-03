@@ -14,13 +14,27 @@
 	
 	<div class="row">
 	<div class="large-10 columns">{% trans 'Alert settled' %}
-	{% for res in alert %}<code id="robot-state" class="accesslog hljs"> {{ res.get_stuffs_display }} {{ res.get_actions_display }} --->  {% if res.mail %}Mail{% endif %} {% if res.sms %}Sms{% endif %} {% if res.call %}call{% endif %} {% if res.alarm %}Alarm{% endif %}  &nbsp &nbsp&nbsp&nbsp<a href=/alert/suppr/{{ res.id }} >{% trans 'delete alert' %}</a> <br>   </code>{% endfor %}
+	{% for res in alert %}<code id="robot-state" class="accesslog hljs"> {{ res.get_stuffs_display }} {{ res.get_actions_display }} --->  {% if res.mail %}Mail{% endif %} {% if res.sms %}Sms{% endif %} {% if res.call %}call{% endif %} {% if res.alarm %}Alarm{% endif %} 
+    {% if res.adam %}(Adam box {{res.adam.ip}} 
+        {% if res.adam_channel_0 %}C0 {% endif %}
+        {% if res.adam_channel_1 %}C1 {% endif %}
+        {% if res.adam_channel_2 %}C2 {% endif %}
+        {% if res.adam_channel_3 %}C3 {% endif %}
+        {% if res.adam_channel_4 %}C4 {% endif %}
+        {% if res.adam_channel_5 %}C5 {% endif %}        
+    ){% endif %}  &nbsp &nbsp&nbsp&nbsp<a href=/alert/suppr/{{ res.id }} >{% trans 'delete alert' %}</a> <br>   </code>{% endfor %}
 	</div>
 	
 	</div>
 	<br><br><br>
-	<div class="row" style="border: 1px solid #466d98;">
-	<form action="/alert/" method="post">{% csrf_token %}<input type="hidden" name="type" value="alert">
+    
+
+<div class="row" style="border: 1px solid #466d98;"><div class="large-15 columns">
+    <form action="/alert/" method="post">{% csrf_token %}<input type="hidden" name="type" value="alert">
+	<div class="row" >
+    
+	
+   
     <div class="large-3 columns">
       <label>{% trans 'Select objects' %}
         {{form.stuffs}}
@@ -39,16 +53,42 @@
 	        <label for="{{form.call.id_for_label}}">{{form.call}}{{form.call.label}}</label>
 	        <label for="{{form.alarm.id_for_label}}">{{form.alarm}}{{form.alarm.label}}</label>
                 {% endif %}
-	  
+	            
       
     </div>
 	<div class="large-3 columns">
 	<br>
 	<button type="submit" name="valid_alert" value="ok" class="button large">{% trans 'Add Alert' %}</button>
-	</div>
-	</form>
-  </div>
-  
+	</div></div>
+    
+    <div class="row" >
+    
+    
+	
+  </div>{% if adam %}<hr size="1" color="blue">
+  <div class="row" >
+   <fieldset class="inlineLabels">
+   <div  class="large-2 columns">
+      <label>Adam box</label>
+	  
+	  {{form.adam}}
+    </div>
+       <div  class="large-2 columns">  
+         <label for="{{form.adam_channel_0.id_for_label}}">{{form.adam_channel_0}}{{form.adam_channel_0.label}}</label>
+         <label for="{{form.adam_channel_1.id_for_label}}">{{form.adam_channel_1}}{{form.adam_channel_1.label}}</label>
+         <label for="{{form.adam_channel_2.id_for_label}}">{{form.adam_channel_2}}{{form.adam_channel_2.label}}</label>
+         </div>
+         <div  class="large-7 columns">       
+         <label for="{{form.adam_channel_3.id_for_label}}">{{form.adam_channel_3}}{{form.adam_channel_3.label}}</label>
+         <label for="{{form.adam_channel_4.id_for_label}}">{{form.adam_channel_4}}{{form.adam_channel_4.label}}</label>
+         <label for="{{form.adam_channel_5.id_for_label}}">{{form.adam_channel_5}}{{form.adam_channel_5.label}}</label>
+         
+         </div>
+         
+         
+         </fieldset> 
+  </div>{% endif %}
+  </form></div></div>
  
  
 	

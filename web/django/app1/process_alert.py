@@ -37,7 +37,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projet.settings")
 import django
 django.setup()
 
-from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_delay, Camera
+from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_info, Camera, Alert_adam
 
 # Your Account SID from twilio.com/console
 account_sid = settings.ACCOUNT_SID
@@ -175,28 +175,46 @@ class Process_alert(object):
 #-------------------- this function send alert when necessary ----------------------------
     # alert is retrieve from models.Alert
     def warn(self, alert):
-        delay = Alert_delay.objects.get()
+        delay = Alert_info.objects.get()
         t = datetime.now(pytz.utc)
         logger.debug('warn in action at {} / alert timer is {} / timedelta : {}'.format(t
                     ,alert.when,t-alert.when))
         logger.debug('sms : {} / call : {} / alarm : {} / mail : {}'.format(
                 alert.sms,alert.call,alert.alarm,alert.mail))
+        
         if alert.mail :
-            delta_d1 = delay.mail_post_wait
             if delay.mail_delay < t-alert.when:
                 last = old(Alert_when.objects.filter(what='mail').last())
                 if t-last > delay.mail_resent :
                     logger.debug('>>>>>>> go to send mail <<<<<<<<<<<')
                     self.send_mail(alert,t)
+            mail_post_wait = delay.mail_post_wait
         else :
-            delta_d1 = timedelta(seconds=0)
+            mail_post_wait = timedelta(seconds=0)
        
         if alert.sms :
-            if delay.sms_delay + delta_d1 < t-alert.when:
+            if delay.sms_delay + mail_post_wait  < t-alert.when:
                 last = old(Alert_when.objects.filter(what='sms').last())
                 if t-last > delay.sms_resent :
                     logger.debug('>>>>>>> go to send sms <<<<<<<<<<<')
                     self.send_sms(alert,t)
+            sms_post_wait = delay.sms_post_wait
+        else :
+            sms_post_wait = timedelta(seconds=0)
+                    
+        if alert.adam is not None :
+            if delay.adam_delay < t-alert.when:
+                logger.debug('>>>>>>> go to active adam <<<<<<<<<<<')
+                
+                last = old(Alert_when.objects.filter(what='adam').last())
+                if last < alert.when :
+                    self.start_adam(alert,t, alert.adam, alert.adam_channel)
+                else :
+                    if t-last > delay.adam_duration :
+                        logger.debug('>>>>>>> go to inactive adam <<<<<<<<<<<')
+                        self.stop_adam(alert,t, alert.adam, alert.adam_channel)
+                    
+                
 #############################################################################################
                     
             
@@ -226,9 +244,23 @@ class Process_alert(object):
             client.messages.create(to=to, from_=sender,body=body)
             logger.warning('sms send to : {}'.format(to))
             Alert_when(what='sms', who=to).save()
-                
-
-
+    
+    def start_adam(self, alert,t, adam, channel):
+        cmd = 'http://'+a.ip+'/digitaloutput/all/value'
+        data = 'D0'+channel+'=1'
+        requests.post(cmd, auth=(adam.auth,adam.password), headers={"content-type":"text"}, data=data)
+        time.sleep(0.5)
+        if r.status_code == 200:
+            logger.warning('adam started on ip : {}'.format(a.ip))
+            Alert_when(what='adam', who='').save()       
+    
+    def stop_adam(self, alert,t, adam, channel):
+        cmd = 'http://'+a.ip+'/digitaloutput/all/value'
+        data = 'D0'+channel+'=0'
+        requests.post(cmd, auth=(adam.auth,adam.password), headers={"content-type":"text"}, data=data)
+        time.sleep(0.5)
+        if r.status_code == 200:
+            logger.warning('adam stopped on ip : {}'.format(a.ip))
 
     def run(self,_time):
         while(self.running):

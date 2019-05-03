@@ -6,17 +6,38 @@ Created on Tue Mar 13 12:32:32 2018
 """
 
 from django import forms
-from .models import Alert
+from .models import Alert, Alert_adam
 from django.utils.translation import ugettext_lazy as _
 
 
 class AlertForm(forms.ModelForm):
+    adam = forms.ModelChoiceField(queryset=Alert_adam.objects, empty_label=None, widget=forms.RadioSelect, required=False)
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        adam = cleaned_data.get("adam")
+        adam_channel_0 = cleaned_data.get("adam_channel_0")
+        adam_channel_1 = cleaned_data.get("adam_channel_1")
+        adam_channel_2 = cleaned_data.get("adam_channel_2")
+        adam_channel_3 = cleaned_data.get("adam_channel_3")
+        adam_channel_4 = cleaned_data.get("adam_channel_4")
+        adam_channel_5 = cleaned_data.get("adam_channel_5")
+
+        if  not (adam and ( adam_channel_1 or adam_channel_2 or adam_channel_3 or adam_channel_4 or adam_channel_5 or adam_channel_0)) :
+            # Only do something if both fields are valid so far.
+            raise forms.ValidationError(
+                "If you use Adam box, you need to choose a chanel and a box "
+            )
+                
     class Meta:
         model = Alert
-        fields = ['stuffs', 'actions','sms','call','alarm','mail']
+        fields = ['stuffs', 'actions','sms','call','alarm','mail','adam',
+                  'adam_channel_0','adam_channel_1','adam_channel_2','adam_channel_3','adam_channel_4','adam_channel_5']
         widgets = {
             'actions': forms.RadioSelect(),
-        }
+            'adam': forms.RadioSelect()}
+        labels = {
+            "adam": _("Adam box"),}
         
 DAY_CODE_STR= {'*':_('Every days'),
                '0':_('Monday'),

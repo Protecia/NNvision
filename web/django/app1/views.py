@@ -182,6 +182,8 @@ def alert(request, id=0, id2=-1):
             if form.is_valid():
                 form.save()
                 return HttpResponseRedirect('/alert')
+            else :
+                aform = AutomatForm()
         elif typeForm ==  "auto":
             form = AutomatForm(request.POST)
             # check whether it's valid:
@@ -201,6 +203,8 @@ def alert(request, id=0, id2=-1):
                 cron.write()
                 # redirect to a new URL:
                 return HttpResponseRedirect('/alert')
+            else :
+                form = AlertForm()
         
 
     # if a GET (or any other method) we'll create a blank form
@@ -221,7 +225,7 @@ def alert(request, id=0, id2=-1):
     #auto = [(a[0],a[1],DAY_CODE_STR[a[4]],a[-1]) for a in auto]
     return render(request, 'app1/alert.html', {'message' : form.errors,
            'category' : 'warning','form': form, 'alert':alert, 'aform':aform,
-           'auto':auto, 'no_free':settings.ACCESS_NO_FREE})
+           'auto':auto, 'no_free':settings.ACCESS_NO_FREE, 'adam':settings.ACCESS_ADAM})
 
 @login_required
 @permission_required('app1.camera')

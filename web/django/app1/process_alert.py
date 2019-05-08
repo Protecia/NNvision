@@ -12,6 +12,7 @@ import sys
 import time
 import pytz
 import glob
+import requests
 from django.conf import settings
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
@@ -118,6 +119,17 @@ def check_space(mo):
             logger.info('new space space left after delete is  {} MO'.format(sm))
         ###################################################################  
 
+def stop_adam_all():
+    adam_request = Alert_adam.objects.all()
+    for adam_box in adam_request :
+        cmd = 'http://'+adam_box.ip+'/digitaloutput/all/value'
+        data = 'DO0=0&DO1=0&DO2=0&DO3=0&DO4=0&DO5=0'
+        r = requests.post(cmd, auth=(adam_box.auth,adam_box.password), headers={"content-type":"text"}, data=data)
+        time.sleep(0.5)
+        if r.status_code == 200:
+            logger.debug('adam stopped with request : {} {} {} {}'.format(cmd,adam_box.auth,adam_box.password,data))
+    
+
 class Process_alert(object):
     def __init__(self):
         self.user = Profile.objects.filter(alert=True).select_related()
@@ -203,16 +215,26 @@ class Process_alert(object):
             sms_post_wait = timedelta(seconds=0)
                     
         if alert.adam is not None :
-            if delay.adam_delay < t-alert.when:
+            if alert.adam.delay < t-alert.when:
                 logger.debug('>>>>>>> go to active adam <<<<<<<<<<<')
                 
                 last = old(Alert_when.objects.filter(what='adam').last())
                 if last < alert.when :
-                    self.start_adam(alert,t, alert.adam, alert.adam_channel)
+                    self.start_adam(alert,t, {0 : alert.adam_channel_0,
+                                                          1 : alert.adam_channel_1,
+                                                          2 : alert.adam_channel_2,
+                                                          3 : alert.adam_channel_3,
+                                                          4 : alert.adam_channel_4,
+                                                          5 : alert.adam_channel_5})
                 else :
                     if t-last > delay.adam_duration :
                         logger.debug('>>>>>>> go to inactive adam <<<<<<<<<<<')
-                        self.stop_adam(alert,t, alert.adam, alert.adam_channel)
+                        self.stop_adam(alert,t, {0 : alert.adam_channel_0,
+                                                             1 : alert.adam_channel_1,
+                                                             2 : alert.adam_channel_2,
+                                                             3 : alert.adam_channel_3,
+                                                             4 : alert.adam_channel_4,
+                                                             5 : alert.adam_channel_5})
                     
                 
 #############################################################################################
@@ -245,23 +267,32 @@ class Process_alert(object):
             logger.warning('sms send to : {}'.format(to))
             Alert_when(what='sms', who=to).save()
     
-    def start_adam(self, alert,t, adam, channel):
-        cmd = 'http://'+a.ip+'/digitaloutput/all/value'
-        data = 'D0'+channel+'=1'
-        requests.post(cmd, auth=(adam.auth,adam.password), headers={"content-type":"text"}, data=data)
+    def start_adam(self, alert, t, channel):
+        cmd = 'http://'+alert.adam.ip+'/digitaloutput/all/value'
+        data = ''
+        for nb,c in channel.items() :
+            if c :
+                data += 'DO'+str(nb)+'=1&'
+        r = requests.post(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, data=data)
         time.sleep(0.5)
         if r.status_code == 200:
-            logger.warning('adam started on ip : {}'.format(a.ip))
+            logger.warning('adam started on ip : {}'.format(alert.adam.ip))
+            logger.debug('with request : {} {} {} {}'.format(cmd,alert.adam.auth,alert.adam.password,data))
             Alert_when(what='adam', who='').save()       
     
-    def stop_adam(self, alert,t, adam, channel):
-        cmd = 'http://'+a.ip+'/digitaloutput/all/value'
-        data = 'D0'+channel+'=0'
-        requests.post(cmd, auth=(adam.auth,adam.password), headers={"content-type":"text"}, data=data)
+    def stop_adam(self, alert, t, channel):
+        cmd = 'http://'+alert.adam.ip+'/digitaloutput/all/value'
+        data = ''
+        for nb,c in channel.items() :
+            if c :
+                data += 'DO'+str(nb)+'=0&'
+        r = requests.post(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, data=data)
         time.sleep(0.5)
         if r.status_code == 200:
-            logger.warning('adam stopped on ip : {}'.format(a.ip))
-
+            logger.warning('adam started on ip : {}'.format(alert.adam.ip))
+            logger.debug('with request : {} {} {} {}'.format(cmd,alert.adam.auth,alert.adam.password,data))
+            Alert_when(what='adam', who='').save()
+     
     def run(self,_time):
         while(self.running):
             check_space(300)   

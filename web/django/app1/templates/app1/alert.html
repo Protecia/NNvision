@@ -14,7 +14,11 @@
 	
 	<div class="row">
 	<div class="large-10 columns">{% trans 'Alert settled' %}
-	{% for res in alert %}<code id="robot-state" class="accesslog hljs"> {{ res.get_stuffs_display }} {{ res.get_actions_display }} --->  {% if res.mail %}Mail{% endif %} {% if res.sms %}Sms{% endif %} {% if res.call %}call{% endif %} {% if res.alarm %}Alarm{% endif %} 
+	{% for res in alert %}<code id="robot-state" class="accesslog hljs"> {{ res.get_stuffs_display }} {{ res.get_actions_display }} --->  {% if res.mail %}Mail{% endif %}
+                                                                                                                                         {% if res.sms %}Sms{% endif %}
+                                                                                                                                         {% if res.call %}call{% endif %}
+                                                                                                                                         {% if res.alarm %}Alarm{% endif %}
+                                                                                                                                         {% if res.hook %}External url{% endif %}
     {% if res.adam %}(Adam box {{res.adam.ip}} 
         {% if res.adam_channel_0 %}C0 {% endif %}
         {% if res.adam_channel_1 %}C1 {% endif %}
@@ -52,6 +56,9 @@
                 <label for="{{form.sms.id_for_label}}">{{form.sms}}{{form.sms.label}}</label>
 	        <label for="{{form.call.id_for_label}}">{{form.call}}{{form.call.label}}</label>
 	        <label for="{{form.alarm.id_for_label}}">{{form.alarm}}{{form.alarm.label}}</label>
+                {% endif %}
+                {% if hook %}
+            <label for="{{form.hook.id_for_label}}">{{form.hook}}{{form.hook.label}}</label>     
                 {% endif %}
 	            
       

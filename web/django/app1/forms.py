@@ -22,8 +22,9 @@ class AlertForm(forms.ModelForm):
         adam_channel_3 = cleaned_data.get("adam_channel_3")
         adam_channel_4 = cleaned_data.get("adam_channel_4")
         adam_channel_5 = cleaned_data.get("adam_channel_5")
+        print(adam)
 
-        if  not (adam and ( adam_channel_1 or adam_channel_2 or adam_channel_3 or adam_channel_4 or adam_channel_5 or adam_channel_0)) :
+        if  (adam!=None) != ( adam_channel_1 or adam_channel_2 or adam_channel_3 or adam_channel_4 or adam_channel_5 or adam_channel_0) :
             # Only do something if both fields are valid so far.
             raise forms.ValidationError(
                 "If you use Adam box, you need to choose a chanel and a box "
@@ -31,13 +32,14 @@ class AlertForm(forms.ModelForm):
                 
     class Meta:
         model = Alert
-        fields = ['stuffs', 'actions','sms','call','alarm','mail','adam',
+        fields = ['stuffs', 'actions','sms','call','alarm','mail','hook','adam',
                   'adam_channel_0','adam_channel_1','adam_channel_2','adam_channel_3','adam_channel_4','adam_channel_5']
         widgets = {
             'actions': forms.RadioSelect(),
             'adam': forms.RadioSelect()}
         labels = {
-            "adam": _("Adam box"),}
+            "adam": _("Adam box"),
+            "hook": _("External URL")}
         
 DAY_CODE_STR= {'*':_('Every days'),
                '0':_('Monday'),

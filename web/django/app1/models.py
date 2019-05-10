@@ -148,6 +148,15 @@ class Alert_adam(models.Model):
     
     def __str__(self):
         return '{} '.format(self.ip)
+    
+class Alert_hook(models.Model):
+    url = models.URLField(null=True, unique=True)
+    auth = models.CharField(max_length=20, null=True, blank =True)
+    password = models.CharField(max_length=20, null=True, blank =True)
+    delay = models.DurationField(default=timedelta(seconds=20))
+    
+    def __str__(self):
+        return '{} '.format(self.url)
 
 
     
@@ -170,6 +179,7 @@ class Alert(models.Model):
     adam_channel_3 = models.BooleanField(default=False)
     adam_channel_4 = models.BooleanField(default=False)
     adam_channel_5 = models.BooleanField(default=False)
+    hook = models.BooleanField(default=False)
     mass_alarm = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
     when = models.DateTimeField(default=datetime(year=2000,month=1,day=1))

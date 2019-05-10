@@ -13,6 +13,7 @@ import time
 import pytz
 import glob
 import requests
+import json
 from django.conf import settings
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
@@ -236,6 +237,16 @@ class Process_alert(object):
                                                              4 : alert.adam_channel_4,
                                                              5 : alert.adam_channel_5})
                     
+        if alert.hook:
+            hook_request = Alert_hook.objects.all()
+            for hook in hook_request:
+                if hook.delay < t-alert.when:
+                    logger.debug('>>>>>>> go to send hook <<<<<<<<<<<')
+                    last = old(Alert_when.objects.filter(what='hook').last())
+                    if t-last > hook.resent :
+                        logger.debug('>>>>>>> go to send hook <<<<<<<<<<<')
+                        self.send_hook(alert,hook, t)
+                
                 
 #############################################################################################
                     
@@ -292,7 +303,20 @@ class Process_alert(object):
             logger.warning('adam started on ip : {}'.format(alert.adam.ip))
             logger.debug('with request : {} {} {} {}'.format(cmd,alert.adam.auth,alert.adam.password,data))
             Alert_when(what='adam', who='').save()
-     
+    
+    def send_hook(self,alert,hook,t):
+        url = hook.url
+        data = {'object': Alert.stuffs_d[alert.stuffs], 'action': Alert.actions_d[alert.actions], 'time':alert.when}
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        r = requests.post(url, data=json.dumps(data), headers=headers)
+        if r.status_code == 200:
+            logger.warning('hook send to : {}'.format(url))
+            logger.debug('with data : {}'.format(data))
+            Alert_when(what='hook', who='url').save()
+        
+        
+    
+    
     def run(self,_time):
         while(self.running):
             check_space(300)   

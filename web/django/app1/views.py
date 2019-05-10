@@ -11,7 +11,8 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from .models import Camera, Result, Alert
-from.forms import AlertForm, AutomatForm, DAY_CODE_STR
+from .forms import AlertForm, AutomatForm, DAY_CODE_STR
+from .process_alert import stop_adam_all
 from PIL import Image
 from django.utils import translation
 from crontab import CronTab
@@ -57,6 +58,7 @@ def index(request):
             Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
         time.sleep(2)
     if d_action == 'stop' :
+        stop_adam_all()
         p = process()
         [ item.kill() for sublist in p for item in sublist]
         time.sleep(2)
@@ -79,6 +81,7 @@ def warning(request, first_alert):
         for a in alert :
             a.active = False
             a.save()
+        stop_adam_all()
         return redirect('/')
     
     alert = alert.first() 
@@ -223,9 +226,9 @@ def alert(request, id=0, id2=-1):
     cron = CronTab(user=True)
     auto = [(c.minute.render(), c.hour.render(), DAY_CODE_STR[c.dow.render()], c.command.split()[2]) for c in cron]
     #auto = [(a[0],a[1],DAY_CODE_STR[a[4]],a[-1]) for a in auto]
-    return render(request, 'app1/alert.html', {'message' : form.errors,
+    return render(request, 'app1/alert.html', {'message' : form.non_field_errors,
            'category' : 'warning','form': form, 'alert':alert, 'aform':aform,
-           'auto':auto, 'no_free':settings.ACCESS_NO_FREE, 'adam':settings.ACCESS_ADAM})
+           'auto':auto, 'no_free':settings.ACCESS_NO_FREE, 'adam':settings.ACCESS_ADAM, 'hook':settings.ACCESS_HOOK })
 
 @login_required
 @permission_required('app1.camera')

@@ -166,6 +166,7 @@ class Alert(models.Model):
     stuffs_reverse = dict((v, k) for k, v in STUFFS_CHOICES)
     stuffs_d = dict((k, v) for k, v in STUFFS_CHOICES)
     actions_d = dict((k, v) for k, v in ACTIONS_CHOICES)
+    # here start db model
     stuffs = models.IntegerField(choices=STUFFS_CHOICES, default=1)
     actions = models.IntegerField(choices=ACTIONS_CHOICES, default=1)
     mail = models.BooleanField(default=True)
@@ -202,6 +203,8 @@ ALERT_CHOICES = (('mail','mail'),
 
 class Alert_when(models.Model):
     what = models.CharField(max_length=10, choices=ALERT_CHOICES)
+    action = models.IntegerField(default =1)
+    stuffs = models.IntegerField(default =1)
     when = models.DateTimeField(auto_now=True)
     who = models.CharField(max_length=200, blank=True)
     def __str__(self):

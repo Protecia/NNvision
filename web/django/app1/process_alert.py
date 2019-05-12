@@ -14,6 +14,7 @@ import pytz
 import glob
 import requests
 import json
+import xml.etree.ElementTree as ET
 from django.conf import settings
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
@@ -22,6 +23,7 @@ from twilio.rest import Client
 from django.core.mail import send_mail
 from django.db import DatabaseError
 from socket import gaierror
+
 
 
 #------------------------------------------------------------------------------
@@ -72,7 +74,7 @@ def old(query):
     if query is not None :
         return query.when
     else:
-        return datetime(2000,1,1)
+        return datetime(2000,1,1,tzinfo=pytz.utc)
     
     
 def TryCatch(func):
@@ -219,7 +221,9 @@ class Process_alert(object):
             if alert.adam.delay < t-alert.when:
                 logger.debug('>>>>>>> go to active adam <<<<<<<<<<<')
                 
-                last = old(Alert_when.objects.filter(what='adam').last())
+                last = old(Alert_when.objects.filter(what='adam', 
+                                                     stuffs=alert.stuffs,
+                                                     action=alert.actions).last())
                 if last < alert.when :
                     self.start_adam(alert,t, {0 : alert.adam_channel_0,
                                                           1 : alert.adam_channel_1,
@@ -228,7 +232,7 @@ class Process_alert(object):
                                                           4 : alert.adam_channel_4,
                                                           5 : alert.adam_channel_5})
                 else :
-                    if t-last > delay.adam_duration :
+                    if t-last > alert.adam.duration :
                         logger.debug('>>>>>>> go to inactive adam <<<<<<<<<<<')
                         self.stop_adam(alert,t, {0 : alert.adam_channel_0,
                                                              1 : alert.adam_channel_1,
@@ -280,29 +284,44 @@ class Process_alert(object):
     
     def start_adam(self, alert, t, channel):
         cmd = 'http://'+alert.adam.ip+'/digitaloutput/all/value'
-        data = ''
+        r = requests.get(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"})
+        xml = ET.fromstring(r.text)
+        adam_state = {}
+        for state in xml.findall('DO'):
+            state.find('ID').text
+            adam_state[int(state.find('ID').text)]=state.find('VALUE').text
         for nb,c in channel.items() :
             if c :
-                data += 'DO'+str(nb)+'=1&'
+                adam_state[nb] = '1'
+        data = ''
+        for i in adam_state:
+            data += "DO"+str(i)+"="+adam_state[i]+"&" 
         r = requests.post(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, data=data)
         time.sleep(0.5)
         if r.status_code == 200:
             logger.warning('adam started on ip : {}'.format(alert.adam.ip))
             logger.debug('with request : {} {} {} {}'.format(cmd,alert.adam.auth,alert.adam.password,data))
-            Alert_when(what='adam', who='').save()       
+            Alert_when(what='adam', who='', stuffs=alert.stuffs, action=alert.actions).save()       
     
     def stop_adam(self, alert, t, channel):
         cmd = 'http://'+alert.adam.ip+'/digitaloutput/all/value'
-        data = ''
+        r = requests.get(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"})
+        xml = ET.fromstring(r.text)
+        adam_state = {}
+        for state in xml.findall('DO'):
+            state.find('ID').text
+            adam_state[int(state.find('ID').text)]=state.find('VALUE').text
         for nb,c in channel.items() :
             if c :
-                data += 'DO'+str(nb)+'=0&'
+                adam_state[nb] = '0'
+        data = ''
+        for i in adam_state:
+            data += "DO"+str(i)+"="+adam_state[i]+"&" 
         r = requests.post(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, data=data)
         time.sleep(0.5)
         if r.status_code == 200:
-            logger.warning('adam started on ip : {}'.format(alert.adam.ip))
+            logger.warning('adam stop on ip : {}'.format(alert.adam.ip))
             logger.debug('with request : {} {} {} {}'.format(cmd,alert.adam.auth,alert.adam.password,data))
-            Alert_when(what='adam', who='').save()
     
     def send_hook(self,alert,hook,t):
         url = hook.url

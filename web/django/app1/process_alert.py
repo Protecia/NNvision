@@ -41,7 +41,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projet.settings")
 import django
 django.setup()
 
-from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_info, Camera, Alert_adam
+from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_info, Camera, Alert_adam, Alert_hook
 
 # Your Account SID from twilio.com/console
 account_sid = settings.ACCOUNT_SID
@@ -199,7 +199,9 @@ class Process_alert(object):
         
         if alert.mail :
             if delay.mail_delay < t-alert.when:
-                last = old(Alert_when.objects.filter(what='mail').last())
+                last = old(Alert_when.objects.filter(what='mail', 
+                                                     stuffs=alert.stuffs,
+                                                     action=alert.actions).last())
                 if t-last > delay.mail_resent :
                     logger.debug('>>>>>>> go to send mail <<<<<<<<<<<')
                     self.send_mail(alert,t)
@@ -209,7 +211,9 @@ class Process_alert(object):
        
         if alert.sms :
             if delay.sms_delay + mail_post_wait  < t-alert.when:
-                last = old(Alert_when.objects.filter(what='sms').last())
+                last = old(Alert_when.objects.filter(what='sms', 
+                                                     stuffs=alert.stuffs,
+                                                     action=alert.actions).last())
                 if t-last > delay.sms_resent :
                     logger.debug('>>>>>>> go to send sms <<<<<<<<<<<')
                     self.send_sms(alert,t)
@@ -246,7 +250,9 @@ class Process_alert(object):
             for hook in hook_request:
                 if hook.delay < t-alert.when:
                     logger.debug('>>>>>>> go to send hook <<<<<<<<<<<')
-                    last = old(Alert_when.objects.filter(what='hook').last())
+                    last = old(Alert_when.objects.filter(what='hook', 
+                                                     stuffs=alert.stuffs,
+                                                     action=alert.actions).last())
                     if t-last > hook.resent :
                         logger.debug('>>>>>>> go to send hook <<<<<<<<<<<')
                         self.send_hook(alert,hook, t)
@@ -270,7 +276,7 @@ class Process_alert(object):
             logger.warning('socket gaierror !!!! :')
             pass
         logger.warning('mail send to : {}'.format(list_mail))
-        Alert_when(what='mail', who=list_mail).save()
+        Alert_when(what='mail', who=list_mail, stuffs=alert.stuffs, action=alert.actions).save() 
             
     def send_sms(self, alert,t):
         for u in self.user :
@@ -280,7 +286,7 @@ class Process_alert(object):
                        Alert.actions_d[alert.actions], self.public_site, t.astimezone(pytz.timezone('Europe/Paris')))
             client.messages.create(to=to, from_=sender,body=body)
             logger.warning('sms send to : {}'.format(to))
-            Alert_when(what='sms', who=to).save()
+            Alert_when(what='sms', who='to', stuffs=alert.stuffs, action=alert.actions).save() 
     
     def start_adam(self, alert, t, channel):
         cmd = 'http://'+alert.adam.ip+'/digitaloutput/all/value'
@@ -331,7 +337,7 @@ class Process_alert(object):
         if r.status_code == 200:
             logger.warning('hook send to : {}'.format(url))
             logger.debug('with data : {}'.format(data))
-            Alert_when(what='hook', who='url').save()
+            Alert_when(what='hook', who=url, stuffs=alert.stuffs, action=alert.actions).save() 
         
         
     

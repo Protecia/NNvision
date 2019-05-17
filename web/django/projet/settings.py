@@ -171,5 +171,5 @@ ACCESS_HOOK = True
 WAIT_BEFORE_DETECTION = 20
 DATASET_TEST = False
 
-RESELLER_LOGO = 'telegil.jpg'
+RESELLER_LOGO = 'logo-telegil.png'
  

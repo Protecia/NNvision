@@ -71,7 +71,7 @@ def index(request):
         [ item.kill() for sublist in p for item in sublist]
         running = False
 
-    context = {'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH}, 'url_for_index' : '/','running':running}
+    context = {'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH}, 'url_for_index' : '/','running':running, 'logo_client':settings.RESELLER_LOGO}
     return render(request, 'app1/index.html',context)
 
 def warning(request, first_alert):
@@ -104,7 +104,7 @@ def camera(request):
         Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
     camera = Camera.objects.filter(active=True)
     camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]
-    context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH}, 'url_for_index' : '/',}
+    context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH}, 'url_for_index' : '/','logo_client':settings.RESELLER_LOGO}
     return render(request, 'app1/camera.html',context)
 
 @login_required
@@ -163,7 +163,7 @@ def panel(request, first, first_alert):
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
     form = AlertForm()
     context = { 'class':filter_class, 'form':form, 'first' : first,
-               'first_alert' : first_alert, 'img_array' : img_array, 'img_alert_array' : img_alert_array}
+               'first_alert' : first_alert, 'img_array' : img_array, 'img_alert_array' : img_alert_array, 'logo_client':settings.RESELLER_LOGO}
     return render(request, 'app1/panel.html', context)
 
 @login_required
@@ -228,7 +228,7 @@ def alert(request, id=0, id2=-1):
     #auto = [(a[0],a[1],DAY_CODE_STR[a[4]],a[-1]) for a in auto]
     return render(request, 'app1/alert.html', {'message' : form.non_field_errors,
            'category' : 'warning','form': form, 'alert':alert, 'aform':aform,
-           'auto':auto, 'no_free':settings.ACCESS_NO_FREE, 'adam':settings.ACCESS_ADAM, 'hook':settings.ACCESS_HOOK })
+           'auto':auto, 'no_free':settings.ACCESS_NO_FREE, 'adam':settings.ACCESS_ADAM, 'hook':settings.ACCESS_HOOK, 'logo_client':settings.RESELLER_LOGO })
 
 @login_required
 @permission_required('app1.camera')

@@ -17,17 +17,19 @@
   
 
     <nav class="top-bar" role="navigation">
+        
       <div class="top-bar-left">
 	  
         <a href="/">
           <img  width="120" height="50" data-interchange="[{% get_static_prefix %}app1/img/neural_network.gif, retina]" src="{% get_static_prefix %}app1/img/neural_network.gif" alt="NNvision">
-        </a>
       
+        </a>
+        {% if logo_client %}
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <img    src="{% get_static_prefix %}app1/img/{{ logo_client}}" %}">
+        {% endif %}
 	  </div>
-	      
-	  
-            <h1 id="top_bar_page_title" style="text-align:center">Telegil</h1>
-       
+	   
 	  
 	  
 	  

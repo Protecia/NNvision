@@ -154,6 +154,7 @@ class Alert_hook(models.Model):
     auth = models.CharField(max_length=20, null=True, blank =True)
     password = models.CharField(max_length=20, null=True, blank =True)
     delay = models.DurationField(default=timedelta(seconds=20))
+    resent = models.DurationField(default=timedelta(seconds=300))
     
     def __str__(self):
         return '{} '.format(self.url)

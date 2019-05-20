@@ -12,4 +12,6 @@ RUN cd django && python3 manage.py collectstatic && python3 manage.py makemigrat
 
 RUN django/change_right.sh && a2enmod  wsgi
 
+RUN rm django/alert.log
+
 CMD ["apachectl", "-D", "FOREGROUND"]

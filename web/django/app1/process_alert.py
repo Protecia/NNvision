@@ -127,7 +127,11 @@ def stop_adam_all():
     for adam_box in adam_request :
         cmd = 'http://'+adam_box.ip+'/digitaloutput/all/value'
         data = 'DO0=0&DO1=0&DO2=0&DO3=0&DO4=0&DO5=0'
-        r = requests.post(cmd, auth=(adam_box.auth,adam_box.password), headers={"content-type":"text"}, data=data)
+        try:
+            r = requests.post(cmd, auth=(adam_box.auth,adam_box.password), headers={"content-type":"text"}, data=data)
+        except requests.exceptions.ConnectionError:
+            logger.warning('adam not responding on ip : {}'.format(adam_box.ip))
+            pass
         time.sleep(0.5)
         if r.status_code == 200:
             logger.debug('adam stopped with request : {} {} {} {}'.format(cmd,adam_box.auth,adam_box.password,data))
@@ -301,8 +305,12 @@ class Process_alert(object):
                 adam_state[nb] = '1'
         data = ''
         for i in adam_state:
-            data += "DO"+str(i)+"="+adam_state[i]+"&" 
-        r = requests.post(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, data=data)
+            data += "DO"+str(i)+"="+adam_state[i]+"&"
+        try:    
+            r = requests.post(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, data=data)
+        except requests.exceptions.ConnectionError :
+            logger.warning('adam not responding on ip : {}'.format(alert.adam.ip))
+            pass
         time.sleep(0.5)
         if r.status_code == 200:
             logger.warning('adam started on ip : {}'.format(alert.adam.ip))
@@ -323,7 +331,11 @@ class Process_alert(object):
         data = ''
         for i in adam_state:
             data += "DO"+str(i)+"="+adam_state[i]+"&" 
-        r = requests.post(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, data=data)
+        try:
+            r = requests.post(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, data=data)
+        except requests.exceptions.ConnectionError :
+            logger.warning('adam not responding on ip : {}'.format(alert.adam.ip))
+            pass
         time.sleep(0.5)
         if r.status_code == 200:
             logger.warning('adam stop on ip : {}'.format(alert.adam.ip))
@@ -333,7 +345,11 @@ class Process_alert(object):
         url = hook.url
         data = {'object': Alert.stuffs_d[alert.stuffs], 'action': Alert.actions_d[alert.actions], 'time':alert.when}
         headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-        r = requests.post(url, data=json.dumps(data), headers=headers)
+        try:
+            r = requests.post(url, data=json.dumps(data), headers=headers)
+        except requests.exceptions.ConnectionError :
+            logger.warning('hook not responding on url : {}'.format(url))
+            pass
         if r.status_code == 200:
             logger.warning('hook send to : {}'.format(url))
             logger.debug('with data : {}'.format(data))

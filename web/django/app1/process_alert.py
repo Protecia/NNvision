@@ -128,14 +128,14 @@ def stop_adam_all():
         cmd = 'http://'+adam_box.ip+'/digitaloutput/all/value'
         data = 'DO0=0&DO1=0&DO2=0&DO3=0&DO4=0&DO5=0'
         try:
-            r = requests.post(cmd, auth=(adam_box.auth,adam_box.password), headers={"content-type":"text"}, data=data)
+            r = requests.post(cmd, auth=(adam_box.auth,adam_box.password), headers={"content-type":"text"}, data=data, timeout=2)
+            if r.status_code == 200:
+                logger.debug('adam stopped with request : {} {} {} {}'.format(cmd,adam_box.auth,adam_box.password,data))
         except requests.exceptions.ConnectionError:
             logger.warning('adam not responding on ip : {}'.format(adam_box.ip))
             pass
         time.sleep(0.5)
-        if r.status_code == 200:
-            logger.debug('adam stopped with request : {} {} {} {}'.format(cmd,adam_box.auth,adam_box.password,data))
-    
+        
 
 class Process_alert(object):
     def __init__(self):
@@ -294,7 +294,11 @@ class Process_alert(object):
     
     def start_adam(self, alert, t, channel):
         cmd = 'http://'+alert.adam.ip+'/digitaloutput/all/value'
-        r = requests.get(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"})
+        try:
+            r = requests.get(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, timeout=2)
+        except requests.exceptions.ConnectionError :
+            logger.warning('adam not responding on ip : {}'.format(alert.adam.ip))
+            return
         xml = ET.fromstring(r.text)
         adam_state = {}
         for state in xml.findall('DO'):
@@ -307,19 +311,23 @@ class Process_alert(object):
         for i in adam_state:
             data += "DO"+str(i)+"="+adam_state[i]+"&"
         try:    
-            r = requests.post(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, data=data)
+            r = requests.post(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, data=data, timeout=2)
+            if r.status_code == 200:
+                logger.warning('adam started on ip : {}'.format(alert.adam.ip))
+                logger.debug('with request : {} {} {} {}'.format(cmd,alert.adam.auth,alert.adam.password,data))
+                Alert_when(what='adam', who='', stuffs=alert.stuffs, action=alert.actions).save()       
         except requests.exceptions.ConnectionError :
             logger.warning('adam not responding on ip : {}'.format(alert.adam.ip))
             pass
         time.sleep(0.5)
-        if r.status_code == 200:
-            logger.warning('adam started on ip : {}'.format(alert.adam.ip))
-            logger.debug('with request : {} {} {} {}'.format(cmd,alert.adam.auth,alert.adam.password,data))
-            Alert_when(what='adam', who='', stuffs=alert.stuffs, action=alert.actions).save()       
-    
+       
     def stop_adam(self, alert, t, channel):
         cmd = 'http://'+alert.adam.ip+'/digitaloutput/all/value'
-        r = requests.get(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"})
+        try:
+            r = requests.get(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, timeout=2)
+        except requests.exceptions.ConnectionError :
+            logger.warning('adam not responding on ip : {}'.format(alert.adam.ip))
+            return
         xml = ET.fromstring(r.text)
         adam_state = {}
         for state in xml.findall('DO'):
@@ -332,28 +340,29 @@ class Process_alert(object):
         for i in adam_state:
             data += "DO"+str(i)+"="+adam_state[i]+"&" 
         try:
-            r = requests.post(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, data=data)
+            r = requests.post(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, data=data, timeout=2)
+            if r.status_code == 200:
+                logger.warning('adam stop on ip : {}'.format(alert.adam.ip))
+                logger.debug('with request : {} {} {} {}'.format(cmd,alert.adam.auth,alert.adam.password,data))
         except requests.exceptions.ConnectionError :
             logger.warning('adam not responding on ip : {}'.format(alert.adam.ip))
             pass
         time.sleep(0.5)
-        if r.status_code == 200:
-            logger.warning('adam stop on ip : {}'.format(alert.adam.ip))
-            logger.debug('with request : {} {} {} {}'.format(cmd,alert.adam.auth,alert.adam.password,data))
-    
+        
     def send_hook(self,alert,hook,t):
         url = hook.url
-        data = {'object': Alert.stuffs_d[alert.stuffs], 'action': Alert.actions_d[alert.actions], 'time':alert.when}
+        data = {'object': str(Alert.stuffs_d[alert.stuffs]), 'action': str(Alert.actions_d[alert.actions]), 'time':alert.when.strftime("%m/%d/%Y, %H:%M:%S")}
         headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
         try:
-            r = requests.post(url, data=json.dumps(data), headers=headers)
+            r = requests.post(url, data=json.dumps(data), headers=headers, timeout=2)
+            if r.status_code == 200:
+                logger.warning('hook send to : {}'.format(url))
+                logger.debug('with data : {}'.format(data))
+                Alert_when(what='hook', who=url, stuffs=alert.stuffs, action=alert.actions).save() 
         except requests.exceptions.ConnectionError :
             logger.warning('hook not responding on url : {}'.format(url))
             pass
-        if r.status_code == 200:
-            logger.warning('hook send to : {}'.format(url))
-            logger.debug('with data : {}'.format(data))
-            Alert_when(what='hook', who=url, stuffs=alert.stuffs, action=alert.actions).save() 
+        
         
         
     

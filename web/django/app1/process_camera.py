@@ -74,18 +74,24 @@ def get_list_same (l_old,l_under,thresh):
                     l_old_w.remove(e_old)
     return new_element
 
-def get_list_diff(l_new,l_old,thresh, flag):
-    while flag :
-        flag=False
-        for e_new, e_old  in ((w1, w2) for w1 in l_new for w2 in l_old) :
+def get_list_diff(l_new,l_old,thresh):
+    new_copy = l_new[:]
+    old_copy = l_old[:]
+    for e_new  in  l_new:
+        flag = False
+        limit_pos = thresh
+        for e_old in l_old:
             if e_new[0]==e_old[0] :
                 diff_pos = (sum([abs(i-j) for i,j in zip(e_new[2],e_old[2])]))
                 if diff_pos < thresh :
                     flag = True
-                    l_new.remove(e_new)
-                    l_old.remove(e_old)
-                    break
-    return l_new,l_old
+                    if diff_pos < limit_pos:
+                        limit_pos = diff_pos
+                        to_remove = (e_new,e_old)            
+        if flag:
+            new_copy.remove(to_remove[0])
+            old_copy.remove(to_remove[1])
+    return new_copy,old_copy
 
 def read_write(rw,*args):
     if rw=='r':
@@ -267,9 +273,7 @@ class ProcessCamera(Thread):
                 time.sleep(0.5)
 
     def base_condition(self,new):
-        l_new_w = new[:]
-        l_old_w = self.result_DB[:]
-        compare = get_list_diff(l_new_w,l_old_w,self.pos_sensivity,True)
+        compare = get_list_diff(new,self.result_DB,self.pos_sensivity)
         if len(compare[0])==0 and len(compare[1])==0 :
             return False
         else:

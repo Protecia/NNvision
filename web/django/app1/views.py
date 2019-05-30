@@ -10,6 +10,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
+from django.db.models import Count
 from .models import Camera, Result, Alert
 from .forms import AlertForm, AutomatForm, DAY_CODE_STR
 from .process_alert import stop_adam_all
@@ -46,7 +47,8 @@ def index(request):
     d_action = request.POST.get('d_action')
     if d_action == 'start' and len(process()[0])==0:
         Camera.objects.all().update(rec=True)
-        if settings.DEBUG:
+        #if settings.DEBUG:
+        if True:
             with open(os.path.join(settings.BASE_DIR,'process_camera.log'), 'w') as log:
                 Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')], 
                       stdout=log, stderr=STDOUT)
@@ -157,8 +159,8 @@ def panel(request, first, first_alert):
         imgs = Result.objects.all().order_by('-id')[first:first+12]
         imgs_alert = Result.objects.filter(alert=True).order_by('-id')[first_alert:first_alert+3]
     else :
-        imgs = Result.objects.filter(object__result_object__contains=filter_class).order_by('-id')[first:first+12]
-        imgs_alert = Result.objects.filter(alert=True, object__result_object__contains=filter_class).order_by('-id')[first_alert:first_alert+3]
+        imgs = Result.objects.filter(object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[first:first+12]
+        imgs_alert = Result.objects.filter(alert=True, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[first_alert:first_alert+3]
     img_array = [imgs[i:i + 3] for i in range(0, len(imgs), 3)]
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
     form = AlertForm()

@@ -23,6 +23,7 @@ from twilio.rest import Client
 from django.core.mail import EmailMessage
 from django.db import DatabaseError
 from socket import gaierror
+from twilio.base.exceptions import TwilioRestException
 
 
 
@@ -293,6 +294,10 @@ class Process_alert(object):
             sender ="+33757916187"
             body = " A {} just {}. Check the image : {} - {}".format(Alert.stuffs_d[alert.stuffs],
                        Alert.actions_d[alert.actions], self.public_site, t.astimezone(pytz.timezone('Europe/Paris')))
+            try:
+                client.messages.create(to=to, from_=sender,body=body)
+            except TwilioRestException:
+                pass
             client.messages.create(to=to, from_=sender,body=body)
             logger.warning('sms send to : {}'.format(to))
             Alert_when(what='sms', who='to', stuffs=alert.stuffs, action=alert.actions).save() 

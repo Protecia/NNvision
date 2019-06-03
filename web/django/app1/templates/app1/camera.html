@@ -18,7 +18,7 @@
 	<div class="row">
 	{% for res in row %}
 	<div class="large-4 columns">
-	<code id="robot-state" class="accesslog hljs"><h6>{{ res.name }}<small> - {{ res.url}}</small></h6><br>
+	<code id="robot-state" class="accesslog hljs"><h6>{{ res.name }}<small> - {% if res.stream %}{{ res.rtsp}}{% else %}{{ res.url}}{% endif %}</small></h6><br>
 	<a href='/camera/last/{{ res.id }}'><img src="/img/last/{{ res.id }}" id="img{{ res.id }}" height="150" ></a>  
 	</code>&nbsp;
 	</div>

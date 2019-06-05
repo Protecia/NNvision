@@ -352,11 +352,25 @@ def get_last_analyse_img(request,cam_id):
             continue
         response = HttpResponse(content_type='image/jpg')
         try:
-            im.resize((150 * im.size[0] / im.size[1],150), Image.ANTIALIAS)
+            im.thumbnail((300,300), Image.ANTIALIAS)
             im.save(response, 'JPEG')
             break
         except OSError:
             continue
     return response
 
-
+def thumbnail(request,path_im):
+    try :
+        im = Image.open(path_im)
+    except OSError:
+        pass
+    response = HttpResponse(content_type='image/jpg')
+    try:
+        im.thumbnail((500,500), Image.ANTIALIAS)
+        im.save(response, 'JPEG')
+    except OSError:
+        pass
+    return response
+    
+    
+    

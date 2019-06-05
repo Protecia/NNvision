@@ -24,6 +24,7 @@ if v[0] >=2 :
         url(r'^settings/wifi_restart/$', views.wifi_restart, name='wifi_restart'),
         path('camera/last/<int:cam>', views.last, name='last image'),
         path('img/last/<int:cam_id>', views.get_last_analyse_img, name='image'),
+        path('thumbnail/<path:path_im>', views.thumbnail, name='thumbnail'),
     ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     
 else :

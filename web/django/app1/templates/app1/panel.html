@@ -45,7 +45,7 @@
 		{% for img_alert in row_alert %}
 		<div class="large-4 columns">
 		<a class="th" href="/panel/detail/{{img_alert.id}}">
-			<img  style="border:5px solid red" src="{{img_alert.file2.url}}" alt="" height="100" >{{img_alert.time|date:'Y-m-d H:i:s'}}
+			<img  style="border:5px solid red" src="/thumbnail/{{img_alert.file2.path}}" alt=""  >{{img_alert.time|date:'Y-m-d H:i:s'}}
 		</a>
 		</div>
 		{% endfor %}
@@ -70,7 +70,7 @@
 		{% for img in row %}
 		<div class="large-4 columns">
 		<a href="/panel/detail/{{img.id}}">
-			<img {% if img.alert == True %} style="border:5px solid red" {% endif %} src="{{img.file2.url}}" alt="" height="100" >{{img.time|date:'Y-m-d H:i:s'}}
+			<img {% if img.alert == True %} style="border:5px solid red" {% endif %} src="/thumbnail/{{img.file2.path}}" alt=""  >{{img.time|date:'Y-m-d H:i:s'}}
 		</a>
 		</div>
 		{% endfor %}

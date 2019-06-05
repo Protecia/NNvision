@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
 from collections import Counter
 from twilio.rest import Client
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.db import DatabaseError
 from socket import gaierror
 
@@ -275,9 +275,14 @@ class Process_alert(object):
         body = " A {} just {}. Check the image : {} - {}".format(Alert.stuffs_d[alert.stuffs],
                    Alert.actions_d[alert.actions], self.public_site+'/warning/0', t.astimezone(pytz.timezone('Europe/Paris')))
         try:
-            send_mail('Subject here',body, sender,list_mail,fail_silently=False,)
-        except gaierror:
-            logger.warning('socket gaierror !!!! :')
+            message = EmailMessage( 'Protecia Alert !!!',
+                                    body,
+                                    sender,
+                                    list_mail)
+            message.attach_file(settings.MEDIA_ROOT+'/'+alert.img_name)
+            message.send(fail_silently=False,)
+        except (gaierror, FileNotFoundError) :
+            logger.warning('Error in send_mail !!!! :')
             pass
         logger.warning('mail send to : {}'.format(list_mail))
         Alert_when(what='mail', who=list_mail, stuffs=alert.stuffs, action=alert.actions).save() 
@@ -397,6 +402,7 @@ class Process_alert(object):
                         if not a.active:
                             a.active = True
                             a.when = t
+                            a.img_name = r.file2.name
                             a.save()           
                 
                 appear = cn-c
@@ -414,6 +420,7 @@ class Process_alert(object):
                         if not a.active:
                             a.active = True
                             a.when = t
+                            a.img_name = r.file2.name
                             a.save()
                                  
                 disappear = c-cn
@@ -431,6 +438,7 @@ class Process_alert(object):
                         if not a.active:
                             a.active = True
                             a.when = t
+                            a.img_name = r.file2.name
                             a.save()
                             
                 self.result = r

@@ -11,6 +11,8 @@
 <div class="row">
   <div class="large-10 columns">
     
+    
+    
 	
 	<div class="row">
 	<div class="large-10 columns">{% trans 'Alert settled' %}
@@ -45,18 +47,32 @@
       </label>
     </div>
     <div class="large-3 columns">
+      
+      <script language="JavaScript">
+function toggle(source) {
+  checkboxes = document.getElementsByName('camera');
+  for(var i=0, n=checkboxes.length;i<n;i++) {
+    checkboxes[i].checked = source.checked;
+  }
+}
+</script>
+      
+      
+      
       <fieldset class="inlineLabels">
-      <label>{% trans 'Camera :' %}</label>
+      <label>{% trans 'Camera' %} - <input type="checkbox" onClick="toggle(this)" >{% trans 'All' %}</label>
+    
+      
       {{form.camera}}
 	  </fieldset>
     </div>
 	<div class="large-3 columns">
-      <label>{% trans 'Action :' %}</label>
+      <label>{% trans 'Action' %} :</label>
 	  {{form.actions.0}}{{form.actions.1}}{{form.actions.2}}
 	  
     </div>
 	<div class="large-3 columns">
-      <label>{% trans 'Contact :' %}</label>
+      <label>{% trans 'Contact' %} :</label>
 	        <label for="{{form.sms.id_for_label}}">{{form.mail}}{{form.mail.label}}</label>
                 {% if no_free %}
                 <label for="{{form.sms.id_for_label}}">{{form.sms}}{{form.sms.label}}</label>

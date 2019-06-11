@@ -184,7 +184,7 @@ def alert(request, id=0, id2=-1):
         if typeForm == "alert": 
             form = AlertForm(request.POST)
             # check whether it's valid:
-            if form.is_valid():
+            if form.is_valid()  :
                 form.save()
                 return HttpResponseRedirect('/alert')
             else :
@@ -210,8 +210,6 @@ def alert(request, id=0, id2=-1):
                 return HttpResponseRedirect('/alert')
             else :
                 form = AlertForm()
-        
-
     # if a GET (or any other method) we'll create a blank form
     else:
         form = AlertForm()
@@ -229,7 +227,7 @@ def alert(request, id=0, id2=-1):
     auto = [(c.minute.render(), c.hour.render(), DAY_CODE_STR[c.dow.render()], c.command.split()[2]) for c in cron]
     #auto = [(a[0],a[1],DAY_CODE_STR[a[4]],a[-1]) for a in auto]
     return render(request, 'app1/alert.html', {'message' : form.non_field_errors,
-           'category' : 'warning','form': form, 'alert':alert, 'aform':aform,
+           'category' : 'warning','form': form, 'alert':alert, 'aform':aform, 
            'auto':auto, 'no_free':settings.ACCESS_NO_FREE, 'adam':settings.ACCESS_ADAM, 'hook':settings.ACCESS_HOOK, 'logo_client':settings.RESELLER_LOGO })
 
 @login_required

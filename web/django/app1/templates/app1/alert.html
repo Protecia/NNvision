@@ -14,7 +14,7 @@
 	
 	<div class="row">
 	<div class="large-10 columns">{% trans 'Alert settled' %}
-	{% for res in alert %}<code id="robot-state" class="accesslog hljs"> {{ res.get_stuffs_display }} {{ res.get_actions_display }} --->  {% if res.mail %}Mail{% endif %}
+	{% for res in alert %}<code id="robot-state" class="accesslog hljs"> {{ res.get_stuffs_display }} {{ res.get_actions_display }} ({% for cam in res.camera.all %} {{cam.name}} {% endfor %})  --->  {% if res.mail %}Mail{% endif %}
                                                                                                                                          {% if res.sms %}Sms{% endif %}
                                                                                                                                          {% if res.call %}call{% endif %}
                                                                                                                                          {% if res.alarm %}Alarm{% endif %}
@@ -44,13 +44,19 @@
         {{form.stuffs}}
       </label>
     </div>
+    <div class="large-3 columns">
+      <fieldset class="inlineLabels">
+      <label>{% trans 'Camera :' %}</label>
+      {{form.camera}}
+	  </fieldset>
+    </div>
 	<div class="large-3 columns">
-      <label>Action</label>
+      <label>{% trans 'Action :' %}</label>
 	  {{form.actions.0}}{{form.actions.1}}{{form.actions.2}}
 	  
     </div>
 	<div class="large-3 columns">
-      <label>Contact</label>
+      <label>{% trans 'Contact :' %}</label>
 	        <label for="{{form.sms.id_for_label}}">{{form.mail}}{{form.mail.label}}</label>
                 {% if no_free %}
                 <label for="{{form.sms.id_for_label}}">{{form.sms}}{{form.sms.label}}</label>
@@ -63,10 +69,7 @@
 	            
       
     </div>
-	<div class="large-3 columns">
-	<br>
-	<button type="submit" name="valid_alert" value="ok" class="button large">{% trans 'Add Alert' %}</button>
-	</div></div>
+	</div>
     
     <div class="row" >
     
@@ -74,28 +77,31 @@
 	
   </div>{% if adam %}{% if form.adam|length > 0 %}<hr size="1" color="blue">
   <div class="row" >
-   <fieldset class="inlineLabels">
-   <div  class="large-2 columns">
-      <label>Adam box</label>
-	  
+    <fieldset class="inlineLabels">
+    <div  class="large-2 columns">
+      <label>{% trans 'Adam box :' %}</label>
 	  {{form.adam}}
     </div>
-       <div  class="large-2 columns">  
-         <label for="{{form.adam_channel_0.id_for_label}}">{{form.adam_channel_0}}{{form.adam_channel_0.label}}</label>
-         <label for="{{form.adam_channel_1.id_for_label}}">{{form.adam_channel_1}}{{form.adam_channel_1.label}}</label>
-         <label for="{{form.adam_channel_2.id_for_label}}">{{form.adam_channel_2}}{{form.adam_channel_2.label}}</label>
-         </div>
-         <div  class="large-7 columns">       
-         <label for="{{form.adam_channel_3.id_for_label}}">{{form.adam_channel_3}}{{form.adam_channel_3.label}}</label>
-         <label for="{{form.adam_channel_4.id_for_label}}">{{form.adam_channel_4}}{{form.adam_channel_4.label}}</label>
-         <label for="{{form.adam_channel_5.id_for_label}}">{{form.adam_channel_5}}{{form.adam_channel_5.label}}</label>
-         
-         </div>
-         
-         
-         </fieldset> 
+    <div  class="large-2 columns">  
+      <label for="{{form.adam_channel_0.id_for_label}}">{{form.adam_channel_0}}{{form.adam_channel_0.label}}</label>
+      <label for="{{form.adam_channel_1.id_for_label}}">{{form.adam_channel_1}}{{form.adam_channel_1.label}}</label>
+      <label for="{{form.adam_channel_2.id_for_label}}">{{form.adam_channel_2}}{{form.adam_channel_2.label}}</label>
+      </div>
+      <div  class="large-7 columns">       
+      <label for="{{form.adam_channel_3.id_for_label}}">{{form.adam_channel_3}}{{form.adam_channel_3.label}}</label>
+      <label for="{{form.adam_channel_4.id_for_label}}">{{form.adam_channel_4}}{{form.adam_channel_4.label}}</label>
+      <label for="{{form.adam_channel_5.id_for_label}}">{{form.adam_channel_5}}{{form.adam_channel_5.label}}</label>   
+    </div>   
+    </fieldset> 
   </div>{% endif %}{% endif %}
-  </form></div></div>
+  <div class="row" >
+    <div class="large-5 large-centered columns">
+	
+	<button type="submit" name="valid_alert" value="ok" class="button large expanded">{% trans 'Add Alert' %}</button>
+  </div>
+</div>
+
+</form></div></div>
  
  
 	
@@ -152,7 +158,8 @@
 
  </div>
 </div>
-<br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br>
+<br><br><br><br><br><br><br><br>
 {% endblock content %}
 
 {% block endscript %}

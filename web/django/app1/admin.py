@@ -12,8 +12,10 @@ class CameraAdmin(admin.ModelAdmin):
 admin.site.register(Camera, CameraAdmin)
 admin.site.register(Profile)
 admin.site.register(Alert_info)
-admin.site.register(Alert_adam)
-admin.site.register(Alert_hook)
+if settings.ACCESS_ADAM:
+    admin.site.register(Alert_adam)
+if settings.ACCESS_HOOK:
+    admin.site.register(Alert_hook)
 
 if settings.DEBUG:
     admin.site.register(Result)

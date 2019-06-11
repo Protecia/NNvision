@@ -75,7 +75,7 @@ class Camera(models.Model):
         return "rtsp://"+self.rtsp.split('@')[1]
 
     def __str__(self):
-        return 'id : {} - name : {} - url : {}'.format(self.id, self.name, self.url)
+        return '{} - {}'.format(self.id, self.name)
 
 # Informations about the detection of the cameras
 @python_2_unicode_compatible  # only if you need to support Python 2
@@ -190,17 +190,13 @@ class Alert(models.Model):
     when = models.DateTimeField(default=datetime(year=2000,month=1,day=1))
     key = models.CharField(max_length=10, default='', blank=True)
     img_name = models.CharField(max_length=50, default='', blank=True)
+    camera = models.ManyToManyField(Camera,   blank=True)
     class Meta:
         unique_together = ('stuffs', 'actions')
         
     def __str__(self):
         return 'action : {} / object : {} '.format(Alert.actions_d[self.actions],
                          Alert.stuffs_d[self.stuffs])
-
-class AlertCamera(models.Model):
-    alert = models.ForeignKey(Alert, on_delete=models.CASCADE, null =True, blank=True)
-    camera = models.ForeignKey(Camera, on_delete=models.CASCADE, null =True, blank=True)
-
 
 ALERT_CHOICES = (('mail','mail'),
                    ('sms','sms'),

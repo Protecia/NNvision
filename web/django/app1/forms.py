@@ -6,20 +6,13 @@ Created on Tue Mar 13 12:32:32 2018
 """
 
 from django import forms
-from .models import Alert, Alert_adam, AlertCamera, Camera
+from .models import Alert, Alert_adam, Camera
 from django.utils.translation import ugettext_lazy as _
 
-'''
-class AlertCameraForm(forms.ModelForm):
-    camera = forms.ModelMultipleChoiceField(queryset=Camera.objects, empty_label='rien')
-   
-    class Meta:
-        model = AlertCamera
-        fields = ['camera',]
-'''
-        
+
 class AlertForm(forms.ModelForm):
     adam = forms.ModelChoiceField(queryset=Alert_adam.objects, empty_label=None, widget=forms.RadioSelect, required=False)
+    camera = forms.ModelMultipleChoiceField(queryset=Camera.objects, widget=forms.CheckboxSelectMultiple, required=False )
    
     def clean(self):
         cleaned_data = super().clean()
@@ -40,7 +33,7 @@ class AlertForm(forms.ModelForm):
                 
     class Meta:
         model = Alert
-        fields = ['stuffs', 'actions','sms','call','alarm','mail','hook','adam',
+        fields = ['camera','stuffs', 'actions','sms','call','alarm','mail','hook','adam',
                   'adam_channel_0','adam_channel_1','adam_channel_2','adam_channel_3','adam_channel_4','adam_channel_5']
         widgets = {
             'actions': forms.RadioSelect(),

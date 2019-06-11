@@ -6,13 +6,21 @@ Created on Tue Mar 13 12:32:32 2018
 """
 
 from django import forms
-from .models import Alert, Alert_adam
+from .models import Alert, Alert_adam, AlertCamera, Camera
 from django.utils.translation import ugettext_lazy as _
 
-
+'''
+class AlertCameraForm(forms.ModelForm):
+    camera = forms.ModelMultipleChoiceField(queryset=Camera.objects, empty_label='rien')
+   
+    class Meta:
+        model = AlertCamera
+        fields = ['camera',]
+'''
+        
 class AlertForm(forms.ModelForm):
     adam = forms.ModelChoiceField(queryset=Alert_adam.objects, empty_label=None, widget=forms.RadioSelect, required=False)
-    
+   
     def clean(self):
         cleaned_data = super().clean()
         adam = cleaned_data.get("adam")

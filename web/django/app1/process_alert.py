@@ -379,7 +379,7 @@ class Process_alert(object):
     
     def run(self,_time):
         while(self.running):
-            check_space(300)   
+            check_space(settings.SPACE_LEFT)   
             #get last objects
             o = Object.objects.filter(result=self.result)
             c = Counter([i.result_object for i in o])
@@ -459,7 +459,7 @@ def main():
     sb = os.statvfs(settings.MEDIA_ROOT)
     sm = sb.f_bavail * sb.f_frsize / 1024 / 1024
     logger.warning('space left is  {} MO'.format(sm))
-    check_space(300)
+    check_space(settings.SPACE_LEFT)
     process_alert=Process_alert()
     print("Waiting...")
     process_alert.wait(settings.WAIT_BEFORE_DETECTION)

@@ -70,6 +70,9 @@ class Camera(models.Model):
     width = models.IntegerField(default = 1280)
     height = models.IntegerField(default = 720)
     pos_sensivity = models.IntegerField(default = 150)
+    
+    def secure_rtsp(self):
+        return "rtsp://"+self.rtsp.split('@')[1]
 
     def __str__(self):
         return 'id : {} - name : {} - url : {}'.format(self.id, self.name, self.url)
@@ -193,6 +196,11 @@ class Alert(models.Model):
     def __str__(self):
         return 'action : {} / object : {} '.format(Alert.actions_d[self.actions],
                          Alert.stuffs_d[self.stuffs])
+
+class AlertCamera(models.Model):
+    alert = models.ForeignKey(Alert, on_delete=models.CASCADE, null =True, blank=True)
+    camera = models.ForeignKey(Camera, on_delete=models.CASCADE, null =True, blank=True)
+
 
 ALERT_CHOICES = (('mail','mail'),
                    ('sms','sms'),

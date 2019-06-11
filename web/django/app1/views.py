@@ -352,7 +352,7 @@ def get_last_analyse_img(request,cam_id):
             continue
         response = HttpResponse(content_type='image/jpg')
         try:
-            im.thumbnail((300,300), Image.ANTIALIAS)
+            im.thumbnail((settings.IMAGE_REAL_TIME_MAX_WIDTH,settings.IMAGE_REAL_TIME_MAX_HIGH), Image.ANTIALIAS)
             im.save(response, 'JPEG')
             break
         except OSError:
@@ -362,14 +362,13 @@ def get_last_analyse_img(request,cam_id):
 def thumbnail(request,path_im):
     try :
         im = Image.open(path_im)
-    except OSError:
+    except OSError :
+        path_img_broken = os.path.join(settings.STATIC_ROOT,'app1','img','image-not-found.jpg')
+        im = Image.open(path_img_broken)
         pass
     response = HttpResponse(content_type='image/jpg')
-    try:
-        im.thumbnail((500,500), Image.ANTIALIAS)
-        im.save(response, 'JPEG')
-    except OSError:
-        pass
+    im.thumbnail((settings.IMAGE_PANEL_MAX_WIDTH,settings.IMAGE_PANEL_MAX_HIGHT), Image.ANTIALIAS)
+    im.save(response, 'JPEG')
     return response
     
     

@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 class Config(models.Model):
     dataset = models.CharField(max_length=50, unique=True, blank=True, null=True )
-    size = models.SmallIntegerField()
+    size = models.SmallIntegerField(default=0)
     name = models.CharField(max_length=200, blank=True )
     ratio = models.FloatField(default = 1)
     valid = models.BooleanField(default=False)
@@ -15,7 +15,7 @@ class Config(models.Model):
 
     
 class Image(models.Model):
-    config = models.ForeignKey(Config, on_delete=models.CASCADE)
+    config = models.ForeignKey(Config, on_delete=models.CASCADE, default=None)
     name = models.CharField(max_length=200)
     time = models.DateTimeField(auto_now=False, blank=True, null=True)
     process = models.SmallIntegerField()

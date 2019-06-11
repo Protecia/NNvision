@@ -103,17 +103,18 @@ class ProcessCamera(Thread):
     def grab(self):
         self.vcap = cv2.VideoCapture(self.cam.rtsp)
         self.running_rtsp = self.vcap.isOpened()
+        cs.logger.warning('openning videocapture {} is {}'.format(self.vcap, self.vcap.isOpened()))
         i=15
-        j=0
+        bad_read = 0
         while self.running_rtsp :
             if i==15:
                 date = time.strftime("%Y-%m-%d-%H-%M-%S")
                 ret, frame = self.vcap.read()
-                self.running_rtsp = ret
-                cs.logger.debug("resultat de la lecture {} rtsp : {} ".format(j,ret))
+                cs.logger.debug("resultat de la lecture rtsp : {} ".format(ret))
                 cs.logger.debug('*** {}'.format(date))
                 t = time.time()
                 if ret and len(frame)>100 :
+                    bad_read = 0
                     if self.cam.reso:
                         if frame.shape[0]!=self.cam.height or frame.shape[1]!=self.cam.width:
                             frame = cv2.resize(frame,(self.cam.width, self.cam.height), interpolation = cv2.INTER_CUBIC)
@@ -122,10 +123,24 @@ class ProcessCamera(Thread):
                         self.request_OK = True
                     cs.logger.debug("resultat de l'ecriture de la frame : {} en {} ".format(
                             self.request_OK,time.time()-t))
+                else :
+                    self.request_OK = False
+                    cs.logger.warning('Bad rtsp read on {} videocapture is {}'.format(self.cam.name,self.vcap.isOpened()))
+                    self.running_rtsp = self.vcap.isOpened()
+                    bad_read+=1
+                    if bad_read > 10:
+                        break
+                    time.sleep(0.5)
                 i=0
-            i+=1
-            j+=1
             self.vcap.grab()
+            i+=1
+        with self.lock:
+            self.vcap.release()
+            cs.logger.warning('VideoCapture close on {}'.format(self.cam.name))
+            self.running_rtsp = False
+            time.sleep(5)
+            
+            
         
 
     def run(self):
@@ -158,10 +173,16 @@ class ProcessCamera(Thread):
             #*****************************Grab image in rtsp **********************************
             else :
                 if not self.running_rtsp :
-                    cs.logger.info('rtsp not running, so launch '.format(
-                                     time.time()-t))
-                    self.thread_rtsp = Thread(target=self.grab)
-                    self.thread_rtsp.start()
+                    with self.lock:
+                        try :
+                            self.thread_rtsp.join()
+                            cs.logger.warning('close thread {} '.format(self.thread_rtsp))
+                        except AttributeError:
+                            pass
+                        cs.logger.warning('rtsp not running on cam {}, so launch '.format(self.cam.name))
+                        self.thread_rtsp = Thread(target=self.grab)
+                        self.thread_rtsp.start()
+                        self.running_rtsp = True
             #*************************************************************************************    
             t=time.time()
             # Normal stop point for ip camera-------------------------------

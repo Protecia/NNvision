@@ -21,7 +21,7 @@ from logging.handlers import RotatingFileHandler
 from collections import Counter
 from twilio.rest import Client
 from django.core.mail import EmailMessage
-from django.db import DatabaseError
+#from django.db import DatabaseError
 from socket import gaierror
 from twilio.base.exceptions import TwilioRestException
 
@@ -56,17 +56,18 @@ client = Client(account_sid, auth_token)
 # a simple config to create a file log - change the level to warning in
 # production
 #------------------------------------------------------------------------------
-if settings.DEBUG : 
-    level=logging.DEBUG
-else:
-    level=logging.WARNING
-logger = logging.getLogger()
-logger.setLevel(level)
-formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-file_handler = RotatingFileHandler(os.path.join(settings.BASE_DIR,'alert.log'), 'a', 10000000, 1)
-file_handler.setLevel(level)
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
+if __name__ == '__main__':
+    if settings.DEBUG : 
+        level=logging.DEBUG
+    else:
+        level=logging.WARNING
+    logger = logging.getLogger()
+    logger.setLevel(level)
+    formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+    file_handler = RotatingFileHandler(os.path.join(settings.BASE_DIR,'alert.log'), 'a', 10000000, 1)
+    file_handler.setLevel(level)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
 #stream_handler = logging.StreamHandler()
 #stream_handler.setLevel(level)
 #logger.addHandler(stream_handler)
@@ -78,6 +79,7 @@ def old(query):
         return datetime(2000,1,1,tzinfo=pytz.utc)
     
     
+'''
 def TryCatch(func):
     def wrapper(*args, **kwargs):
         try:
@@ -85,7 +87,7 @@ def TryCatch(func):
         except DatabaseError :
            logger.warning('>>>>>>>>> Error in database <<<<<<<<<<<')
     return wrapper
-
+'''
 
 
 def purge_files():
@@ -104,7 +106,6 @@ def purge_files():
              if os.path.getctime(file) < time_older :
                  os.remove(file)
 
-@TryCatch
 def check_space(mo):
         ##### check the space on disk to avoid filling the sd card #######
         sb = os.statvfs(settings.MEDIA_ROOT)
@@ -172,12 +173,12 @@ class Process_alert(object):
                         a.save()           
 
     
-    @TryCatch    
+  
     def wait(self,_time):
         i=0
         wait=True
         while wait:
-            check_space(300)
+            check_space(settings.SPACE_LEFT)
             logger.info('start waiting for no detection : {}s'.format(i))
             rn = Result.objects.all().last()
             if rn == None:
@@ -191,6 +192,7 @@ class Process_alert(object):
             if i>_time : 
                 wait=False
                 logger.info('waiting {} s, end loop'.format(_time))
+
 
 #-------------------- this function send alert when necessary ----------------------------
     # alert is retrieve from models.Alert

@@ -16,7 +16,9 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
-
+admin.site.site_header = "Protecia Admin"
+admin.site.site_title = "Protecia Admin"
+admin.site.index_title = "Manage cameras, users and alert :"
 
 urlpatterns = [
     url(r'^', include('app1.urls')),

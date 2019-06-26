@@ -73,7 +73,7 @@ class METADATA(Structure):
                 ("names", POINTER(c_char_p))]
 
 
-lib = CDLL("/NNvision/darknet_alex_201903/libdarknet.so", RTLD_GLOBAL)
+lib = CDLL("/NNvision/darknet_alex_201906/libdarknet.so", RTLD_GLOBAL)
 lib.network_width.argtypes = [c_void_p]
 lib.network_width.restype = c_int
 lib.network_height.argtypes = [c_void_p]
@@ -211,7 +211,7 @@ def detect_image(net, meta, im, thresh=.5, hier_thresh=.5, nms=.45, debug= False
     num = pnum[0]
     if debug: print("got zeroth index of pnum")
     if nms:
-        do_nms_sort(dets, num, meta.classes, nms)
+        do_nms_obj(dets, num, meta.classes, nms)
     if debug: print("did sort")
     res = []
     if debug: print("about to range")

@@ -80,14 +80,13 @@ WSGI_APPLICATION = 'projet.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'database', 'db.sqlite3'),
-        'OPTIONS': {
-            'timeout': 10,  # in seconds
-            # see also
-            # https://docs.python.org/3.7/library/sqlite3.html#sqlite3.connect
-        }
-    }
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'protecia',
+        'USER': 'djdb',
+        'PASSWORD': 'protecia',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
+     }
 }
 
 
@@ -161,8 +160,8 @@ ACCOUNT_SID = "AC445238ce002d1c440c77883963183c04"
 # Your Auth Token from twilio.com/console
 AUTH_TOKEN  = "97c36acf2c85e62436181e878305f982"
 
-VERSION='1.0.4'
-DARKNET_PATH='/NNvision/darknet_alex_201903'
+VERSION='2.0'
+DARKNET_PATH='/NNvision/darknet_alex_201906'
 THREATED_REQUESTS=True
 PUBLIC_SITE='http://'
 ACCESS_NO_FREE = True
@@ -172,7 +171,7 @@ WAIT_BEFORE_DETECTION = 20
 DATASET_TEST = False
 SPACE_LEFT = 300 # en Mo
 IMAGE_PANEL_MAX_WIDTH = 300  # pixels
-IMAGE_PANEL_MAX_HEIGHT = 300
+IMAGE_PANEL_MAX_HIGHT = 300
 IMAGE_REAL_TIME_MAX_WIDTH = 300
 IMAGE_REAL_TIME_MAX_HIGH = 300
 

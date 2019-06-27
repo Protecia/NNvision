@@ -176,4 +176,5 @@ IMAGE_REAL_TIME_MAX_WIDTH = 300
 IMAGE_REAL_TIME_MAX_HIGH = 300
 
 RESELLER_LOGO = 'logo-telegil.png'  # None if you want nothing
+USER_LANGUAGE = 'fr'
  

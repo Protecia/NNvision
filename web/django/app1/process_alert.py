@@ -21,6 +21,8 @@ from logging.handlers import RotatingFileHandler
 from collections import Counter
 from twilio.rest import Client
 from django.core.mail import EmailMessage
+from django.utils.translation import gettext as _
+from django.utils.translation import activate 
 #from django.db import DatabaseError
 from socket import gaierror
 from twilio.base.exceptions import TwilioRestException
@@ -275,8 +277,8 @@ class Process_alert(object):
         for u in self.user :
             list_mail.append(u.user.email)
         sender ="contact@protecia.com"
-        body = " A {} just {}. Check the image : {} - {}".format(Alert.stuffs_d[alert.stuffs],
-                   Alert.actions_d[alert.actions], self.public_site+'/warning/0', t.astimezone(pytz.timezone('Europe/Paris')))
+        body = " A {} just {}. ".format(Alert.stuffs_d[alert.stuffs], Alert.actions_d[alert.actions])
+        body += "<br>"+_("Check the image")+" : {} - {}".format(self.public_site+'/warning/0', t.astimezone(pytz.timezone('Europe/Paris')))
         try:
             message = EmailMessage( 'Protecia Alert !!!',
                                     body,
@@ -457,6 +459,7 @@ class Process_alert(object):
 
 
 def main():
+    activate(settings.USER_LANGUAGE)
     purge_files()
     sb = os.statvfs(settings.MEDIA_ROOT)
     sm = sb.f_bavail * sb.f_frsize / 1024 / 1024

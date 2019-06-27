@@ -5,7 +5,7 @@
 <div class="row">
 <div class="large-15 columns">
   <div class="large-7 columns"><br>
-    <h1 class="section-title" style="display : inline">Images </h1><h5 style="display : inline" >(showing {{class}} objects)</h5>
+    <h1 class="section-title" style="display : inline">Images </h1><h5 style="display : inline" >({% trans 'Filter' %} :  {% trans {{class}} %})</h5>
   </div><br>
 <div class="large-5 columns" style="border: 1px solid #466d98;">
 
@@ -35,7 +35,7 @@
 <br>
 <div class="row">
   <div class="large-15 columns" style="border: 1px solid #466d98;">
-    <h3> Last alert :  </h3>
+    <h3>{% trans 'Last alert' %} :  </h3>
 	<div align="right">
 	{% if first_alert >= 3 %}<a href="/panel/{{first}}/{{first_alert|add:-3}}" class="button tiny">&laquo; previous</a>{% endif %}
 	<a href="/panel/{{first}}/{{first_alert|add:3}}" class="button tiny">next &raquo;</a></div>
@@ -61,7 +61,7 @@
 <a id="detection"></a>
 <div class="row"><a name="detection"></a>
   <div class="large-15 columns" style="border: 1px solid #466d98;">
-    <h3> Last detection :  </h3>
+    <h3>{% trans 'Last detection' %} :  </h3>
 	<div align="right">
 	{% if first >= 12 %}<a href="/panel/{{first|add:-12}}/{{first_alert}}#detection" class="button tiny">&laquo; previous</a>{% endif %}
 	<a href="/panel/{{first|add:12}}/{{first_alert}}#detection" class="button tiny">next &raquo;</a></div>

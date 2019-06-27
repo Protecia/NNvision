@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-27 10:32+0200\n"
+"POT-Creation-Date: 2019-06-27 11:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -242,17 +242,31 @@ msgstr "Action :"
 msgid "Add automat"
 msgstr "Ajouter un automatisme"
 
+#: app1/templates/app1/panel.html:8
+#| msgid "Add filter"
+msgid "Filter"
+msgstr "Filtre"
+
 #: app1/templates/app1/panel.html:15
 msgid "Select display object"
 msgstr "Selectionnez l'objet à détecter"
 
 #: app1/templates/app1/panel.html:21
 msgid "Add filter"
-msgstr "Ajouter une alerte"
+msgstr "Ajouter un filtre"
 
 #: app1/templates/app1/panel.html:25
 msgid "Reset filter"
-msgstr "Supprimer le filtre"
+msgstr "Suppr. le filtre"
+
+#: app1/templates/app1/panel.html:38
+#| msgid "delete alert"
+msgid "Last alert"
+msgstr "Dernières alertes"
+
+#: app1/templates/app1/panel.html:64
+msgid "Last detection"
+msgstr "Dernières détections"
 
 #: projet/settings.py:117
 msgid "English"

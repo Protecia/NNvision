@@ -189,7 +189,7 @@ class Alert(models.Model):
     active = models.BooleanField(default=False)
     when = models.DateTimeField(default=datetime(year=2000,month=1,day=1))
     key = models.CharField(max_length=10, default='', blank=True)
-    img_name = models.CharField(max_length=50, default='', blank=True)
+    img_name = models.CharField(max_length=100, default='', blank=True)
     camera = models.ManyToManyField(Camera,   blank=True)
     class Meta:
         unique_together = ('stuffs', 'actions')

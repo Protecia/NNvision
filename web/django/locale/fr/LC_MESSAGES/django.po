@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-27 11:09+0200\n"
+"POT-Creation-Date: 2019-06-27 17:55+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -167,8 +167,24 @@ msgid "present"
 msgstr "est présent"
 
 #: app1/process_alert.py:281
-msgid "Check the image"
-msgstr "Vérifiez l'image"
+#| msgid "Last detection"
+msgid "Origin of detection"
+msgstr "Origine de la détection"
+
+#: app1/process_alert.py:281
+#| msgid "Last detection"
+msgid "Type of detection"
+msgstr "Type de détection"
+
+#: app1/process_alert.py:282
+#| msgid "Last detection"
+msgid "Time of detection"
+msgstr "Heure de la détection"
+
+#: app1/process_alert.py:283
+#| msgid "Check the image"
+msgid "Please check the images"
+msgstr "Vérifiez les images"
 
 #: app1/templates/app1/alert.html:7
 msgid "Alert"
@@ -243,7 +259,6 @@ msgid "Add automat"
 msgstr "Ajouter un automatisme"
 
 #: app1/templates/app1/panel.html:8
-#| msgid "Add filter"
 msgid "Filter"
 msgstr "Filtre"
 
@@ -260,7 +275,6 @@ msgid "Reset filter"
 msgstr "Suppr. le filtre"
 
 #: app1/templates/app1/panel.html:38
-#| msgid "delete alert"
 msgid "Last alert"
 msgstr "Dernières alertes"
 

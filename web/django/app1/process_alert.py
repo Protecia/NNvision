@@ -273,24 +273,28 @@ class Process_alert(object):
             
             
     def send_mail(self, alert,t):
+        activate(settings.USER_LANGUAGE)
         list_mail = []
         for u in self.user :
             list_mail.append(u.user.email)
         sender ="contact@protecia.com"
-        body = " A {} just {}. ".format(Alert.stuffs_d[alert.stuffs], Alert.actions_d[alert.actions])
-        body += "<br>"+_("Check the image")+" : {} - {}".format(self.public_site+'/warning/0', t.astimezone(pytz.timezone('Europe/Paris')))
+        body = _("Origin of detection") +"  : {}".format(Alert.stuffs_d[alert.stuffs])+"   ---  "+_("Type of detection")+" :  {}".format(Alert.actions_d[alert.actions])
+        body += "<br>"+_("Time of detection")+" : {:%d-%m-%Y - %H:%M:%S}".format(t.astimezone(pytz.timezone(settings.TIME_ZONE)))
+        body += "<br>"+_("Please check the images")+" : {} ".format(self.public_site+'/warning/0')
         try:
             message = EmailMessage( 'Protecia Alert !!!',
                                     body,
                                     sender,
                                     list_mail)
+            message.content_subtype = "html"
             message.attach_file(settings.MEDIA_ROOT+'/'+alert.img_name)
             message.send(fail_silently=False,)
         except (gaierror, FileNotFoundError) :
             logger.warning('Error in send_mail !!!! :')
             pass
         logger.warning('mail send to : {}'.format(list_mail))
-        Alert_when(what='mail', who=list_mail, stuffs=alert.stuffs, action=alert.actions).save() 
+        Alert_when(what='mail', who=list_mail, stuffs=alert.stuffs, action=alert.actions).save()
+        activate('en')
             
     def send_sms(self, alert,t):
         for u in self.user :
@@ -459,7 +463,7 @@ class Process_alert(object):
 
 
 def main():
-    activate(settings.USER_LANGUAGE)
+    activate('en')
     purge_files()
     sb = os.statvfs(settings.MEDIA_ROOT)
     sm = sb.f_bavail * sb.f_frsize / 1024 / 1024

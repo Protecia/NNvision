@@ -33,8 +33,8 @@ RUN cd opencv-3.4.4 && mkdir build && cd build && \
     make -j8 && make install && ln -s /usr/local/python/cv2/python-3.6/cv2.cpython-36m-x86_64-linux-gnu.so /usr/local/lib/python3.6/dist-packages/cv2.so && ldconfig \
     && cd ../.. && rm -rf opencv-3.4.4/ opencv_contrib-3.4.4/
 
-RUN cd darknet_alex_201906 && make -s -j8 --no-print-directory && \
-    rm -rf 3rdparty build backup cmake include scripts src results obj && rm a* b* C* DarknetC* i* j* L* M* n* R* v*  u* 
+RUN cd darknet_pjreddie_201906 && make -s -j8 --no-print-directory && \
+    rm -rf backup include scripts src results examples && rm L* M* R*
 
 # Activate mod_wsgi
 RUN tar  xvfz mod_wsgi-4.6.5.tar.gz && rm mod_wsgi-4.6.5.tar.gz && cd mod_wsgi-4.6.5 && \

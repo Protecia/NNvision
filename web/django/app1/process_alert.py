@@ -27,8 +27,6 @@ from django.utils.translation import activate
 from socket import gaierror
 from twilio.base.exceptions import TwilioRestException
 
-
-
 #------------------------------------------------------------------------------
 # Because this script have to be run in a separate process from manage.py
 # you need to set up a Django environnement to use the Class defined in
@@ -79,8 +77,7 @@ def old(query):
         return query.when
     else:
         return datetime(2000,1,1,tzinfo=pytz.utc)
-    
-    
+     
 '''
 def TryCatch(func):
     def wrapper(*args, **kwargs):
@@ -90,7 +87,6 @@ def TryCatch(func):
            logger.warning('>>>>>>>>> Error in database <<<<<<<<<<<')
     return wrapper
 '''
-
 
 def purge_files():
     r = Result.objects.all().order_by('time')
@@ -140,7 +136,6 @@ def stop_adam_all():
             pass
         time.sleep(0.5)
         
-
 class Process_alert(object):
     def __init__(self):
         self.user = Profile.objects.filter(alert=True).select_related()
@@ -158,24 +153,27 @@ class Process_alert(object):
             o = Object.objects.filter(result=result)
             c = Counter([i.result_object for i in o])
             logger.info('getting last object init : {}'.format(c))
-            for s in c :
-                a=False
-                object_present = Alert.stuffs_reverse.get(s)
-                if object_present :
-                    a = Alert.objects.filter(stuffs=object_present, 
-                                         actions=Alert.actions_reverse['present']).first()
-                if a :
-                    logger.info('present init alert : {}'.format(a))
-                    result.alert= True
-                    result.save()
-                    t = result.time
-                    if not a.active:
-                        a.active = True
-                        a.when = t
-                        a.save()           
+            self.check_alert(result, 'present init',c)
 
+    def check_alert(self, result, alert_type, object_counter):
+            for s in object_counter :
+                    a=False
+                    object_present = Alert.stuffs_reverse.get(s)
+                    if object_present :
+                        a = Alert.objects.filter(stuffs=object_present, 
+                                                 actions=Alert.actions_reverse['present'],
+                                                 camera=result.camera).first()
+                    if a :
+                        logger.info(alert_type+' alert : {}'.format(a))
+                        result.alert= True
+                        result.save()
+                        t = result.time
+                        if not a.active:
+                            a.active = True
+                            a.when = t
+                            a.img_name = result.file2.name
+                            a.save()
     
-  
     def wait(self,_time):
         i=0
         wait=True
@@ -194,7 +192,6 @@ class Process_alert(object):
             if i>_time : 
                 wait=False
                 logger.info('waiting {} s, end loop'.format(_time))
-
 
 #-------------------- this function send alert when necessary ----------------------------
     # alert is retrieve from models.Alert
@@ -264,14 +261,9 @@ class Process_alert(object):
                                                      action=alert.actions).last())
                     if t-last > hook.resent :
                         logger.debug('>>>>>>> go to send hook <<<<<<<<<<<')
-                        self.send_hook(alert,hook, t)
-                
-                
+                        self.send_hook(alert,hook, t)        
 #############################################################################################
                     
-            
-            
-            
     def send_mail(self, alert,t):
         activate(settings.USER_LANGUAGE)
         list_mail = []
@@ -297,18 +289,21 @@ class Process_alert(object):
         activate('en')
             
     def send_sms(self, alert,t):
+        activate(settings.USER_LANGUAGE)
         for u in self.user :
             to = u.phone_number
             sender ="+33757916187"
-            body = " A {} just {}. Check the image : {} - {}".format(Alert.stuffs_d[alert.stuffs],
-                       Alert.actions_d[alert.actions], self.public_site, t.astimezone(pytz.timezone('Europe/Paris')))
+            body = _("Origin of detection") +"  : {}".format(Alert.stuffs_d[alert.stuffs])+"   ---  "+_("Type of detection")+" :  {}".format(Alert.actions_d[alert.actions])
+            body += "\n"+_("Time of detection")+" : {:%d-%m-%Y - %H:%M:%S}".format(t.astimezone(pytz.timezone(settings.TIME_ZONE)))
+            body += "n"+_("Please check the images")+" : {} ".format(self.public_site+'/warning/0')
             try:
                 client.messages.create(to=to, from_=sender,body=body)
             except TwilioRestException:
                 pass
             client.messages.create(to=to, from_=sender,body=body)
             logger.warning('sms send to : {}'.format(to))
-            Alert_when(what='sms', who='to', stuffs=alert.stuffs, action=alert.actions).save() 
+            Alert_when(what='sms', who='to', stuffs=alert.stuffs, action=alert.actions).save()
+        activate('en')
     
     def start_adam(self, alert, t, channel):
         cmd = 'http://'+alert.adam.ip+'/digitaloutput/all/value'
@@ -380,12 +375,9 @@ class Process_alert(object):
         except requests.exceptions.ConnectionError :
             logger.warning('hook not responding on url : {}'.format(url))
             pass
-        
-        
-        
-    
-    
+
     def run(self,_time):
+           
         while(self.running):
             check_space(settings.SPACE_LEFT)   
             #get last objects
@@ -397,70 +389,21 @@ class Process_alert(object):
             for r in rn:
                 logger.info('new result in databases : {}'.format(r))
                 on = Object.objects.filter(result=r)
-                
                 cn = Counter([i.result_object for i in on])
                 logger.debug('getting objects in databases : {}'.format(cn))
-                
-                for s in cn :
-                    a=False
-                    object_present = Alert.stuffs_reverse.get(s)
-                    if object_present :
-                        a = Alert.objects.filter(stuffs=object_present, 
-                                             actions=Alert.actions_reverse['present']).first()
-                    if a :
-                        logger.info('present alert : {}'.format(a))
-                        r.alert= True
-                        r.save()
-                        t = r.time
-                        if not a.active:
-                            a.active = True
-                            a.when = t
-                            a.img_name = r.file2.name
-                            a.save()           
-                
+                # case "is present"
+                self.check_alert(r, 'present',cn)
+                # case : "appear"
                 appear = cn-c
-                for s in appear :
-                    a=False
-                    object_appear = Alert.stuffs_reverse.get(s)
-                    if object_appear :
-                        a = Alert.objects.filter(stuffs=object_appear, 
-                                             actions=Alert.actions_reverse['appear']).first()    
-                    if a :
-                        logger.info('appear alert : {}'.format(a))
-                        r.alert= True
-                        r.save()
-                        t = r.time
-                        if not a.active:
-                            a.active = True
-                            a.when = t
-                            a.img_name = r.file2.name
-                            a.save()
-                                 
+                self.check_alert(r, 'appear',appear)
+                # case : disappear                 
                 disappear = c-cn
-                for s in disappear:
-                    a=False
-                    object_disappear = Alert.stuffs_reverse.get(s)
-                    if object_disappear :
-                        a = Alert.objects.filter(stuffs=object_disappear, 
-                                             actions=Alert.actions_reverse['disappear']).first()
-                        logger.info('disappear alert : {}'.format(a))
-                    if a : 
-                        r.alert= True
-                        r.save()
-                        t = r.time
-                        if not a.active:
-                            a.active = True
-                            a.when = t
-                            a.img_name = r.file2.name
-                            a.save()
-                            
+                self.check_alert(r, 'disappear',disappear)
                 self.result = r
-            
             alert = Alert.objects.filter(active = True)
             for a in alert :
                 self.warn(a)
             time.sleep(_time)
-
 
 def main():
     activate('en')
@@ -478,12 +421,6 @@ def main():
     except KeyboardInterrupt:
         print("Bye bye!")
 
-
 # start the threads
 if __name__ == '__main__':
     main()
-    
-
-    
-
-

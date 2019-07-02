@@ -16,7 +16,7 @@
 	
 	<div class="row">
 	<div class="large-10 columns">{% trans 'Alert settled' %}
-	{% for res in alert %}<code id="robot-state" class="accesslog hljs"> {{ res.get_stuffs_display }} {{ res.get_actions_display }} ({% for cam in res.camera.all %} {{cam.name}} {% endfor %})  --->  {% if res.mail %}Mail{% endif %}
+	{% for res in alert %}<code id="robot-state" class="accesslog hljs"> {{ res.get_stuffs_display }} {{ res.get_actions_display }} ({% for cam in res.camera.all %} *{{cam.name}}*  {% endfor %})  --->  {% if res.mail %}Mail{% endif %}
                                                                                                                                          {% if res.sms %}Sms{% endif %}
                                                                                                                                          {% if res.call %}call{% endif %}
                                                                                                                                          {% if res.alarm %}Alarm{% endif %}

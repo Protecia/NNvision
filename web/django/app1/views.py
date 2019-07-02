@@ -17,6 +17,8 @@ from .process_alert import stop_adam_all
 from PIL import Image
 from django.utils import translation
 from crontab import CronTab
+import pytz
+from datetime import datetime as hour, timedelta
 
 
 
@@ -142,7 +144,7 @@ def darknet_state(request):
 
 @login_required
 @permission_required('app1.camera')
-def panel(request, first, first_alert):
+def panel(request, nav, first):
     if request.method == 'POST':
         actionForm = request.POST.get("valid_filter", "")
         if actionForm == 'ok':
@@ -153,12 +155,46 @@ def panel(request, first, first_alert):
         else :
             request.session['class']= 'all'
     filter_class = request.session.get("class","all")
-    first=int(first)
-    first_alert=int(first_alert)
     if filter_class == "all" :
-        imgs = Result.objects.all().order_by('-id')[first:first+12]
-        imgs_alert = Result.objects.filter(alert=True).order_by('-id')[first_alert:first_alert+3]
+        if nav == 'd':
+            imgs = Result.objects.all().order_by('-id')[first:first+12]
+            if imgs :
+                time_result = imgs[0].time
+            else:
+                time_result = Result.objects.all().earliest('time').time
+            imgs_alert = Result.objects.filter(alert=True, time__lte=time_result).order_by('-id')[:3]
+            first_alert = len(Result.objects.filter(alert=True, time__gt=time_result))
+        if nav == 'a':
+            imgs_alert = Result.objects.filter(alert=True).order_by('-id')[first:first+3]
+            if imgs_alert :
+                time_result = imgs_alert[0].time
+            else :
+                time_result = Result.objects.filter(alert=True).earliest('time').time
+            imgs = Result.objects.filter(time__lte=time_result).order_by('-id')[:12]
+            first_alert = first
+            first = len(Result.objects.filter(time__gt=time_result))
     else :
+        if nav == 'd':
+            imgs = Result.objects.filter(object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[first:first+12]
+            if imgs :
+                time_result = imgs[0].time
+            else:
+                time_result = Result.objects.all().earliest('time').time
+            imgs_alert = Result.objects.filter(alert=True, time__lte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[:3]
+            first_alert = len(Result.objects.filter(alert=True, time__gte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object')))
+        if nav == 'a':
+            imgs_alert = Result.objects.filter(alert=True, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[first:first+3]
+            if imgs_alert :
+                time_result = imgs_alert[0].time
+            else :
+                time_result = Result.objects.filter(alert=True).earliest('time').time
+            imgs = Result.objects.filter(time__lte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[:12]
+            first_alert = first
+            first = len(Result.objects.filter(time__gte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object')))        
+        
+        
+        
+        
         imgs = Result.objects.filter(object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[first:first+12]
         imgs_alert = Result.objects.filter(alert=True, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[first_alert:first_alert+3]
     img_array = [imgs[i:i + 3] for i in range(0, len(imgs), 3)]
@@ -201,6 +237,17 @@ def alert(request, id=0, id2=-1):
                 cron = CronTab(user=True)
                 cmd = settings.PYTHON+' '+os.path.join(settings.BASE_DIR,'app1/_running.py '+a)
                 job  = cron.new(command=cmd)
+                '''
+                local_tz = pytz.timezone (settings.TIME_ZONE)
+                now = hour.now()
+                now_here = local_tz.localize(now, is_dst=None)
+                now_uct = 
+                
+                
+                hour_cron = hour(season.year, season.month, season.day, h,m)
+                hour_cron = local_tz.localize(hour_cron, is_dst=None)
+                hour_cron = hour_cron.astimezone(pytz.utc)
+                '''
                 job.minute.on(m)
                 job.hour.on(h)
                 if d!='*' :

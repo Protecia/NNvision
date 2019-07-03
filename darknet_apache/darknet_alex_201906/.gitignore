@@ -9,15 +9,6 @@
 *.dll
 *.lib
 mnist/
-data/
-caffe/
-grasp/
-images/
-opencv/
-convnet/
-decaf/
-submission/
-cfg/
 build/darknet/*
 build_*/
 !build/darknet/YoloWrapper.cs
@@ -38,7 +29,3 @@ Thumbs.db
 # Managed by CMake
 src/version.h
 
-# Build artifacts
-lib/
-share/
-include/darknet/

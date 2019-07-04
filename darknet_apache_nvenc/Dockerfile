@@ -18,7 +18,7 @@ WORKDIR /NNvision
 COPY . /NNvision
 
 # Compile ffmpeg
-RUN cd ffmpeg-4.1.3/nv-codec-headers && make -j8 && make install && cd .. && \
+RUN cd ffmpeg-4.1.3/nv-codec-headers && make && make install && cd .. && \
     ./configure --enable-cuda --enable-cuvid --enable-nvenc --enable-nonfree --enable-libnpp --enable-shared --cc="gcc -fPIC" --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 && make -j8 && make install && cd .. && rm -rf ffmpeg-4.1.3
 
 # Compile OpenCV
@@ -30,10 +30,10 @@ RUN cd opencv-3.4.4 && mkdir build && cd build && \
 	-D OPENCV_ENABLE_NONFREE=ON \
 	-D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-3.4.4/modules \
 	-D BUILD_EXAMPLES=OFF .. && \
-    make -j8 && make install && ln -s /usr/local/python/cv2/python-3.6/cv2.cpython-36m-x86_64-linux-gnu.so /usr/local/lib/python3.6/dist-packages/cv2.so && ldconfig \
+    make && make install && ln -s /usr/local/python/cv2/python-3.6/cv2.cpython-36m-x86_64-linux-gnu.so /usr/local/lib/python3.6/dist-packages/cv2.so && ldconfig \
     && cd ../.. && rm -rf opencv-3.4.4/ opencv_contrib-3.4.4/
 
-RUN cd darknet_pjreddie_201906 && make -s -j8 --no-print-directory && \
+RUN cd darknet_pjreddie_201906 && make -s  --no-print-directory && \
     rm -rf backup include scripts src results examples && rm L* M* R*
 
 # Activate mod_wsgi

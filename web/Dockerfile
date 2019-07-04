@@ -18,4 +18,6 @@ RUN cd django && python3 manage.py collectstatic && /etc/init.d/postgresql start
 
 RUN django/change_right.sh && a2enmod  wsgi && rm Dockerfile* && rm build.sh
 
+RUN mkdir /etc/nnvision_time && rm /etc/localtime && cd /etc/nnvision_time && ln -s /usr/share/zoneinfo/Europe/Paris localtime && cd .. && ln -s nnvision_time/localtime localtime 
+
 CMD ["/NNvision/start2.sh"]

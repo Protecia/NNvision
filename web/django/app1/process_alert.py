@@ -153,25 +153,26 @@ class Process_alert(object):
             o = Object.objects.filter(result=result)
             c = Counter([i.result_object for i in o])
             logger.info('getting last object init : {}'.format(c))
-            self.check_alert(result, 'present init',c)
-
+            self.check_alert(result, 'present',c)
+    
     def check_alert(self, result, alert_type, object_counter):
             for s in object_counter :
                     a=False
                     object_present = Alert.stuffs_reverse.get(s)
                     if object_present :
                         a = Alert.objects.filter(stuffs=object_present, 
-                                                 actions=Alert.actions_reverse['present'],
+                                                 actions=Alert.actions_reverse[alert_type],
                                                  camera=result.camera).first()
                     if a :
                         logger.info(alert_type+' alert : {}'.format(a))
                         result.alert= True
                         result.save()
+                        a.img_name = result.file2.name
+                        a.save()
                         t = result.time
                         if not a.active:
                             a.active = True
                             a.when = t
-                            a.img_name = result.file2.name
                             a.save()
     
     def wait(self,_time):

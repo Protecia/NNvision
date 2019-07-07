@@ -155,6 +155,13 @@ def panel(request, nav, first):
         else :
             request.session['class']= 'all'
     filter_class = request.session.get("class","all")
+    if not Result.objects.all():
+        img_array = []
+        img_alert_array = []
+        form = AlertForm()
+        context = { 'class':filter_class, 'form':form, 'first' : first,
+               'first_alert' : first, 'img_array' : img_array, 'img_alert_array' : img_alert_array, 'logo_client':settings.RESELLER_LOGO}
+        return render(request, 'app1/panel.html', context)  
     if filter_class == "all" :
         if nav == 'd':
             imgs = Result.objects.all().order_by('-id')[first:first+12]
@@ -191,12 +198,6 @@ def panel(request, nav, first):
             imgs = Result.objects.filter(time__lte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[:12]
             first_alert = first
             first = len(Result.objects.filter(time__gte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object')))        
-        
-        
-        
-        
-        imgs = Result.objects.filter(object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[first:first+12]
-        imgs_alert = Result.objects.filter(alert=True, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[first_alert:first_alert+3]
     img_array = [imgs[i:i + 3] for i in range(0, len(imgs), 3)]
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
     form = AlertForm()

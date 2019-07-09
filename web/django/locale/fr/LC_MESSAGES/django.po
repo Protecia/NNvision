@@ -220,7 +220,7 @@ msgstr "Contact"
 
 #: app1/templates/app1/alert.html:98
 msgid "Adam box :"
-msgstr "Contact"
+msgstr "Boitier Adam"
 
 #: app1/templates/app1/alert.html:116
 msgid "Add Alert"

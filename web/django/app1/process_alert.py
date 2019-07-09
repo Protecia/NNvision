@@ -123,6 +123,7 @@ def check_space(mo):
         ###################################################################  
 
 def stop_adam_all():
+    logger = logging.getLogger()
     adam_request = Alert_adam.objects.all()
     for adam_box in adam_request :
         cmd = 'http://'+adam_box.ip+'/digitaloutput/all/value'

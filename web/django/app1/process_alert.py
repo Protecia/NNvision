@@ -169,11 +169,11 @@ class Process_alert(object):
                         result.alert= True
                         result.save()
                         a.img_name = result.file2.name
+                        a.last = result.time
                         a.save()
-                        t = result.time
                         if not a.active:
                             a.active = True
-                            a.when = t
+                            a.when = result.time
                             a.save()
     
     def wait(self,_time):
@@ -212,7 +212,7 @@ class Process_alert(object):
                                                      action=alert.actions).last())
                 if t-last > delay.mail_resent :
                     logger.debug('>>>>>>> go to send mail <<<<<<<<<<<')
-                    self.send_mail(alert,t)
+                    self.send_mail(alert)
             mail_post_wait = delay.mail_post_wait
         else :
             mail_post_wait = timedelta(seconds=0)
@@ -266,14 +266,14 @@ class Process_alert(object):
                         self.send_hook(alert,hook, t)        
 #############################################################################################
                     
-    def send_mail(self, alert,t):
+    def send_mail(self, alert):
         activate(settings.USER_LANGUAGE)
         list_mail = []
         for u in self.user :
             list_mail.append(u.user.email)
         sender ="contact@protecia.com"
         body = _("Origin of detection") +"  : {}".format(Alert.stuffs_d[alert.stuffs])+"   ---  "+_("Type of detection")+" :  {}".format(Alert.actions_d[alert.actions])
-        body += "<br>"+_("Time of detection")+" : {:%d-%m-%Y - %H:%M:%S}".format(t.astimezone(pytz.timezone(settings.TIME_ZONE)))
+        body += "<br>"+_("Time of detection")+" : {:%d-%m-%Y - %H:%M:%S}".format(alert.last.astimezone(pytz.timezone(settings.TIME_ZONE)))
         body += "<br>"+_("Please check the images")+" : {} ".format(self.public_site+'/warning/0')
         try:
             message = EmailMessage( 'Protecia Alert !!!',

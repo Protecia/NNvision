@@ -2,7 +2,7 @@
 
 {% block content %}
 {% load static %}
-
+{% load i18n %}
 
 
 <div class="row">
@@ -13,8 +13,8 @@
     <div class="small-2 small-centered columns"><img  src={% static "app1/img/warning.png" %}  ></div>
 </div>
 
-    <h2> The location is under Alert.
-	Check carefully the images and call the police. If you think it is a fake alarm, cancel it !  </h2>
+    <h2>{% trans 'The location is under Alert' %}.
+	{% trans 'Check carefully the images and call the police' %}. {% trans 'If you think it is a fake alarm, cancel it' %} !  </h2>
 	<div align="right">
 	{% if first_alert >= 9 %}<a href="/warning/{{first_alert|add:-9}}" class="button tiny">&laquo; previous</a>{% endif %}
 	<a href="/warning/{{first_alert|add:9}}" class="button tiny">next &raquo;</a></div>

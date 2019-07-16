@@ -17,10 +17,6 @@ from .process_alert import stop_adam_all
 from PIL import Image
 from django.utils import translation
 from crontab import CronTab
-import pytz
-from datetime import datetime as hour, timedelta
-
-
 
 
 # Create your views here.
@@ -211,6 +207,21 @@ def panel_detail(request, id):
     img = Result.objects.get(id=id)
     return render(request, 'app1/panel_detail.html', {'img':img, 'id':id})
 
+
+def warning_detail(request, id):
+    img = Result.objects.get(id=id)
+    alert = Alert.objects.filter(active=True).order_by('when')
+    alert = alert.first() 
+    if not alert :
+        return redirect('/')
+    imgs_alert = Result.objects.filter(alert=True).filter(time__gte=alert.when)
+    ids = [i.id for i in imgs_alert]
+    if id in ids:
+        return render(request, 'app1/panel_detail.html', {'img':img, 'id':id})
+    else:
+        return redirect('/')
+        
+
 @login_required
 @permission_required('app1.camera')
 def alert(request, id=0, id2=-1):
@@ -238,17 +249,6 @@ def alert(request, id=0, id2=-1):
                 cron = CronTab(user=True)
                 cmd = settings.PYTHON+' '+os.path.join(settings.BASE_DIR,'app1/_running.py '+a)
                 job  = cron.new(command=cmd)
-                '''
-                local_tz = pytz.timezone (settings.TIME_ZONE)
-                now = hour.now()
-                now_here = local_tz.localize(now, is_dst=None)
-                now_uct = 
-                
-                
-                hour_cron = hour(season.year, season.month, season.day, h,m)
-                hour_cron = local_tz.localize(hour_cron, is_dst=None)
-                hour_cron = hour_cron.astimezone(pytz.utc)
-                '''
                 job.minute.on(m)
                 job.hour.on(h)
                 if d!='*' :

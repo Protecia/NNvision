@@ -23,7 +23,7 @@
 
 		{% for img_alert in row_alert %}
 		<div class="large-4 columns">
-		<a class="th" href="/panel/detail/{{img_alert.id}}">
+		<a class="th" href="/warning_detail/{{img_alert.id}}">
 			<img  style="border:5px solid red" src="{{img_alert.file2.url}}" alt="" height="100" >{{img_alert.time|date:'Y-m-d H:i:s'}}
 		</a>
 		</div>

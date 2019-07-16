@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^camera/$', views.camera, name='camera'),
     path('panel/<str:nav>/<int:first>', views.panel, name='panel'),
     path('warning/<int:first_alert>', views.warning, name='warning'),
+    path('warning_detail/<int:id>', views.warning_detail, name='warning_detail'),
     path('alert/', views.alert, name='alert'),
     path('alert/suppr/<int:id>', views.alert, name='alert'),
     path('alert/suppr_auto/<int:id2>', views.alert, name='alert'),

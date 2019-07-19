@@ -20,6 +20,6 @@ RUN django/change_right.sh && a2enmod  wsgi && rm Dockerfile* && rm build.sh
 
 RUN mkdir /etc/nnvision_time && rm /etc/localtime && cd /etc/nnvision_time && ln -s /usr/share/zoneinfo/Europe/Paris localtime && cd .. && ln -s nnvision_time/localtime localtime 
 
-RUN DEBIAN_FRONTEND=noninteractive apt -y install ddclient && mv ddclient.conf /etc/ddclient.conf
+RUN DEBIAN_FRONTEND=noninteractive apt -y install ddclient && mkdir /etc/ddclient && rm /etc/ddclient.conf && mv ddclient.conf /etc/ddclient/ddclient.conf && cd /etc && ln -s ddclient/ddclient.conf ddclient.conf
 
 CMD ["/NNvision/start2.sh"]

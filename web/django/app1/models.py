@@ -187,6 +187,7 @@ class Alert(models.Model):
     hook = models.BooleanField(default=False)
     mass_alarm = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
+    # warning on naive date, could be : datetime(year=2000,month=1,day=1,tzinfo=pytz.timezone(settings.TIME_ZONE))
     when = models.DateTimeField(default=datetime(year=2000,month=1,day=1))
     last = models.DateTimeField(default=datetime(year=2000,month=1,day=1))
     key = models.CharField(max_length=10, default='', blank=True)

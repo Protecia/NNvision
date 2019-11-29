@@ -1,1 +1,1 @@
-docker build --rm -t nnvision:2.0 .
+docker build --rm -t nnvision_server:1.0 .

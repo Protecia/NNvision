@@ -12,7 +12,7 @@ from django.conf import settings
 from process_camera_thread import ProcessCamera
 import time
 from threading import Event
-from multiprocessing import Process, Queue, pEvent
+from multiprocessing import Process, Queue, Event as pEvent
 import requests
 import json
 from collections import namedtuple

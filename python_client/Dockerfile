@@ -7,7 +7,7 @@ COPY . /NNvision
 USER postgres
 RUN    /etc/init.d/postgresql start &&\
        psql --command "CREATE USER djdb WITH PASSWORD 'protecia';" && \
-       psql --command "CREATE DATABASE protecia WITH OWNER djdb;" && /etc/init.d/postgresql stop
+       psql --command "CREATE DATABASE protecia_client WITH OWNER djdb;" && /etc/init.d/postgresql stop
 
 USER root
 # Activate django

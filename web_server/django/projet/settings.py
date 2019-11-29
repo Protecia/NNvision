@@ -81,7 +81,7 @@ WSGI_APPLICATION = 'projet.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'protecia',
+        'NAME': 'protecia_server',
         'USER': 'djdb',
         'PASSWORD': 'protecia',
         'HOST': '127.0.0.1',

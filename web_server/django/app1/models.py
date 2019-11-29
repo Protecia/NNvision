@@ -65,7 +65,7 @@ class Camera(models.Model):
     AUTH_CHOICES = (
         ('B', 'Basic'),
         ('D', 'Digest'))
-    client = models.ForeignKey(Client, default=lambda: Client.objects.get(id=1), on_delete=models.CASCADE)
+    client = models.ForeignKey(Client, default=1, on_delete=models.CASCADE)
     name = models.CharField(max_length=20)
     active = models.BooleanField()
     rec = models.BooleanField(default=True)

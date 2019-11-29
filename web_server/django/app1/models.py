@@ -81,7 +81,7 @@ class Camera(models.Model):
     width = models.IntegerField(default = 1280)
     height = models.IntegerField(default = 720)
     pos_sensivity = models.IntegerField(default = 150)
-    update = models.BooleanField()
+    update = models.BooleanField(default=False)
 
     def secure_rtsp(self):
         return "rtsp://"+self.rtsp.split('@')[1]

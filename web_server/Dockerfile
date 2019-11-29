@@ -6,7 +6,6 @@ COPY . /NNvision/web_server
 # Activate postgresql
 USER postgres
 RUN    /etc/init.d/postgresql start &&\
-       psql --command "CREATE USER djdb WITH PASSWORD 'protecia';" && \
        psql --command "CREATE DATABASE protecia_server WITH OWNER djdb;" && /etc/init.d/postgresql stop
 
 USER root

@@ -3,6 +3,8 @@ FROM nnvision_base_nvenc
 WORKDIR /NNvision
 COPY . /NNvision
 
+RUN apt-get update
+
 # Activate postgresql
 USER postgres
 RUN    /etc/init.d/postgresql start &&\

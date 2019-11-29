@@ -1,1 +1,0 @@
-[{"model": "app1.alert_info", "pk": 1, "fields": {"mail_delay": "00:00:00", "mail_resent": "00:05:00", "mail_post_wait": "00:01:00", "sms_delay": "00:00:30", "sms_resent": "00:05:00", "sms_post_wait": "00:00:30", "call_delay": "00:01:00", "call_resent": "00:05:00", "call_post_wait": "00:00:30", "alarm_delay": "00:00:00", "alarm_resent": "00:05:00" }}]

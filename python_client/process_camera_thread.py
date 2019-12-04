@@ -8,10 +8,54 @@ Main script to process the camera images
 """
 import time
 import requests
-import os
 import cv2
 import numpy as np
 from threading import Thread, Lock
+import settings
+import os
+import darknet as dn
+import json
+import logging
+from logging.handlers import RotatingFileHandler
+
+#------------------------------------------------------------------------------
+# a simple config to create a file log - change the level to warning in
+# production
+#------------------------------------------------------------------------------
+level=settings.LOG
+logger = logging.getLogger()
+logger.setLevel(level)
+formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+file_handler = RotatingFileHandler(os.path.join('/NNvision/log','camera.log'), 'a', 10000000, 1)
+file_handler.setLevel(level)
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+#stream_handler = logging.StreamHandler()
+#stream_handler.setLevel(level)
+#logger.addHandler(stream_handler)
+#------------------------------------------------------------------------------
+
+
+threated_requests = settings.THREATED_REQUESTS
+path = settings.DARKNET_PATH
+cfg = os.path.join(path,settings.CFG).encode()
+weights = os.path.join(path,settings.WEIGHTS).encode()
+data = os.path.join(path,settings.DATA).encode()
+net = dn.load_net(cfg,weights, 0)
+meta = dn.load_meta(data)
+
+E_rec = False
+ 
+def getState():
+    global E_rec
+    try :
+        r = requests.post("http://192.168.0.19:2222/getState", data = {'key': settings.KEY, } )
+        rec = json.loads(r.text)[0]['rec']
+        E_rec = rec
+        return E_rec
+    except requests.exceptions.ConnectionError :
+        logger.info('Can not find the remote server')
+        return 3
 
 # function to extract same objects in 2 lists
 def get_list_same (l_old,l_under,thresh):
@@ -66,41 +110,29 @@ def read_write(rw,*args):
 class ProcessCamera(Thread):
     """Thread used to grab camera images and process the image with darknet"""
 
-    def __init__(self, cam, num, Q_result, logger, net, meta,
-                 threated_requests, list_event, path, array_to_image,
-                 detect_image, nb_cam, Q_img):
+    def __init__(self, cam, num, Q_result, list_event, nb_cam, Q_img):
         Thread.__init__(self)
         self.event = list_event
         self.cam = cam
         self.num = num
         self.running = False
         self.running_rtsp = False
-        self.img_temp = os.path.join(path,'tempimg_cam'+str(self.cam.id)+'.jpg')
-        self.img_temp_box = os.path.join(path,'tempimg_cam'+str(self.cam.id)+'_box.jpg')
         self.pos_sensivity = cam.pos_sensivity
-        self.threated_requests = threated_requests
+        #self.threated_requests = threated_requests
         self.request_OK = False
         self.lock = Lock()
         self.black_list=(b'pottedplant',b'cell phone')
         self.logger = logger
-        self.net = net
-        self.meta = meta
-        self.array_to_image = array_to_image
-        self.detect_image = detect_image
+        #self.net = net
+        #self.meta = meta
+        #self.array_to_image = array_to_image
+        #self.detect_image = detect_image
+        self.E_rec = E_rec
         self.nb_cam = nb_cam
         self.Q_img = Q_img
-        self.Q_result
-
-        ###  getting last object in db for camera to avoid writing same images at each restart
-        r_last = self.result.objects.filter(camera=cam).last()
-        if r_last :
-            o_last = self.object.objects.filter(result_id=r_last.id)
-            result_last = [(r.result_object.encode(), float(r.result_prob),
-                            (float(r.result_loc1),float(r.result_loc2),
-                             float(r.result_loc3),float(r.result_loc4))) for r in o_last]
-            self.result_DB = result_last
-        else :
-            self.result_DB = []
+        self.Q_result = Q_result
+        self.result_DB = []
+        
         if cam.auth_type == 'B':
             self.auth = requests.auth.HTTPBasicAuth(cam.username,cam.password)
         if cam.auth_type == 'D' :
@@ -157,7 +189,7 @@ class ProcessCamera(Thread):
             t=time.time()
 
             # Special stop point for dahua nvcr which can not answer multiple fast http requests
-            if not self.threated_requests :
+            if not threated_requests :
                 self.event[self.num].wait()
                 self.logger.debug('cam {} alive - not threated request'.format(self.cam.id))
             #-----------------------------------------------------------------------------------
@@ -193,7 +225,7 @@ class ProcessCamera(Thread):
             #*************************************************************************************
             t=time.time()
             # Normal stop point for ip camera-------------------------------
-            if self.threated_requests :
+            if threated_requests :
                 self.event[self.num].wait()
                 self.logger.debug('cam {} alive'.format(self.cam.id))
             #---------------------------------------------------------------
@@ -203,8 +235,8 @@ class ProcessCamera(Thread):
                 th = self.cam.threshold*(1-(float(self.cam.gap)/100))
                 self.logger.debug('thresh set to {}'.format(th))
                 frame_rgb = cv2.cvtColor(arr, cv2.COLOR_BGR2RGB)
-                im, arrd = self.array_to_image(frame_rgb)
-                result_darknet = self.detect_image(self.net, self.meta, im, thresh=th)
+                im, arrd = dn.array_to_image(frame_rgb)
+                result_darknet = dn.detect_image(net, meta, im, thresh=th)
                 self.logger.info('get brut result from darknet in {}s : {} \n'.format(
                 time.time()-t,result_darknet))
                 self.event[self.num].clear()
@@ -216,16 +248,7 @@ class ProcessCamera(Thread):
                 t=time.time()
                 result_filtered = self.check_thresh(result_darknet)
                 # compare with last result to check if different
-                arrb = arr.copy()
-                for r in result_filtered:
-                    box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2))),
-                           (int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2))))
-                    cv2.rectangle(arrb,box[0],box[1],(0,255,0),3)
-                    cv2.putText(arrb,r[0].decode(),box[1],
-                    cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
-                rw = cv2.imwrite(self.img_temp_box,arrb)
-                self.logger.debug('result of writing image box : {}'.format(rw))
-                if self.base_condition(result_filtered) and self.cam.rec:
+                if self.base_condition(result_filtered) and E_rec:
                     self.logger.debug('>>> Result have changed <<< ')
                     date = time.strftime("%Y-%m-%d-%H-%M-%S")
                     img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
@@ -268,3 +291,4 @@ class ProcessCamera(Thread):
             rp+=diff_objects
         self.logger.debug('the filtered list of detected objects is {}'.format(rp))
         return rp
+    

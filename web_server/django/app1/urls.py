@@ -23,6 +23,7 @@ urlpatterns = [
     path('thumbnail/<path:path_im>', views.thumbnail, name='thumbnail'),
     path('upload', views.upload),
     path('getCam', views.getCam),
+    path('getState', views.getState),
     path('upCam', views.upCam),
     path('favicon.ico', favicon_view),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

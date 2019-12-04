@@ -59,6 +59,9 @@ from app1.models import Result, Object, Camera
 from app1.darknet_python import darknet as dn
 
 
+Q = Queue()
+E = pEvent()
+
 def upload(Q):
     while True:
         img = Q.get()
@@ -84,10 +87,9 @@ def getCamera(force='0'):
 
 
 def main():
-    Q = Queue()
-    E = pEvent()
-    E.set() # the first start
     
+    E.set() # the first start
+
     
     
     threated_requests = settings.THREATED_REQUESTS

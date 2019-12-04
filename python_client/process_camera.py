@@ -4,38 +4,24 @@ Created on Sat Jun  1 07:34:04 2019
 
 @author: julien
 """
-import os
-import logging
-from logging.handlers import RotatingFileHandler
-from process_camera_thread import ProcessCamera
+
+
+
+import process_camera_thread as pc
 from threading import Event
 from multiprocessing import Process, Queue, Event as pEvent
 import requests
 import json
 from collections import namedtuple
 import settings
-import darknet as dn
 
-#------------------------------------------------------------------------------
-# a simple config to create a file log - change the level to warning in
-# production
-#------------------------------------------------------------------------------
-level=settings.LOG
-logger = logging.getLogger()
-logger.setLevel(level)
-formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-file_handler = RotatingFileHandler(os.path.join(settings.BASE_DIR,'camera.log'), 'a', 10000000, 1)
-file_handler.setLevel(level)
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
-#stream_handler = logging.StreamHandler()
-#stream_handler.setLevel(level)
-#logger.addHandler(stream_handler)
-#------------------------------------------------------------------------------
+
+
 
 Q_img = Queue()
 Q_result = Queue()
 E_cam = pEvent()
+onLine = True
 
 def upload(Q):
     while True:
@@ -45,48 +31,45 @@ def upload(Q):
             requests.post("http://192.168.0.19:8080/upload", files=files)
         except requests.exceptions.ConnectionError :
             pass
-        
+
 def getCamera(force='0'):
-    key =  settings.KEY
-    r = requests.post("http://192.168.0.19:2222/getCam", data = {'key': key, 'force':force} )
-    if force=='1' or r.text!='0' :
-        c = json.loads(r.text)
-        with open('camera.json', 'w') as out:
-            json.dump(c,out)
-        r = requests.post("http://192.168.0.19:2222/upCam", data = {'key': key})
-        E_cam.set()
-        return True   
+    try :
+        r = requests.post("http://192.168.0.19:2222/getCam", data = {'key': settings.KEY, 'force':force} )
+        if force=='1' or r.text!='0' :
+            c = json.loads(r.text)
+            with open('camera.json', 'w') as out:
+                json.dump(c,out)
+            r = requests.post("http://192.168.0.19:2222/upCam", data = {'key': settings.KEY})
+            E_cam.set()
+            return True
+    except requests.exceptions.ConnectionError :
+        pc.logger.info('Can not find the remote server')
+        pass
     return False
-    
- #c = json.loads(r.text, object_hook=lambda d: namedtuple('camera', d.keys())(*d.values()))
 
 
-def main():   
+
+
+def main():
     getCamera(force='1')
-    threated_requests = settings.THREATED_REQUESTS
-    path = settings.DARKNET_PATH
-    cfg = os.path.join(path,settings.CFG).encode()
-    weights = os.path.join(path,settings.WEIGHTS).encode()
-    data = os.path.join(path,settings.DATA).encode()
-    net = dn.load_net(cfg,weights, 0)
-    meta = dn.load_meta(data)
+    
     try:
         while(True):
-            with open('camera.json', 'r') as json_file:  
+            with open('camera.json', 'r') as json_file:
                 cameras = json.load(json_file, object_hook=lambda d: namedtuple('camera', d.keys())(*d.values()))
             list_thread=[]
             list_event=[Event() for i in range(len(cameras))]
             for n, c in enumerate(cameras):
-                p = ProcessCamera(c, n, Q_result, logger, net, meta,
-                                  threated_requests, list_event, settings.MEDIA_ROOT,
-                                  dn.array_to_image, dn.detect_image, len(cameras), Q_img)
+                p = pc.ProcessCamera(c, n, Q_result, 
+                                   list_event,
+                                   len(cameras), Q_img)
                 list_thread.append(p)
                 p.start()
-        
+
             print('darknet is running...')
             # Just run4ever (until Ctrl-c...)
             list_event[0].set()
-        
+
             pImageUpload = Process(target=upload, args=(Q_img,))
             pCameraDownload = Process(target=getCamera)
             pImageUpload.start()
@@ -101,8 +84,8 @@ def main():
                 except AttributeError:
                     pass
                 t.join()
-            print("Camera change restart !")            
-            
+            pc.logger.warning('Camera change restart !')
+
     except KeyboardInterrupt:
         for t in list_thread:
             t.running=False
@@ -112,6 +95,8 @@ def main():
             except AttributeError:
                 pass
             t.join()
+        pImageUpload.join()
+        pCameraDownload.join()
         print("Bye bye!")
 
 

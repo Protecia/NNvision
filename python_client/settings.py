@@ -9,7 +9,7 @@ import logging
 LOG = logging.DEBUG
 
 CFG = 'cfg/yolov3-spp.cfg'
-WEIGHTS = './weights/yolov3-spp.weights'
+WEIGHTS = '../weights/yolov3-spp.weights'
 DATA = 'cfg/coco.data'
 DARKNET_PATH='/NNvision/darknet_pjreddie_201906'
 

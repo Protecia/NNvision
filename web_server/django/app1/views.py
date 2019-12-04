@@ -9,7 +9,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Count
-from .models import Camera, Result, Alert
+from .models import Camera, Result, Alert, Client
 from .forms import AlertForm, AutomatForm, DAY_CODE_STR
 from .process_alert import stop_adam_all
 from PIL import Image
@@ -53,6 +53,13 @@ def getCam(request):
 def upCam(request):
     key = request.POST.get('key', 'default')
     Camera.objects.filter(active=True, client__key=key).update(update=False)
+    return HttpResponse('0') 
+    
+@csrf_exempt
+def getState(request):
+    key = request.POST.get('key', 'default')
+    c = Client.objects.filter(key=key)
+    return JsonResponse(list(c.values()), safe=False)
     
     
     

@@ -44,18 +44,25 @@ data = os.path.join(path,settings.DATA).encode()
 net = dn.load_net(cfg,weights, 0)
 meta = dn.load_meta(data)
 
-E_rec = False
- 
-def getState():
-    global E_rec
-    try :
-        r = requests.post("http://192.168.0.19:2222/getState", data = {'key': settings.KEY, } )
-        rec = json.loads(r.text)[0]['rec']
-        E_rec = rec
-        return E_rec
-    except requests.exceptions.ConnectionError :
-        logger.info('Can not find the remote server')
-        return 3
+def EtoB(E):
+    if E.is_set() :
+        return True
+    else :
+        return False
+
+def getState(E):
+    while True:
+        try :
+            r = requests.post("http://192.168.0.19:2222/getState", data = {'key': settings.KEY, } )
+            rec = json.loads(r.text)[0]['rec']
+            if rec :
+                E.set()
+            else :
+                E.clear()
+        except requests.exceptions.ConnectionError :
+            logger.info('getState Can not find the remote server')
+            time.sleep(5)
+
 
 # function to extract same objects in 2 lists
 def get_list_same (l_old,l_under,thresh):
@@ -110,7 +117,7 @@ def read_write(rw,*args):
 class ProcessCamera(Thread):
     """Thread used to grab camera images and process the image with darknet"""
 
-    def __init__(self, cam, num, Q_result, list_event, nb_cam, Q_img):
+    def __init__(self, cam, num, Q_result, list_event, nb_cam, Q_img, E_state):
         Thread.__init__(self)
         self.event = list_event
         self.cam = cam
@@ -127,12 +134,12 @@ class ProcessCamera(Thread):
         #self.meta = meta
         #self.array_to_image = array_to_image
         #self.detect_image = detect_image
-        self.E_rec = E_rec
         self.nb_cam = nb_cam
         self.Q_img = Q_img
         self.Q_result = Q_result
         self.result_DB = []
-        
+        self.E_state = E_state
+
         if cam.auth_type == 'B':
             self.auth = requests.auth.HTTPBasicAuth(cam.username,cam.password)
         if cam.auth_type == 'D' :
@@ -248,7 +255,8 @@ class ProcessCamera(Thread):
                 t=time.time()
                 result_filtered = self.check_thresh(result_darknet)
                 # compare with last result to check if different
-                if self.base_condition(result_filtered) and E_rec:
+                self.logger.warning('E_rec :{}'.format(EtoB(self.E_State)))
+                if self.base_condition(result_filtered) and EtoB(self.E_State):
                     self.logger.debug('>>> Result have changed <<< ')
                     date = time.strftime("%Y-%m-%d-%H-%M-%S")
                     img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
@@ -291,4 +299,4 @@ class ProcessCamera(Thread):
             rp+=diff_objects
         self.logger.debug('the filtered list of detected objects is {}'.format(rp))
         return rp
-    
+

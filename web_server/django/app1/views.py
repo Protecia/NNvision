@@ -59,6 +59,12 @@ def upCam(request):
 def getState(request):
     key = request.POST.get('key', 'default')
     c = Client.objects.filter(key=key)
+    _c = c[0]
+    if not _c.change:
+        time.sleep(10)
+    else :
+        _c.change = False
+        _c.save()
     return JsonResponse(list(c.values()), safe=False)
     
     

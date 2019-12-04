@@ -21,6 +21,7 @@ import settings
 Q_img = Queue()
 Q_result = Queue()
 E_cam = pEvent()
+E_state = pEvent()
 onLine = True
 
 def upload(Q):
@@ -47,12 +48,8 @@ def getCamera(force='0'):
         pass
     return False
 
-
-
-
 def main():
     getCamera(force='1')
-    
     try:
         while(True):
             with open('camera.json', 'r') as json_file:
@@ -60,20 +57,20 @@ def main():
             list_thread=[]
             list_event=[Event() for i in range(len(cameras))]
             for n, c in enumerate(cameras):
-                p = pc.ProcessCamera(c, n, Q_result, 
+                p = pc.ProcessCamera(c, n, Q_result,
                                    list_event,
-                                   len(cameras), Q_img)
+                                   len(cameras), Q_img, E_state())
                 list_thread.append(p)
                 p.start()
-
             print('darknet is running...')
             # Just run4ever (until Ctrl-c...)
             list_event[0].set()
-
             pImageUpload = Process(target=upload, args=(Q_img,))
             pCameraDownload = Process(target=getCamera)
+            pState = Process(target=pc.getState, args=(E_state,))
             pImageUpload.start()
             pCameraDownload.start()
+            pState.start()
             E_cam.clear()
             E_cam.wait()
             for t in list_thread:
@@ -97,6 +94,7 @@ def main():
             t.join()
         pImageUpload.join()
         pCameraDownload.join()
+        pState.join()
         print("Bye bye!")
 
 

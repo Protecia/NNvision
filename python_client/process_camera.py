@@ -29,18 +29,18 @@ def upload(Q):
         img = Q.get()
         files = {'myFile': img}
         try :
-            requests.post("http://192.168.0.19:8080/upload", files=files)
+            requests.post(settings.SERVER+"upload", files=files)
         except requests.exceptions.ConnectionError :
             pass
 
 def getCamera(force='0'):
     try :
-        r = requests.post("http://192.168.0.19:2222/getCam", data = {'key': settings.KEY, 'force':force} )
+        r = requests.post(settings.SERVER+"getCam", data = {'key': settings.KEY, 'force':force} )
         if force=='1' or r.text!='0' :
             c = json.loads(r.text)
             with open('camera.json', 'w') as out:
                 json.dump(c,out)
-            r = requests.post("http://192.168.0.19:2222/upCam", data = {'key': settings.KEY})
+            r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
             E_cam.set()
             return True
     except requests.exceptions.ConnectionError :

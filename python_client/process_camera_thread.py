@@ -53,7 +53,7 @@ def EtoB(E):
 def getState(E):
     while True:
         try :
-            r = requests.post("http://192.168.0.19:2222/getState", data = {'key': settings.KEY, } )
+            r = requests.post(settings.SERVER+"getState", data = {'key': settings.KEY, } )
             rec = json.loads(r.text)[0]['rec']
             if rec :
                 E.set()

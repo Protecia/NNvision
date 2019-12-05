@@ -38,7 +38,7 @@ def getCamera(force='0'):
         r = requests.post(settings.SERVER+"getCam", data = {'key': settings.KEY, 'force':force} )
         if force=='1' or r.text!='0' :
             c = json.loads(r.text)
-            with open('camera.json', 'w') as out:
+            with open('camera/camera.json', 'w') as out:
                 json.dump(c,out)
             r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
             E_cam.set()
@@ -52,7 +52,7 @@ def main():
     getCamera(force='1')
     try:
         while(True):
-            with open('camera.json', 'r') as json_file:
+            with open('camera/camera.json', 'r') as json_file:
                 cameras = json.load(json_file, object_hook=lambda d: namedtuple('camera', d.keys())(*d.values()))
             list_thread=[]
             list_event=[Event() for i in range(len(cameras))]

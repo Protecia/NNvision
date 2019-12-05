@@ -59,7 +59,7 @@ def main():
             for n, c in enumerate(cameras):
                 p = pc.ProcessCamera(c, n, Q_result,
                                    list_event,
-                                   len(cameras), Q_img, E_state())
+                                   len(cameras), Q_img, E_state)
                 list_thread.append(p)
                 p.start()
             print('darknet is running...')

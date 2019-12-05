@@ -26,7 +26,7 @@ level=settings.LOG
 logger = logging.getLogger()
 logger.setLevel(level)
 formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-file_handler = RotatingFileHandler(os.path.join('/NNvision/log','camera.log'), 'a', 10000000, 1)
+file_handler = RotatingFileHandler(os.path.join('/NNvision/camera','camera.log'), 'a', 10000000, 1)
 file_handler.setLevel(level)
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
@@ -255,15 +255,15 @@ class ProcessCamera(Thread):
                 t=time.time()
                 result_filtered = self.check_thresh(result_darknet)
                 # compare with last result to check if different
-                self.logger.warning('E_rec :{}'.format(EtoB(self.E_State)))
-                if self.base_condition(result_filtered) and EtoB(self.E_State):
+                self.logger.debug('E_rec :{}'.format(EtoB(self.E_state)))
+                if self.base_condition(result_filtered) and EtoB(self.E_state):
                     self.logger.debug('>>> Result have changed <<< ')
                     date = time.strftime("%Y-%m-%d-%H-%M-%S")
                     img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
                     self.Q_img.put((date+'_'+str(ifile)+'.jpg',img_bytes))
-                    self.logger.warning('Q_img size : {}').format(self.Q_img.qsize())
+                    self.logger.warning('Q_img size : {}'.format(self.Q_img.qsize()))
                     self.Q_result.put((date+'_'+str(ifile)+'.jpg',result_filtered))
-                    self.logger.warning('Q_result size : {}').format(self.Q_result.qsize())
+                    self.logger.warning('Q_result size : {}'.format(self.Q_result.qsize()))
                     self.logger.info('>>>>>>>>>>>>>>>--------- Result send to queue '
                     '-------------<<<<<<<<<<<<<<<<<<<<<\n')
                     self.result_DB = result_filtered

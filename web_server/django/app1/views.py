@@ -36,7 +36,7 @@ def upload(request):
     if request.method == 'POST':
         file = request.FILES['myFile']  
         size = len(file)
-        return size
+        return JsonResponse([{'size':size},],safe=False) 
     return "not post"
 
 @csrf_exempt
@@ -58,13 +58,16 @@ def upCam(request):
 @csrf_exempt
 def getState(request):
     key = request.POST.get('key', 'default')
-    c = Client.objects.filter(key=key)
-    _c = c[0]
-    if not _c.change:
-        time.sleep(10)
-    else :
-        _c.change = False
-        _c.save()
+    i=0
+    while i<10 :
+        c = Client.objects.filter(key=key)
+        _c = c[0]
+        if not _c.change:
+            time.sleep(1)
+        else :
+            _c.change = False
+            _c.save()
+            break
     return JsonResponse(list(c.values()), safe=False)
     
     

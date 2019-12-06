@@ -34,10 +34,17 @@ def process():
 @csrf_exempt
 def upload(request):
     if request.method == 'POST':
+        key = request.POST.get('key', 'default')
         file = request.FILES['myFile']  
         size = len(file)
         return JsonResponse([{'size':size},],safe=False) 
     return "not post"
+
+@csrf_exempt
+def uploadresult(request):
+    key = request.POST.get('key', 'default')
+    json = request.body
+    return JsonResponse([{'statut':True},],safe=False) 
 
 @csrf_exempt
 def getCam(request):
@@ -68,6 +75,7 @@ def getState(request):
             _c.change = False
             _c.save()
             break
+        i+=1
     return JsonResponse(list(c.values()), safe=False)
     
     

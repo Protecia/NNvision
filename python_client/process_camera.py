@@ -5,18 +5,13 @@ Created on Sat Jun  1 07:34:04 2019
 @author: julien
 """
 
-
-
 import process_camera_thread as pc
 from threading import Event
 from multiprocessing import Process, Queue, Event as pEvent
 import requests
 import json
 from collections import namedtuple
-import settings
-
-
-
+import settings.settings as settings
 
 Q_img = Queue()
 Q_result = Queue()
@@ -29,24 +24,33 @@ def upload(Q):
         img = Q.get()
         files = {'myFile': img}
         try :
-            requests.post(settings.SERVER+"upload", files=files)
+            requests.post(settings.SERVER+"upload", files=files, data = {'key': settings.KEY})
+        except requests.exceptions.ConnectionError :
+            pass
+
+def uploadResult(Q):
+    while True:
+        result = Q.get()
+        resultString = (result[0],[(r[0].decode(),r[1],r[2]) for r in result[1] ])
+        resultJson = json.dumps(resultString)
+        try :
+            requests.post(settings.SERVER+"uploadresult", json=resultJson, data = {'key': settings.KEY})
         except requests.exceptions.ConnectionError :
             pass
 
 def getCamera(force='0'):
-    try :
-        r = requests.post(settings.SERVER+"getCam", data = {'key': settings.KEY, 'force':force} )
-        if force=='1' or r.text!='0' :
-            c = json.loads(r.text)
-            with open('camera/camera.json', 'w') as out:
-                json.dump(c,out)
-            r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
-            E_cam.set()
-            return True
-    except requests.exceptions.ConnectionError :
-        pc.logger.info('Can not find the remote server')
-        pass
-    return False
+    while True:
+        try :
+            r = requests.post(settings.SERVER+"getCam", data = {'key': settings.KEY, 'force':force} )
+            if force=='1' or r.text!='0' :
+                c = json.loads(r.text)
+                with open('camera/camera.json', 'w') as out:
+                    json.dump(c,out)
+                r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
+                E_cam.set()
+        except requests.exceptions.ConnectionError :
+            pc.logger.info('Can not find the remote server')
+            pass
 
 def main():
     getCamera(force='1')
@@ -96,8 +100,6 @@ def main():
         pCameraDownload.join()
         pState.join()
         print("Bye bye!")
-
-
 
 # start the threads
 if __name__ == '__main__':

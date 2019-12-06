@@ -68,6 +68,7 @@ def getState(request):
             _c.change = False
             _c.save()
             break
+        i+=1
     return JsonResponse(list(c.values()), safe=False)
     
     

@@ -1,16 +1,21 @@
 FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
 
-RUN apt-get update
+RUN apt-get update && apt-get install -y apt-utils && rm -rf /var/lib/apt/lists/*
 
 # Set the locale
-RUN apt-get install locales && locale-gen en_US.UTF-8
+RUN  apt-get update && apt-get install locales && locale-gen en_US.UTF-8 && rm -rf /var/lib/apt/lists/*
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils
 
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata  && apt-get install -y wget mlocate build-essential python3 python3-dev python3-pip nano cron yasm pkg-config cmake libjpeg-dev libpng-dev libtiff-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libgtk-3-dev libatlas-base-dev gfortran libpq-dev
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+               tzdata \
+               wget mlocate build-essential python3 python3-dev \
+               python3-pip nano cron yasm pkg-config cmake libjpeg-dev \
+               libpng-dev libtiff-dev libavcodec-dev libavformat-dev \
+               libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libgtk-3-dev libatlas-base-dev gfortran libpq-dev \
+               && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install psutil Pillow numpy
 

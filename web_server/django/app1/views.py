@@ -50,7 +50,7 @@ def uploadresult(request):
 def getCam(request):
     key = request.POST.get('key', 'default')
     force = request.POST.get('force', '0')
-    cam = Camera.objects.filter(active=True, client__key=key)
+    cam = Camera.objects.filter(client__key=key)
     if force=='1' or any([c.update for c in cam]):
         return JsonResponse(list(cam.values()), safe=False)
     time.sleep(10)

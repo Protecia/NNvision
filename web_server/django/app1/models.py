@@ -71,6 +71,8 @@ class Camera(models.Model):
     name = models.CharField(max_length=20)
     active = models.BooleanField()
     rec = models.BooleanField(default=True)
+    ip = models.GenericIPAddressField(null=True)
+    port = models.IntegerField(default = 80)
     url = models.URLField()
     auth_type = models.CharField(max_length=1, choices=AUTH_CHOICES, default='B')
     username = models.CharField(max_length=20)
@@ -84,12 +86,21 @@ class Camera(models.Model):
     height = models.IntegerField(default = 720)
     pos_sensivity = models.IntegerField(default = 150)
     update = models.BooleanField(default=False)
+    wait_for_set = models.BooleanField(default=False)
 
     def secure_rtsp(self):
         return "rtsp://"+self.rtsp.split('@')[1]
 
     def __str__(self):
         return '{} - {}'.format(self.id, self.name)
+    
+class Scheme(models.Model):
+    brand = models.CharField(max_length=20)
+    url = models.URLField()
+    rtsp = models.CharField(validators=[URLValidator(schemes=('rtsp',)),],max_length=200,blank=True)
+    
+    
+    
 
 # Informations about the detection of the cameras
 @python_2_unicode_compatible  # only if you need to support Python 2

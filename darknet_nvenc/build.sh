@@ -1,1 +1,1 @@
-docker build --rm -t darknet_nvenc .
+docker build --rm -t nnvision_client_base .

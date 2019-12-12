@@ -1,4 +1,4 @@
-FROM nnvision:3.0
+FROM nnvision_base_nvenc
 
 WORKDIR /NNvision/web_server
 COPY . /NNvision/web_server

@@ -1,7 +1,7 @@
 FROM nnvision_server_base
 
-WORKDIR /NNvision/web_server
-COPY . /NNvision/web_server
+WORKDIR /NNvision
+COPY . /NNvision
 
 # Activate postgresql
 USER postgres

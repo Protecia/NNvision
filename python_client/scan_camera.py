@@ -32,7 +32,6 @@ cameras_ip =  [ c['ip'] for c in cameras]
 for c in ws :
         if c in cameras_ip :
             cameras_ip.remove(c)
-            del ws[c]
             
 # ws contains new cam
 # camera_ip contains cam to inactive

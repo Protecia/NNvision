@@ -1,4 +1,4 @@
-FROM nnvision_base_nvenc
+FROM nnvision_server_base
 
 WORKDIR /NNvision/web_server
 COPY . /NNvision/web_server
@@ -6,7 +6,8 @@ COPY . /NNvision/web_server
 # Activate postgresql
 USER postgres
 RUN    /etc/init.d/postgresql start &&\
-       psql --command "CREATE DATABASE protecia_server WITH OWNER djdb;" && /etc/init.d/postgresql stop
+       psql --command "CREATE USER djdb WITH PASSWORD 'protecia';" && \
+       psql --command "CREATE DATABASE protecia WITH OWNER djdb;" && /etc/init.d/postgresql stop
 
 USER root
 # Activate django

@@ -1,4 +1,4 @@
-FROM darknet_nvenc
+FROM nnvision_client_base
 
 WORKDIR /NNvision
 COPY . /NNvision

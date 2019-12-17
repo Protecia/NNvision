@@ -11,6 +11,8 @@ import secrets
 
 
 class Client(models.Model):
+    first_name = models.CharField(max_length=200, blank = True)
+    name = models.CharField(max_length=200, blank = True)
     adress = models.CharField(max_length=200, blank = True)
     key = models.CharField(max_length=200, default=secrets.token_hex )
     serial_box = models.CharField(max_length=20, blank = True)
@@ -69,14 +71,14 @@ class Camera(models.Model):
         ('D', 'Digest'))
     client = models.ForeignKey(Client, default=1, on_delete=models.CASCADE)
     name = models.CharField(max_length=20)
-    active = models.BooleanField()
+    active = models.BooleanField(default=False)
     rec = models.BooleanField(default=True)
-    ip = models.GenericIPAddressField(null=True)
+    ip = models.GenericIPAddressField(null=True, unique=True)
     port = models.IntegerField(default = 80)
-    url = models.URLField()
+    url = models.URLField(blank=True)
     auth_type = models.CharField(max_length=1, choices=AUTH_CHOICES, default='B')
-    username = models.CharField(max_length=20)
-    password = models.CharField(max_length=20)
+    username = models.CharField(max_length=20, blank=True)
+    password = models.CharField(max_length=20, blank=True)
     rtsp = models.CharField(validators=[URLValidator(schemes=('rtsp',)),],max_length=200,blank=True)
     stream = models.BooleanField(default=False)
     threshold = models.FloatField(validators=[MinValueValidator(0.20), MaxValueValidator(0.99)],default=0.9)
@@ -96,8 +98,11 @@ class Camera(models.Model):
     
 class Scheme(models.Model):
     brand = models.CharField(max_length=20)
-    url = models.URLField()
-    rtsp = models.CharField(validators=[URLValidator(schemes=('rtsp',)),],max_length=200,blank=True)
+    url = models.CharField(max_length=200,blank=True)
+    rtsp = models.CharField(max_length=200,blank=True)
+    
+    def __str__(self):
+        return '{}'.format(self.brand)
     
     
     

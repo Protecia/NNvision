@@ -47,6 +47,8 @@ def getCamera(force='0'):
                 with open('camera/camera.json', 'w') as out:
                     json.dump(c,out)
                 r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
+                if force=='1' :
+                    break
                 E_cam.set()
         except requests.exceptions.ConnectionError :
             pc.logger.info('Can not find the remote server')

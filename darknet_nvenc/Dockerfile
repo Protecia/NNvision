@@ -17,7 +17,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
                libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libgtk-3-dev libatlas-base-dev gfortran libpq-dev \
                && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install psutil Pillow numpy WSDiscovery
+RUN pip3 install psutil Pillow numpy WSDiscovery requests
 
 WORKDIR /NNvision
 COPY . /NNvision

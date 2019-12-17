@@ -9,7 +9,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Count
-from .models import Camera, Result, Alert, Client
+from .models import Camera, Result, Alert, Client, Scheme
 from .forms import AlertForm, AutomatForm, DAY_CODE_STR
 from .process_alert import stop_adam_all
 from PIL import Image
@@ -17,6 +17,8 @@ from django.utils import translation
 from crontab import CronTab
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.db import IntegrityError
+import json
 
 # Create your views here.
 
@@ -30,6 +32,29 @@ def process():
         except ps.AccessDenied :
             pass
     return _process
+
+@csrf_exempt
+def newCam(request):
+    key = request.POST.get('key', 'default')
+    if len(Client.objects.filter(key=key))>0 :
+        data = json.loads(request.body)
+        for c in data:
+            cam = Camera(**c)
+            try :
+                cam.save()
+            except IntegrityError:
+                pass
+                
+        
+    return JsonResponse('0')
+    
+@csrf_exempt
+def getScheme(request):
+    key = request.POST.get('key', 'default')
+    if len(Client.objects.filter(key=key))>0 :
+        scheme = Scheme.objects.all()
+        return JsonResponse(list(scheme.values()), safe=False)
+    return JsonResponse('0')
 
 @csrf_exempt
 def upload(request):

@@ -3,7 +3,7 @@ from django.conf import settings
 
 # Register your models here.
 
-from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_info, Alert_adam, Alert_hook
+from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_info, Alert_adam, Alert_hook, Scheme
 
 class CameraAdmin(admin.ModelAdmin):
     exclude = ('rec','client',)

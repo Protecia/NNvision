@@ -17,7 +17,9 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
                libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libgtk-3-dev libatlas-base-dev gfortran libpq-dev \
                && rm -rf /var/lib/apt/lists/*
 
+
 RUN pip3 install psutil Pillow numpy WSDiscovery requests
+
 
 WORKDIR /NNvision
 COPY . /NNvision
@@ -40,8 +42,6 @@ RUN cd opencv-3.4.4 && mkdir build && cd build && \
 
 RUN cd darknet_pjreddie_201906 && make -s  --no-print-directory && \
     rm -rf backup include scripts src results examples && rm L* M* R*
-
-
 
 
 

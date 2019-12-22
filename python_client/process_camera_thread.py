@@ -15,26 +15,9 @@ import settings.settings as settings
 import os
 import darknet as dn
 import json
-import logging
-from logging.handlers import RotatingFileHandler
+from .log import logger
 
-#------------------------------------------------------------------------------
-# a simple config to create a file log - change the level to warning in
-# production
-#------------------------------------------------------------------------------
-level=settings.LOG
-logger = logging.getLogger()
-logger.setLevel(level)
-formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-file_handler = RotatingFileHandler(os.path.join('/NNvision/camera','camera.log'), 'a', 10000000, 1)
-file_handler.setLevel(level)
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
-#stream_handler = logging.StreamHandler()
-#stream_handler.setLevel(level)
-#logger.addHandler(stream_handler)
-#------------------------------------------------------------------------------
-
+logger = logger('process_camera_thread')
 
 threated_requests = settings.THREATED_REQUESTS
 path = settings.DARKNET_PATH

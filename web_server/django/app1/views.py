@@ -44,8 +44,7 @@ def setCam(request):
         return JsonResponse({'statut':False},safe=False)    
     cam = data['cam']
     for c in cam:
-        cam = Camera(**c)
-        Camera.client = client
+        cam, created = Camera.objects.update_or_create(client = client, ip = c['ip'], defaults=c)
         try :
             cam.save()
         except IntegrityError:

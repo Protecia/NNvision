@@ -11,19 +11,9 @@ import settings.settings as settings
 import requests
 from onvif import ONVIFCamera
 from onvif.exceptions import ONVIFError
+from .log import logger
 
-"""
-abandonned because onvif camera can give their url
-
-def getScheme():
-    try : 
-        r = requests.post(settings.SERVER+"getScheme", data = {'key': settings.KEY,} )
-        s = json.loads(r.text)
-        with open('camera/scheme.json', 'w') as out:
-            json.dump(s,out)
-    except requests.exceptions.ConnectionError :
-        pass
-"""     
+log = logger('scan_camera')
 
 def wsDiscovery():
     """Discover cameras on network using onvif discovery.
@@ -102,11 +92,13 @@ def getCam():
                         r = requests.get(http, auth = a , stream=False, timeout=1)
                         if r.ok:
                             new_cam['brand']=info['Manufacturer']
-                            new_cam['type']=info['Model']
+                            new_cam['model']=info['Model']
                             new_cam['url']= http
                             new_cam['auth_type']= t
                             new_cam['username'] = user
                             new_cam['password'] = passwd
+                            new_cam['active'] = True
+                            new_cam['wait_for_set'] = False
                             new_cam['rtsp'] = rtsp.split('//')[0]+'//'+user+':'+passwd+'@'+rtsp.split('//')[1]
                     except requests.exceptions.ConnectionError :
                         pass
@@ -114,7 +106,7 @@ def getCam():
     return list_cam
                                         
     
-newCam(list_cam)
+setCam(getCam())
             
             
             

@@ -12,6 +12,9 @@ import requests
 import json
 from collections import namedtuple
 import settings.settings as settings
+from .log import logger
+
+logger = logger('process_camera')
 
 Q_img = Queue()
 Q_result = Queue()
@@ -51,7 +54,7 @@ def getCamera(force='0'):
                     break
                 E_cam.set()
         except requests.exceptions.ConnectionError :
-            pc.logger.info('Can not find the remote server')
+            logger.info('Can not find the remote server')
             pass
 
 def main():

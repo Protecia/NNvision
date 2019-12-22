@@ -18,7 +18,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
                && rm -rf /var/lib/apt/lists/*
 
 
-RUN pip3 install psutil Pillow numpy WSDiscovery requests
+RUN pip3 install psutil Pillow numpy WSDiscovery requests onvif_zeep-roboticia
 
 
 WORKDIR /NNvision

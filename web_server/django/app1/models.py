@@ -14,10 +14,15 @@ class Client(models.Model):
     first_name = models.CharField(max_length=200, blank = True)
     name = models.CharField(max_length=200, blank = True)
     adress = models.CharField(max_length=200, blank = True)
+    cp = models.CharField(max_length=200, blank = True)
+    city = models.CharField(max_length=200, blank = True)
     key = models.CharField(max_length=200, default=secrets.token_hex )
     serial_box = models.CharField(max_length=20, blank = True)
     rec = models.BooleanField(default="False")
     change = models.BooleanField(default="False")
+    
+    def __str__(self):
+        return '{} -  {} -  {}'.format(self.first_name, self.name, self.adress, self.cp)
 
 
 
@@ -69,12 +74,13 @@ class Camera(models.Model):
     AUTH_CHOICES = (
         ('B', 'Basic'),
         ('D', 'Digest'))
-    client = models.ForeignKey(Client, default=1, on_delete=models.CASCADE)
-    name = models.CharField(max_length=20)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    name = models.CharField(max_length=20, default='unknow')
+    brand  = models.CharField(max_length=20, default='unknow')
     active = models.BooleanField(default=False)
     rec = models.BooleanField(default=True)
     ip = models.GenericIPAddressField(null=True, unique=True)
-    port = models.IntegerField(default = 80)
+    port_onvif = models.IntegerField(default = 80)
     url = models.URLField(blank=True)
     auth_type = models.CharField(max_length=1, choices=AUTH_CHOICES, default='B')
     username = models.CharField(max_length=20, blank=True)
@@ -88,7 +94,7 @@ class Camera(models.Model):
     height = models.IntegerField(default = 720)
     pos_sensivity = models.IntegerField(default = 150)
     update = models.BooleanField(default=False)
-    wait_for_set = models.BooleanField(default=False)
+    wait_for_set = models.BooleanField(default=True)
 
     def secure_rtsp(self):
         return "rtsp://"+self.rtsp.split('@')[1]

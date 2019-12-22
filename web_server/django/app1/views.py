@@ -34,19 +34,24 @@ def process():
     return _process
 
 @csrf_exempt
-def newCam(request):
-    key = request.POST.get('key', 'default')
-    if len(Client.objects.filter(key=key))>0 :
-        data = json.loads(request.body)
-        for c in data:
-            cam = Camera(**c)
-            try :
-                cam.save()
-            except IntegrityError:
-                pass
-                
-        
-    return JsonResponse('0')
+def setCam(request):
+    data = json.loads(request.body.decode())
+    try :
+        client = Client.objects.get(key=data['key'])
+    except :
+        time.sleep(10)
+        pass
+        return JsonResponse({'statut':False},safe=False)    
+    cam = data['cam']
+    for c in cam:
+        cam = Camera(**c)
+        Camera.client = client
+        try :
+            cam.save()
+        except IntegrityError:
+            pass
+    return JsonResponse({'statut':True},safe=False)        
+    
     
 @csrf_exempt
 def getScheme(request):
@@ -54,7 +59,7 @@ def getScheme(request):
     if len(Client.objects.filter(key=key))>0 :
         scheme = Scheme.objects.all()
         return JsonResponse(list(scheme.values()), safe=False)
-    return JsonResponse('0')
+    return JsonResponse('0',safe=False)
 
 @csrf_exempt
 def upload(request):

@@ -24,7 +24,7 @@ urlpatterns = [
     path('upload', views.upload),
     path('getCam', views.getCam),
     path('getScheme', views.getScheme),
-    path('newCam', views.newCam),
+    path('setCam', views.setCam),
     path('getState', views.getState),
     path('upCam', views.upCam),
     path('favicon.ico', favicon_view),

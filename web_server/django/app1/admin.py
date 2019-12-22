@@ -6,7 +6,7 @@ from django.conf import settings
 from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_info, Alert_adam, Alert_hook, Scheme
 
 class CameraAdmin(admin.ModelAdmin):
-    exclude = ('rec','client',)
+    exclude = ('rec',)
     def save_model(self, request, obj, form, change):
         if getattr(obj, 'client', None) is None:
             obj.client = Profile.objects.get(user=request.user).client
@@ -21,12 +21,21 @@ class CameraAdmin(admin.ModelAdmin):
         if not obj:
             return True
         return request.user.is_superuser or obj.client == Profile.objects.get(user=request.user).client
+    
+    def get_exclude(self, request, obj=None):
+        excluded = super().get_exclude(request, obj) or [] # get overall excluded fields
+
+        if not request.user.is_superuser: # if user is not a superuser
+            return excluded + ('client')
+
+        return excluded # otherwise return the default excluded fields if any
 
 
 admin.site.register(Camera, CameraAdmin)
 admin.site.register(Profile)
 admin.site.register(Alert_info)
 admin.site.register(Client)
+admin.site.register(Scheme)
 if settings.ACCESS_ADAM:
     admin.site.register(Alert_adam)
 if settings.ACCESS_HOOK:

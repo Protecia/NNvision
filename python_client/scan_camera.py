@@ -11,10 +11,11 @@ import settings.settings as settings
 import requests
 from onvif import ONVIFCamera
 from onvif.exceptions import ONVIFError
-from .log import logger
+from log import logger
 import time
+import filecmp
 
-log = logger('scan_camera')
+log = logger('scan_camera').run()
 
 def wsDiscovery():
     """Discover cameras on network using onvif discovery.
@@ -119,12 +120,18 @@ def getCam(lock, force='0'):
         return False
         pass
 
-def run(period, lock):
+def run(period, lock, E_cam_start, E_cam_stop):
+    old_cam = []
     while True :
         # scan the cam on the network
         ws = wsDiscovery()
         # pull the cam from the server
         cam = getCam(lock)
+        # check if changes
+        if cam == old_cam :
+            E_cam_start.set()
+        else :
+            E_cam_stop.set()
         # compare the cam with the camera file
         list_cam = compareCam(ws, cam)
         # push the cam to the server

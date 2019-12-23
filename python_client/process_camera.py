@@ -12,18 +12,20 @@ import requests
 import json
 from collections import namedtuple
 import settings.settings as settings
-from .log import logger
+from log import logger
 import scan_camera as sc
 
-logger = logger('process_camera')
+logger = logger('process_camera').run()
 
 Q_img = Queue()
 Q_result = Queue()
-E_cam = pEvent()
+E_cam_start = pEvent()
+E_cam_stop = pEvent()
 E_state = pEvent()
+lock = Lock()
 onLine = True
 
-def upload(Q):
+def uploadImage(Q):
     while True:
         img = Q.get()
         files = {'myFile': img}
@@ -47,9 +49,12 @@ def main():
     
     try:
         while(True):
-            with open('camera/camera.json', 'r') as json_file:
-                cameras = json.load(json_file, object_hook=lambda d: namedtuple('camera', d.keys())(*d.values()))
-                cameras = [c for c in cameras if c.active==True]
+            E_cam_start.wait()
+            E_cam_stop.clear()
+            with lock :
+                with open('camera/camera.json', 'r') as json_file:
+                    cameras = json.load(json_file, object_hook=lambda d: namedtuple('camera', d.keys())(*d.values()))
+            cameras = [c for c in cameras if c.active==True]
             list_thread=[]
             list_event=[Event() for i in range(len(cameras))]
             for n, c in enumerate(cameras):
@@ -61,14 +66,15 @@ def main():
             print('darknet is running...')
             # Just run4ever (until Ctrl-c...)
             list_event[0].set()
-            pImageUpload = Process(target=upload, args=(Q_img,))
-            pCameraDownload = Process(target=sc.run)
+            pImageUpload = Process(target=uploadImage, args=(Q_img,))
+            pCameraDownload = Process(target=sc.run, args=(1,lock, E_cam_start, E_cam_stop))
             pState = Process(target=pc.getState, args=(E_state,))
             pImageUpload.start()
             pCameraDownload.start()
             pState.start()
-            E_cam.clear()
-            E_cam.wait()
+            
+            E_cam_stop.wait()
+            E_cam_start.clear()
             for t in list_thread:
                 t.running=False
                 t.running_rtsp=False

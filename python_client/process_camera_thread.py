@@ -15,9 +15,9 @@ import settings.settings as settings
 import os
 import darknet as dn
 import json
-from .log import logger
+from log import logger
 
-logger = logger('process_camera_thread')
+logger = logger('process_camera_thread').run()
 
 threated_requests = settings.THREATED_REQUESTS
 path = settings.DARKNET_PATH

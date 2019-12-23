@@ -24,4 +24,7 @@ class logger(object):
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
         
+    def run(self):
+        return self.logger
+        
 

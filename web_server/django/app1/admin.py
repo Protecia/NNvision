@@ -6,7 +6,24 @@ from django.conf import settings
 from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_info, Alert_adam, Alert_hook, Scheme
 
 class CameraAdmin(admin.ModelAdmin):
-    exclude = ('rec',)
+    exclude = ('rec','wait_for_set','update','from_client')
+    '''
+    def delete_model(self, request, obj):
+        client = Profile.objects.get(user=request.user).client
+        client.camera = 1
+        client.save()
+        super().delete_model(request, obj)
+    '''
+        
+    def get_readonly_fields(self, request, obj=None):
+        fields=self.readonly_fields
+        if obj and obj.from_client == True :
+            fields += ('ip','port_onvif','url','auth_type','rtsp','brand','client','model')
+        if not request.user.is_superuser :
+            fields += ('threshold','gap','pos_sensivity','reso','width','height')
+        return fields
+    
+    
     def save_model(self, request, obj, form, change):
         if getattr(obj, 'client', None) is None:
             obj.client = Profile.objects.get(user=request.user).client

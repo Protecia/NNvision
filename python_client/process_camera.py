@@ -7,12 +7,13 @@ Created on Sat Jun  1 07:34:04 2019
 
 import process_camera_thread as pc
 from threading import Event
-from multiprocessing import Process, Queue, Event as pEvent
+from multiprocessing import Process, Queue, Lock, Event as pEvent
 import requests
 import json
 from collections import namedtuple
 import settings.settings as settings
 from .log import logger
+import scan_camera as sc
 
 logger = logger('process_camera')
 
@@ -41,24 +42,9 @@ def uploadResult(Q):
         except requests.exceptions.ConnectionError :
             pass
 
-def getCamera(force='0'):
-    while True:
-        try :
-            r = requests.post(settings.SERVER+"getCam", data = {'key': settings.KEY, 'force':force} )
-            if force=='1' or r.text!='0' :
-                c = json.loads(r.text)
-                with open('camera/camera.json', 'w') as out:
-                    json.dump(c,out)
-                r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
-                if force=='1' :
-                    break
-                E_cam.set()
-        except requests.exceptions.ConnectionError :
-            logger.info('Can not find the remote server')
-            pass
 
 def main():
-    getCamera(force='1')
+    
     try:
         while(True):
             with open('camera/camera.json', 'r') as json_file:
@@ -76,7 +62,7 @@ def main():
             # Just run4ever (until Ctrl-c...)
             list_event[0].set()
             pImageUpload = Process(target=upload, args=(Q_img,))
-            pCameraDownload = Process(target=getCamera)
+            pCameraDownload = Process(target=sc.run)
             pState = Process(target=pc.getState, args=(E_state,))
             pImageUpload.start()
             pCameraDownload.start()
@@ -91,7 +77,7 @@ def main():
                 except AttributeError:
                     pass
                 t.join()
-            pc.logger.warning('Camera change restart !')
+            logger.warning('Camera change restart !')
 
     except KeyboardInterrupt:
         for t in list_thread:

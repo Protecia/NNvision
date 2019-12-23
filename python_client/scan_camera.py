@@ -12,6 +12,7 @@ import requests
 from onvif import ONVIFCamera
 from onvif.exceptions import ONVIFError
 from .log import logger
+import time
 
 log = logger('scan_camera')
 
@@ -52,36 +53,35 @@ def getOnvifUri(ip,port,user,passwd):
     except ONVIFError :
         return None
     return info, rtsp, http
-    
+
 def setCam(cam):
     camJson = {'key':settings.KEY,'cam':cam}
-    try : 
+    try :
         r = requests.post(settings.SERVER+"setCam", json=camJson )
         s = json.loads(r.text)
         return s
     except requests.exceptions.ConnectionError :
         pass
     return False
-    
-def getCam():
-    ws = wsDiscovery()
-    with open('camera/camera.json', 'r') as json_file:
-        cameras = json.load(json_file)
+
+def compareCam(ws, cameras):
     cameras_ip =  [ c['ip'] for c in cameras if c['wait_for_set'] is False]
     ws_copy = ws.copy()
     for c in ws_copy :
         if c in cameras_ip:
             del ws[c]
-            cameras_ip.remove(c) 
-    cameras_users = [(c['username'],c['password']) for c in cameras]        
+            cameras_ip.remove(c)
+    cameras_users = [(c['username'],c['password']) for c in cameras]
     # ws contains new cam or cam not set
     # test connection
     list_cam = []
     for ip,port in ws.items() :
         new_cam = {}
-        new_cam['name']= 'unknow' 
+        new_cam['name']= 'unknow'
         new_cam['ip'] = ip
         new_cam['port_onvif'] = port
+        new_cam['wait_for_set'] = True
+        new_cam['from_client'] = True
         for user , passwd in cameras_users:
             onvif = getOnvifUri(ip,port,user,passwd)
             if onvif :
@@ -104,17 +104,43 @@ def getCam():
                         pass
         list_cam.append(new_cam)
     return list_cam
-                                        
-    
-setCam(getCam())
-            
-            
-            
-            
+
+def getCam(lock, force='0'):
+    try :
+        r = requests.post(settings.SERVER+"getCam", data = {'key': settings.KEY, 'force':force} )
+        c = json.loads(r.text)
+        with lock:
+            with open('camera/camera.json', 'w') as out:
+                json.dump(c,out)
+        r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
+        return c
+    except requests.exceptions.ConnectionError :
+        logger.info('Can not find the remote server')
+        return False
+        pass
+
+def run(period, lock):
+    while True :
+        # scan the cam on the network
+        ws = wsDiscovery()
+        # pull the cam from the server
+        cam = getCam(lock)
+        # compare the cam with the camera file
+        list_cam = compareCam(ws, cam)
+        # push the cam to the server
+        setCam(list_cam)
+        # wait for the loop
+        time.sleep(period)
+
+
+
+
+
+
 # camera_ip contains cam to inactive
-            
-            
-""" 
+
+
+"""
 new cam -> test scheme and set
 inactive cam
 """

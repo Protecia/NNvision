@@ -82,8 +82,8 @@ def getCam(request):
     cam = Camera.objects.filter(client__key=key)
     if force=='1' or any([c.update for c in cam]):
         return JsonResponse(list(cam.values()), safe=False)
-    time.sleep(10)
-    return HttpResponse('0') 
+    time.sleep(20)
+    return JsonResponse(list(cam.values()), safe=False)
 
 @csrf_exempt
 def upCam(request):

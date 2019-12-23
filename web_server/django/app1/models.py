@@ -18,9 +18,9 @@ class Client(models.Model):
     city = models.CharField(max_length=200, blank = True)
     key = models.CharField(max_length=200, default=secrets.token_hex )
     serial_box = models.CharField(max_length=20, blank = True)
-    rec = models.BooleanField(default="False")
-    change = models.BooleanField(default="False")
-    
+    rec = models.BooleanField(default=False)
+    change = models.BooleanField(default=False)
+        
     def __str__(self):
         return '{} -  {} -  {}'.format(self.first_name, self.name, self.adress, self.cp)
 
@@ -95,7 +95,8 @@ class Camera(models.Model):
     height = models.IntegerField(default = 720)
     pos_sensivity = models.IntegerField(default = 150)
     update = models.BooleanField(default=False)
-    wait_for_set = models.BooleanField(default=True)
+    wait_for_set = models.BooleanField(default=False)
+    from_client = models.BooleanField(default=False)
 
     def secure_rtsp(self):
         return "rtsp://"+self.rtsp.split('@')[1]

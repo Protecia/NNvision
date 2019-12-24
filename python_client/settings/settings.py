@@ -6,7 +6,7 @@ Created on Tue Dec  3 15:06:16 2019
 """
 import logging
 
-LOG = logging.DEBUG
+LOG = logging.WARNING
 
 CFG = 'cfg/yolov3-spp.cfg'
 WEIGHTS = '../weights/yolov3-spp.weights'

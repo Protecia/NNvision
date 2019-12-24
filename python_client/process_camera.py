@@ -32,10 +32,10 @@ def main():
             # start the process to synchronize cameras
             pCameraDownload = Process(target=sc.run, args=(1,lock, E_cam_start, E_cam_stop))
             pCameraDownload.start()
-            logger_pc.info('scan camera launch, E_cam_start.is_set : {}  / E_cam_stopt.is_set : {}'.format(E_cam_start.is_set(),E_cam_stop.is_set()) )
+            logger_pc.warning('scan camera launch, E_cam_start.is_set : {}  / E_cam_stopt.is_set : {}'.format(E_cam_start.is_set(),E_cam_stop.is_set()) )
             E_cam_start.wait()
             E_cam_stop.clear()
-            logger_pc.info('scan camera launch, E_cam_start.is_set : {}  / E_cam_stopt.is_set : {}'.format(E_cam_start.is_set(),E_cam_stop.is_set()) )
+            logger_pc.warning('scan camera launch, E_cam_start.is_set : {}  / E_cam_stopt.is_set : {}'.format(E_cam_start.is_set(),E_cam_stop.is_set()) )
             with lock :
                 with open('camera/camera.json', 'r') as json_file:
                     cameras = json.load(json_file, object_hook=lambda d: namedtuple('camera', d.keys())(*d.values()))
@@ -53,7 +53,7 @@ def main():
             list_event[0].set()
             pImageUpload = Process(target=up.uploadImage, args=(Q_img,))
             pResultUpload = Process(target=up.uploadResult, args=(Q_result,))
-            pState = Process(target=pc.getState, args=(E_state,))
+            pState = Process(target=up.getState, args=(E_state,))
             pImageUpload.start()
             pResultUpload.start()
             pState.start()

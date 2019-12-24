@@ -7,6 +7,8 @@ Created on Tue Dec 24 16:14:52 2019
 import requests
 import settings.settings as settings
 from log import Logger
+import time
+import json
 
 logger = Logger(__name__).run()
 
@@ -30,3 +32,17 @@ def uploadResult(Q):
         except requests.exceptions.ConnectionError :
             pass
         logger.INFO('send json : {}'.format(resultJson))
+        
+
+def getState(E):
+    while True:
+        try :
+            r = requests.post(settings.SERVER+"getState", data = {'key': settings.KEY, } )
+            rec = json.loads(r.text)[0]['rec']
+            if rec :
+                E.set()
+            else :
+                E.clear()
+        except requests.exceptions.ConnectionError :
+            logger.info('getState Can not find the remote server')
+            time.sleep(5)

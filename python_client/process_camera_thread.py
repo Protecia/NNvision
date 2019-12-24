@@ -33,19 +33,6 @@ def EtoB(E):
     else :
         return False
 
-def getState(E):
-    while True:
-        try :
-            r = requests.post(settings.SERVER+"getState", data = {'key': settings.KEY, } )
-            rec = json.loads(r.text)[0]['rec']
-            if rec :
-                E.set()
-            else :
-                E.clear()
-        except requests.exceptions.ConnectionError :
-            logger.info('getState Can not find the remote server')
-            time.sleep(5)
-
 
 # function to extract same objects in 2 lists
 def get_list_same (l_old,l_under,thresh):
@@ -247,7 +234,7 @@ class ProcessCamera(Thread):
                     self.logger.warning('Q_img size : {}'.format(self.Q_img.qsize()))
                     self.Q_result.put((date+'_'+str(ifile)+'.jpg',result_filtered))
                     self.logger.warning('Q_result size : {}'.format(self.Q_result.qsize()))
-                    self.logger.info('>>>>>>>>>>>>>>>--------- Result send to queue '
+                    self.logger.warning('>>>>>>>>>>>>>>>--------- Result send to queue '
                     '-------------<<<<<<<<<<<<<<<<<<<<<\n')
                     self.result_DB = result_filtered
                 self.logger.info('brut result process in {}s '.format(time.time()-t))

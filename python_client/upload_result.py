@@ -23,15 +23,16 @@ def uploadImage(Q):
 
 def uploadResult(Q):
     while True:
+        logger.warning('starting upload result')
         result = Q.get()
-        logger.INFO('get from queue : {}'.format(result))
+        logger.info('get from queue : {}'.format(result))
         resultString = (result[0],[(r[0].decode(),r[1],r[2]) for r in result[1] ])
         resultJson = {'key': settings.KEY, 'result' : resultString }
         try :
             requests.post(settings.SERVER+"uploadresult", json=resultJson)
         except requests.exceptions.ConnectionError :
             pass
-        logger.INFO('send json : {}'.format(resultJson))
+        logger.warning('send json : {}'.format(resultJson))
         
 
 def getState(E):

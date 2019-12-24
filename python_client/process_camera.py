@@ -88,9 +88,14 @@ def main():
             except AttributeError:
                 pass
             t.join()
-        pImageUpload.join()
-        pCameraDownload.join()
+        pImageUpload.terminate()
+        pState.terminate()
+        pCameraDownload.terminate()
+        pResultUpload.terminate()
+        pImageUpload.join()()
         pState.join()
+        pCameraDownload.join()
+        pResultUpload.joint()
         print("Bye bye!")
 
 # start the threads

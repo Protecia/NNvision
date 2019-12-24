@@ -12,10 +12,10 @@ import requests
 import json
 from collections import namedtuple
 import settings.settings as settings
-from log import logger
+from log import Logger
 import scan_camera as sc
 
-logger = logger('process_camera').run()
+logger_pc = Logger('process_camera').run()
 
 Q_img = Queue()
 Q_result = Queue()
@@ -49,6 +49,9 @@ def main():
     
     try:
         while(True):
+            # start the process to synchronize cameras
+            pCameraDownload = Process(target=sc.run, args=(1,lock, E_cam_start, E_cam_stop))
+            logger_pc.info('scan camera launch, E_cam_start.is_set : {}  / E_cam_stopt.is_set : {}'.format(E_cam_start.is_set(),E_cam_stop.is_set()) )
             E_cam_start.wait()
             E_cam_stop.clear()
             with lock :
@@ -67,7 +70,7 @@ def main():
             # Just run4ever (until Ctrl-c...)
             list_event[0].set()
             pImageUpload = Process(target=uploadImage, args=(Q_img,))
-            pCameraDownload = Process(target=sc.run, args=(1,lock, E_cam_start, E_cam_stop))
+            
             pState = Process(target=pc.getState, args=(E_state,))
             pImageUpload.start()
             pCameraDownload.start()
@@ -83,7 +86,7 @@ def main():
                 except AttributeError:
                     pass
                 t.join()
-            logger.warning('Camera change restart !')
+            logger_pc.warning('Camera change restart !')
 
     except KeyboardInterrupt:
         for t in list_thread:

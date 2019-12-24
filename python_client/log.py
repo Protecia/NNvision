@@ -14,7 +14,7 @@ import os
 # production
 #------------------------------------------------------------------------------
 
-class logger(object):
+class Logger(object):
     def __init__(self, name):
         self.logger = logging.getLogger()
         self.logger.setLevel(settings.LOG)

@@ -16,7 +16,7 @@ import os
 
 class Logger(object):
     def __init__(self, name):
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger(name)
         self.logger.setLevel(settings.LOG)
         formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
         file_handler = RotatingFileHandler(os.path.join('/NNvision/camera',name+'.log'), 'a', 10000000, 1)

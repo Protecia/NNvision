@@ -8,12 +8,11 @@ Created on Sat Jun  1 07:34:04 2019
 import process_camera_thread as pc
 from threading import Event
 from multiprocessing import Process, Queue, Lock, Event as pEvent
-import requests
 import json
 from collections import namedtuple
-import settings.settings as settings
 from log import Logger
 import scan_camera as sc
+import upload_result as up
 
 logger_pc = Logger('process_camera').run()
 
@@ -25,25 +24,6 @@ E_state = pEvent()
 lock = Lock()
 onLine = True
 
-def uploadImage(Q):
-    while True:
-        img = Q.get()
-        files = {'myFile': img}
-        try :
-            requests.post(settings.SERVER+"upload", files=files, data = {'key': settings.KEY})
-        except requests.exceptions.ConnectionError :
-            pass
-
-def uploadResult(Q):
-    while True:
-        result = Q.get()
-        resultString = (result[0],[(r[0].decode(),r[1],r[2]) for r in result[1] ])
-        resultJson = json.dumps(resultString)
-        try :
-            requests.post(settings.SERVER+"uploadresult", json=resultJson, data = {'key': settings.KEY})
-        except requests.exceptions.ConnectionError :
-            pass
-
 
 def main():
     
@@ -51,9 +31,11 @@ def main():
         while(True):
             # start the process to synchronize cameras
             pCameraDownload = Process(target=sc.run, args=(1,lock, E_cam_start, E_cam_stop))
+            pCameraDownload.start()
             logger_pc.info('scan camera launch, E_cam_start.is_set : {}  / E_cam_stopt.is_set : {}'.format(E_cam_start.is_set(),E_cam_stop.is_set()) )
             E_cam_start.wait()
             E_cam_stop.clear()
+            logger_pc.info('scan camera launch, E_cam_start.is_set : {}  / E_cam_stopt.is_set : {}'.format(E_cam_start.is_set(),E_cam_stop.is_set()) )
             with lock :
                 with open('camera/camera.json', 'r') as json_file:
                     cameras = json.load(json_file, object_hook=lambda d: namedtuple('camera', d.keys())(*d.values()))
@@ -69,11 +51,11 @@ def main():
             print('darknet is running...')
             # Just run4ever (until Ctrl-c...)
             list_event[0].set()
-            pImageUpload = Process(target=uploadImage, args=(Q_img,))
-            
+            pImageUpload = Process(target=up.uploadImage, args=(Q_img,))
+            pResultUpload = Process(target=up.uploadResult, args=(Q_result,))
             pState = Process(target=pc.getState, args=(E_state,))
             pImageUpload.start()
-            pCameraDownload.start()
+            pResultUpload.start()
             pState.start()
             
             E_cam_stop.wait()
@@ -86,6 +68,15 @@ def main():
                 except AttributeError:
                     pass
                 t.join()
+            pImageUpload.terminate()
+            pState.terminate()
+            pCameraDownload.terminate()
+            pResultUpload.terminate()
+            pImageUpload.join()()
+            pState.join()
+            pCameraDownload.join()
+            pResultUpload.joint()
+            
             logger_pc.warning('Camera change restart !')
 
     except KeyboardInterrupt:

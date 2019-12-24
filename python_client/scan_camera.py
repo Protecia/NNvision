@@ -129,10 +129,10 @@ def run(period, lock, E_cam_start, E_cam_stop):
         # check if changes
         if cam == old_cam :
             E_cam_start.set()
-            logger_sc.debug('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
+            logger_sc.info('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
         else :
             E_cam_stop.set()
-            logger_sc.debug(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
+            logger_sc.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
         old_cam = cam
         # compare the cam with the camera file
         list_cam = compareCam(ws, cam)

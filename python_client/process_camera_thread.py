@@ -232,7 +232,7 @@ class ProcessCamera(Thread):
                     img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
                     self.Q_img.put((date+'_'+str(ifile)+'.jpg',img_bytes))
                     self.logger.warning('Q_img size : {}'.format(self.Q_img.qsize()))
-                    self.Q_result.put((date+'_'+str(ifile)+'.jpg',result_filtered))
+                    self.Q_result.put((date+'_'+str(ifile)+'.jpg', self.cam.id , result_filtered, result_darknet))
                     self.logger.warning('Q_result size : {}'.format(self.Q_result.qsize()))
                     self.logger.warning('>>>>>>>>>>>>>>>--------- Result send to queue '
                     '-------------<<<<<<<<<<<<<<<<<<<<<\n')

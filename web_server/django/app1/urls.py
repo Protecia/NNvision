@@ -3,7 +3,7 @@ from django.conf.urls import url
 from django.conf.urls.static import static
 from django.views.generic.base import RedirectView
 from django.urls import path, include
-from . import views
+from . import views, api
 
 favicon_view = RedirectView.as_view(url='/static/app1/img/favicon.ico', permanent=True)
 
@@ -21,11 +21,12 @@ urlpatterns = [
     path('camera/last/<int:cam>', views.last, name='last image'),
     path('img/last/<int:cam_id>', views.get_last_analyse_img, name='image'),
     path('thumbnail/<path:path_im>', views.thumbnail, name='thumbnail'),
-    path('upload', views.upload),
-    path('getCam', views.getCam),
-    path('getScheme', views.getScheme),
-    path('setCam', views.setCam),
-    path('getState', views.getState),
-    path('upCam', views.upCam),
+    path('uploadimage', api.uploadImage),
+    path('getCam', api.getCam),
+    path('getScheme', api.getScheme),
+    path('uploadresult', api.uploadResult),
+    path('setCam', api.setCam),
+    path('getState', api.getState),
+    path('upCam', api.upCam),
     path('favicon.ico', favicon_view),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

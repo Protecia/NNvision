@@ -26,8 +26,8 @@ def uploadResult(Q):
         logger.warning('starting upload result')
         result = Q.get()
         logger.info('get from queue : {}'.format(result))
-        resultString = (result[0],[(r[0].decode(),r[1],r[2]) for r in result[1] ])
-        resultJson = {'key': settings.KEY, 'result' : resultString }
+        img, cam,  result_filtered, result_darknet = result[0], result[1], [(r[0].decode(),r[1],r[2]) for r in result[2] ], [(r[0].decode(),r[1],r[2]) for r in result[3] ]
+        resultJson = {'key': settings.KEY, 'img' : img, 'cam' : cam, 'result_filtered' : result_filtered, 'result_darknet' : result_darknet }
         try :
             requests.post(settings.SERVER+"uploadresult", json=resultJson)
         except requests.exceptions.ConnectionError :

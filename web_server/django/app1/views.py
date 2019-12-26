@@ -9,7 +9,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Count
-from .models import Camera, Result, Alert, Client, Scheme
+from .models import Camera, Result, Alert, Client, Scheme, Object
 from .forms import AlertForm, AutomatForm, DAY_CODE_STR
 from .process_alert import stop_adam_all
 from PIL import Image
@@ -19,6 +19,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
 import json
+from django.db import transaction
 
 # Create your views here.
 
@@ -41,7 +42,7 @@ def setCam(request):
     except :
         time.sleep(10)
         pass
-        return JsonResponse({'statut':False},safe=False)    
+        return JsonResponse({'statut':False},safe=False)
     cam = data['cam']
     for c in cam:
         cam, created = Camera.objects.update_or_create(client = client, ip = c['ip'], defaults=c)
@@ -49,9 +50,9 @@ def setCam(request):
             cam.save()
         except IntegrityError:
             pass
-    return JsonResponse({'statut':True},safe=False)        
-    
-    
+    return JsonResponse({'statut':True},safe=False)
+
+
 @csrf_exempt
 def getScheme(request):
     key = request.POST.get('key', 'default')
@@ -61,19 +62,38 @@ def getScheme(request):
     return JsonResponse('0',safe=False)
 
 @csrf_exempt
-def upload(request):
+def uploadImage(request):
     if request.method == 'POST':
         key = request.POST.get('key', 'default')
-        file = request.FILES['myFile']  
+        file = request.FILES['myFile']
         size = len(file)
-        return JsonResponse([{'size':size},],safe=False) 
+        return JsonResponse([{'size':size},],safe=False)
     return "not post"
 
 @csrf_exempt
-def uploadresult(request):
-    key = request.POST.get('key', 'default')
-    json = request.body
-    return JsonResponse([{'statut':True},],safe=False) 
+def uploadResult(request):
+    data = json.loads(request.body.decode())
+    try :
+        client = Client.objects.get(key=data['key'])
+    except :
+        time.sleep(10)
+        pass
+        return JsonResponse({'statut':False},safe=False)
+    with transaction.atomic():
+       result_DB = Result(camera=data['cam'],img = client.id+data['img'], brut=data['result_darknet'])
+       for r in data['result_filtered']:
+           object_DB = Object(result = result_DB,
+                              result_object=r[0],
+                              result_prob=r[1],
+                              result_loc1=r[2][0],
+                              result_loc2=r[2][1],
+                              result_loc3=r[2][2],
+                              result_loc4=r[2][3])
+           object_DB.save()
+       result_DB.save()
+
+
+    return JsonResponse([{'statut':True},],safe=False)
 
 @csrf_exempt
 def getCam(request):
@@ -89,8 +109,8 @@ def getCam(request):
 def upCam(request):
     key = request.POST.get('key', 'default')
     Camera.objects.filter(active=True, client__key=key).update(update=False)
-    return HttpResponse('0') 
-    
+    return HttpResponse('0')
+
 @csrf_exempt
 def getState(request):
     key = request.POST.get('key', 'default')
@@ -106,9 +126,9 @@ def getState(request):
             break
         i+=1
     return JsonResponse(list(c.values()), safe=False)
-    
-    
-    
+
+
+
 
 
 def index(request):
@@ -126,10 +146,10 @@ def index(request):
         #if settings.DEBUG:
         if True:
             with open(os.path.join(settings.BASE_DIR,'process_camera.log'), 'w') as log:
-                Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')], 
+                Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')],
                       stdout=log, stderr=STDOUT)
             with open(os.path.join(settings.BASE_DIR,'process_alert.log'), 'w') as loga:
-                Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')], 
+                Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')],
                       stdout=loga, stderr=STDOUT)
         else:
             Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
@@ -145,7 +165,7 @@ def index(request):
         running = True
     elif len(p[0])==0 and len(p[1])==0:
         running = False
-    else : 
+    else :
         [ item.kill() for sublist in p for item in sublist]
         running = False
 
@@ -161,17 +181,17 @@ def warning(request, first_alert):
             a.save()
         stop_adam_all()
         return redirect('/')
-    
-    alert = alert.first() 
+
+    alert = alert.first()
     if not alert :
-        return redirect('/')    
-    
+        return redirect('/')
+
     first_alert=int(first_alert)
     imgs_alert = Result.objects.filter(alert=True).filter(time__gte=alert.when).order_by('-id')[first_alert:first_alert+9]
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
     context = { 'first_alert' : first_alert, 'img_alert_array' : img_alert_array}
     return render(request, 'app1/warning.html', context)
-    
+
 
 @login_required
 @permission_required('app1.camera')
@@ -199,7 +219,7 @@ def darknet(request):
             Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
             time.sleep(2)
     if d_action == 'stop' :
-        if len(p[0])==0 and len(p[1])==0 : message = "Servers are not running !" 
+        if len(p[0])==0 and len(p[1])==0 : message = "Servers are not running !"
         else :
             [ item.kill() for sublist in p for item in sublist]
     context = { 'message' : message, 'category' : 'warning', 'd_action' :d_action, 'url_state' : '/darknet/state'}
@@ -235,7 +255,7 @@ def panel(request, nav, first):
         form = AlertForm()
         context = { 'class':filter_class, 'form':form, 'first' : first,
                'first_alert' : first, 'img_array' : img_array, 'img_alert_array' : img_alert_array, 'logo_client':settings.RESELLER_LOGO}
-        return render(request, 'app1/panel.html', context)  
+        return render(request, 'app1/panel.html', context)
     if filter_class == "all" :
         if nav == 'd':
             imgs = Result.objects.all().order_by('-id')[first:first+12]
@@ -271,7 +291,7 @@ def panel(request, nav, first):
                 time_result = Result.objects.filter(alert=True).earliest('time').time
             imgs = Result.objects.filter(time__lte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[:12]
             first_alert = first
-            first = len(Result.objects.filter(time__gte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object')))        
+            first = len(Result.objects.filter(time__gte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object')))
     img_array = [imgs[i:i + 3] for i in range(0, len(imgs), 3)]
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
     form = AlertForm()
@@ -289,7 +309,7 @@ def panel_detail(request, id):
 def warning_detail(request, id):
     img = Result.objects.get(id=id)
     alert = Alert.objects.filter(active=True).order_by('when')
-    alert = alert.first() 
+    alert = alert.first()
     if not alert :
         return redirect('/')
     imgs_alert = Result.objects.filter(alert=True).filter(time__gte=alert.when)
@@ -298,7 +318,7 @@ def warning_detail(request, id):
         return render(request, 'app1/panel_detail.html', {'img':img, 'id':id})
     else:
         return redirect('/')
-        
+
 
 @login_required
 @permission_required('app1.camera')
@@ -307,7 +327,7 @@ def alert(request, id=0, id2=-1):
     if request.method == 'POST':
         typeForm = request.POST.get("type", "")
         # create a form instance and populate it with data from the request:
-        if typeForm == "alert": 
+        if typeForm == "alert":
             form = AlertForm(request.POST)
             # check whether it's valid:
             if form.is_valid()  :
@@ -341,19 +361,19 @@ def alert(request, id=0, id2=-1):
         form = AlertForm()
         aform = AutomatForm()
     if id !=0 :
-        Alert.objects.get(pk=id).delete()     
+        Alert.objects.get(pk=id).delete()
     if id2 != -1:
         cron = CronTab(user=True)
         cron.remove(cron[int(id2)])
-        cron.write()   
-    
-    # get all the alert and all the automatism 
+        cron.write()
+
+    # get all the alert and all the automatism
     alert = Alert.objects.all()
     cron = CronTab(user=True)
     auto = [(c.minute.render(), c.hour.render(), DAY_CODE_STR[c.dow.render()], c.command.split()[2]) for c in cron]
     #auto = [(a[0],a[1],DAY_CODE_STR[a[4]],a[-1]) for a in auto]
     return render(request, 'app1/alert.html', {'message' : form.non_field_errors,
-           'category' : 'warning','form': form, 'alert':alert, 'aform':aform, 
+           'category' : 'warning','form': form, 'alert':alert, 'aform':aform,
            'auto':auto, 'no_free':settings.ACCESS_NO_FREE, 'adam':settings.ACCESS_ADAM, 'hook':settings.ACCESS_HOOK, 'logo_client':settings.RESELLER_LOGO })
 
 
@@ -405,6 +425,6 @@ def thumbnail(request,path_im):
     im.thumbnail((settings.IMAGE_PANEL_MAX_WIDTH,settings.IMAGE_PANEL_MAX_HIGHT), Image.ANTIALIAS)
     im.save(response, 'JPEG')
     return response
-    
-    
-    
+
+
+

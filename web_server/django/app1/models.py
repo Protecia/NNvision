@@ -119,7 +119,8 @@ class Scheme(models.Model):
 @python_2_unicode_compatible  # only if you need to support Python 2
 class Result(models.Model):
     camera = models.ForeignKey(Camera, on_delete=models.CASCADE)
-    file = models.FilePathField(path='/NNvivison/media_root/images', recursive=True, allow_folders=True, default='detect' )
+    #file = models.FilePathField(path='/NNvivison/media_root/images', recursive=True, allow_folders=True, default='detect' )
+    file = models.CharField(max_length=100, default='detect')
     time = models.DateTimeField(auto_now=True)
     brut = models.TextField(default='')
     alert = models.BooleanField(default=False)

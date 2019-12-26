@@ -13,6 +13,7 @@ from django.db import IntegrityError
 import json
 from django.db import transaction
 from django.http import HttpResponseRedirect, HttpResponse
+from django.conf import settings
 
 @csrf_exempt
 def setCam(request):
@@ -45,8 +46,18 @@ def getScheme(request):
 def uploadImage(request):
     if request.method == 'POST':
         key = request.POST.get('key', 'default')
-        file = request.FILES['myFile']
-        size = len(file)
+        img_name = request.POST.get('img_name', 'default')
+        try :
+            client = Client.objects.get(key=key)
+        except :
+            time.sleep(10)
+            pass
+            return JsonResponse({'statut':False},safe=False)     
+        img = request.FILES['myFile']
+        size = len(img)
+        img_path = settings.MEDIA_ROOT+str(client.id)+'/'+img_name
+        with open(img_path, 'wb') as file:
+            file.write(img)
         return JsonResponse([{'size':size},],safe=False)
     return "not post"
 
@@ -55,12 +66,14 @@ def uploadResult(request):
     data = json.loads(request.body.decode())
     try :
         client = Client.objects.get(key=data['key'])
+        camera = Camera.objects.get(pk=data['cam'])
     except :
         time.sleep(10)
         pass
         return JsonResponse({'statut':False},safe=False)
     with transaction.atomic():
-       result_DB = Result(camera=data['cam'],img = client.id+data['img'], brut=data['result_darknet'])
+       result_DB = Result(camera=camera,file = str(client.id)+'/'+data['img'], brut=data['result_darknet'])
+       result_DB.save()
        for r in data['result_filtered']:
            object_DB = Object(result = result_DB,
                               result_object=r[0],
@@ -70,7 +83,7 @@ def uploadResult(request):
                               result_loc3=r[2][2],
                               result_loc4=r[2][3])
            object_DB.save()
-       result_DB.save()
+       
 
 
     return JsonResponse([{'statut':True},],safe=False)

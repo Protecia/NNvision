@@ -14,7 +14,7 @@ from onvif.exceptions import ONVIFError
 from log import Logger
 import time
 
-logger_sc = Logger('scan_camera').run()
+logger = Logger('scan_camera').run()
 
 def wsDiscovery():
     """Discover cameras on network using onvif discovery.
@@ -129,10 +129,10 @@ def run(period, lock, E_cam_start, E_cam_stop):
         # check if changes
         if cam == old_cam :
             E_cam_start.set()
-            logger_sc.info('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
+            logger.info('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
         else :
             E_cam_stop.set()
-            logger_sc.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
+            logger.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
         old_cam = cam
         # compare the cam with the camera file
         list_cam = compareCam(ws, cam)

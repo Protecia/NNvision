@@ -17,7 +17,7 @@ def uploadImage(Q):
         img = Q.get()
         files = {'myFile': img}
         try :
-            requests.post(settings.SERVER+"upload", files=files, data = {'key': settings.KEY})
+            requests.post(settings.SERVER+"uploadimage", files=files, data = {'key': settings.KEY})
         except requests.exceptions.ConnectionError :
             pass
 

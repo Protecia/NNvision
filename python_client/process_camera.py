@@ -12,7 +12,7 @@ import json
 from collections import namedtuple
 from log import Logger
 import scan_camera as sc
-import upload_result as up
+import upload as up
 
 logger_pc = Logger('process_camera').run()
 

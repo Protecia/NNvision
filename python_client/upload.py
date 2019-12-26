@@ -15,17 +15,20 @@ logger = Logger(__name__).run()
 def uploadImage(Q):
     while True:
         img = Q.get()
-        files = {'myFile': img}
+        logger.info('get image from queue : {}'.format(img[0]))
+        files = {'myFile': img[1]}
+        imgJson = {'key': settings.KEY, 'img_name': img[0]}
         try :
-            requests.post(settings.SERVER+"uploadimage", files=files, data = {'key': settings.KEY})
+            requests.post(settings.SERVER+"uploadimage", files=files, data = imgJson)
         except requests.exceptions.ConnectionError :
             pass
+        logger.warning('send json : {}'.format(imgJson))
 
 def uploadResult(Q):
     while True:
         logger.warning('starting upload result')
         result = Q.get()
-        logger.info('get from queue : {}'.format(result))
+        logger.info('get result from queue : {}'.format(result))
         img, cam,  result_filtered, result_darknet = result[0], result[1], [(r[0].decode(),r[1],r[2]) for r in result[2] ], [(r[0].decode(),r[1],r[2]) for r in result[3] ]
         resultJson = {'key': settings.KEY, 'img' : img, 'cam' : cam, 'result_filtered' : result_filtered, 'result_darknet' : result_darknet }
         try :

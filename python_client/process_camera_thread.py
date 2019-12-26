@@ -229,6 +229,9 @@ class ProcessCamera(Thread):
                 if self.base_condition(result_filtered) and EtoB(self.E_state):
                     self.logger.debug('>>> Result have changed <<< ')
                     date = time.strftime("%Y-%m-%d-%H-%M-%S")
+                    if self.cam.reso:
+                        if arr.shape[0]!=self.cam.height or arr.shape[1]!=self.cam.width:
+                            arr = cv2.resize(arr,(self.cam.width, self.cam.height), interpolation = cv2.INTER_CUBIC)
                     img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
                     self.Q_img.put((date+'_'+str(ifile)+'.jpg',img_bytes))
                     self.logger.warning('Q_img size : {}'.format(self.Q_img.qsize()))

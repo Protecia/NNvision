@@ -71,7 +71,7 @@
 		{% for img in row %}
 		<div class="large-4 columns">
 		<a href="/panel_detail/{{img.id}}">
-			<img {% if img.alert == True %} style="border:5px solid red" {% endif %} src="/thumbnail/{{img.file2.path}}" alt=""  ><br>{{img.time|date:'Y-m-d H:i:s'}}
+			<img {% if img.alert == True %} style="border:5px solid red" {% endif %} src="/thumbnail/{{img.file}}" alt=""  ><br>{{img.time|date:'Y-m-d H:i:s'}}
 		</a>
 		</div>
 		{% endfor %}

@@ -144,11 +144,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, '../media_root')
 
 LOGOUT_REDIRECT_URL = '/'
 
-CFG = 'cfg/yolov3-spp.cfg'
-WEIGHTS = '../weights/yolov3-spp.weights'
-DATA = 'cfg/coco.data'
-PYTHON = 'python3'
-
 EMAIL_HOST = 'ssl0.ovh.net'
 EMAIL_PORT = '465'
 EMAIL_HOST_USER = 'contact@protecia.com'
@@ -161,8 +156,6 @@ ACCOUNT_SID = "AC445238ce002d1c440c77883963183c04"
 AUTH_TOKEN  = "97c36acf2c85e62436181e878305f982"
 
 VERSION='2.0'
-DARKNET_PATH='/NNvision/darknet_pjreddie_201906'
-THREATED_REQUESTS=True
 PUBLIC_SITE='http://'
 ACCESS_NO_FREE = True
 ACCESS_ADAM = True
@@ -175,6 +168,6 @@ IMAGE_PANEL_MAX_HIGHT = 300
 IMAGE_REAL_TIME_MAX_WIDTH = 300
 IMAGE_REAL_TIME_MAX_HIGH = 300
 
-RESELLER_LOGO = 'logo-telegil.png'  # None if you want nothing
+RESELLER_LOGO = None  # None if you want nothing
 USER_LANGUAGE = 'fr'
  

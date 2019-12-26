@@ -416,6 +416,7 @@ def get_last_analyse_img(request,cam_id):
 
 def thumbnail(request,path_im):
     try :
+        path_im = os.path.join(settings.MEDIA_ROOT,path_im)
         im = Image.open(path_im)
     except OSError :
         path_img_broken = os.path.join(settings.STATIC_ROOT,'app1','img','image-not-found.jpg')

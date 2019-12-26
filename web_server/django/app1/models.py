@@ -20,6 +20,16 @@ class Client(models.Model):
     serial_box = models.CharField(max_length=20, blank = True)
     rec = models.BooleanField(default=False)
     change = models.BooleanField(default=False)
+    access_no_free = models.BooleanField(default=False)
+    access_adam = models.BooleanField(default=False)
+    access_telegram = models.BooleanField(default=False)
+    wait_before_detection = models.IntegerField(default = 20)
+    dataset_test = models.BooleanField(default=False)
+    space_allowed =  models.IntegerField(default = 1000)
+    image_panel_max_width = models.IntegerField(default = 400)
+    image_panel_max_hight = models.IntegerField(default = 400)
+    image_real_time_max_width = models.IntegerField(default = 500) 
+    image_real_time_max_hight = models.IntegerField(default = 500)
         
     def __str__(self):
         return '{} -  {} -  {}'.format(self.first_name, self.name, self.adress, self.cp)

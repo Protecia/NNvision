@@ -13,27 +13,36 @@ import json
 logger = Logger(__name__).run()
 
 def uploadImage(Q):
+    server = True
     while True:
-        img = Q.get()
-        logger.info('get image from queue : {}'.format(img[0]))
-        files = {'myFile': img[1]}
-        imgJson = {'key': settings.KEY, 'img_name': img[0]}
+        if server :
+            img = Q.get()
+            logger.info('get image from queue : {}'.format(img[0]))
+            files = {'myFile': img[1]}
+            imgJson = {'key': settings.KEY, 'img_name': img[0]}
         try :
             requests.post(settings.SERVER+"uploadimage", files=files, data = imgJson)
+            server = True
         except requests.exceptions.ConnectionError :
+            server = False
+            logger.warning('getState Can not find the remote server')
             pass
         logger.warning('send json : {}'.format(imgJson))
 
 def uploadResult(Q):
+    server = True
     while True:
-        logger.warning('starting upload result')
-        result = Q.get()
-        logger.info('get result from queue : {}'.format(result))
-        img, cam,  result_filtered, result_darknet = result[0], result[1], [(r[0].decode(),r[1],r[2]) for r in result[2] ], [(r[0].decode(),r[1],r[2]) for r in result[3] ]
-        resultJson = {'key': settings.KEY, 'img' : img, 'cam' : cam, 'result_filtered' : result_filtered, 'result_darknet' : result_darknet }
+        if server :
+            logger.warning('starting upload result')
+            result = Q.get()
+            logger.info('get result from queue : {}'.format(result))
+            img, cam,  result_filtered, result_darknet = result[0], result[1], [(r[0].decode(),r[1],r[2]) for r in result[2] ], [(r[0].decode(),r[1],r[2]) for r in result[3] ]
+            resultJson = {'key': settings.KEY, 'img' : img, 'cam' : cam, 'result_filtered' : result_filtered, 'result_darknet' : result_darknet }
         try :
             requests.post(settings.SERVER+"uploadresult", json=resultJson)
         except requests.exceptions.ConnectionError :
+            server = False
+            logger.warning('getState Can not find the remote server')
             pass
         logger.warning('send json : {}'.format(resultJson))
         

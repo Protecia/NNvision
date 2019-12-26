@@ -4,7 +4,7 @@ Created on Thu Dec 26 10:34:51 2019
 
 @author: julien
 """
-
+import os
 import time
 from .models import Camera, Result, Client, Scheme, Object
 from django.http import JsonResponse
@@ -12,7 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
 import json
 from django.db import transaction
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponse
 from django.conf import settings
 
 @csrf_exempt
@@ -55,10 +55,11 @@ def uploadImage(request):
             return JsonResponse({'statut':False},safe=False)     
         img = request.FILES['myFile']
         size = len(img)
-        img_path = settings.MEDIA_ROOT+str(client.id)+'/'+img_name
+        img_path = settings.MEDIA_ROOT+'/'+str(client.id)+'/'+img_name
+        os.makedirs(os.path.dirname(img_path), exist_ok=True)
         with open(img_path, 'wb') as file:
-            file.write(img)
-        return JsonResponse([{'size':size},],safe=False)
+            file.write(img.read())
+        return JsonResponse([{'size':size, 'name':img.name},],safe=False)
     return "not post"
 
 @csrf_exempt

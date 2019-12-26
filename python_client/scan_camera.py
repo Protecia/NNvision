@@ -127,17 +127,18 @@ def run(period, lock, E_cam_start, E_cam_stop):
         # pull the cam from the server
         cam = getCam(lock)
         # check if changes
-        if cam == old_cam :
-            E_cam_start.set()
-            logger.info('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
-        else :
-            E_cam_stop.set()
-            logger.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
-        old_cam = cam
-        # compare the cam with the camera file
-        list_cam = compareCam(ws, cam)
-        # push the cam to the server
-        setCam(list_cam)
+        if cam :
+            if cam == old_cam :
+                E_cam_start.set()
+                logger.info('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
+            else :
+                E_cam_stop.set()
+                logger.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
+            old_cam = cam
+            # compare the cam with the camera file
+            list_cam = compareCam(ws, cam)
+            # push the cam to the server
+            setCam(list_cam)
         # wait for the loop
         time.sleep(period)
 

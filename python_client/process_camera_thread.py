@@ -87,7 +87,7 @@ def read_write(rw,*args):
 class ProcessCamera(Thread):
     """Thread used to grab camera images and process the image with darknet"""
 
-    def __init__(self, cam, num, Q_result, list_event, nb_cam, Q_img, E_state):
+    def __init__(self, cam, num, Q_result, list_event, nb_cam, Q_img, E_state, Q_img_real, E_state_real):
         Thread.__init__(self)
         self.event = list_event
         self.cam = cam
@@ -109,6 +109,8 @@ class ProcessCamera(Thread):
         self.Q_result = Q_result
         self.result_DB = []
         self.E_state = E_state
+        self.E_state_real = E_state_real
+        self.Q_img_real = Q_img_real
 
         if cam.auth_type == 'B':
             self.auth = requests.auth.HTTPBasicAuth(cam.username,cam.password)
@@ -224,15 +226,19 @@ class ProcessCamera(Thread):
                 # get only result above trheshlod or previously valid
                 t=time.time()
                 result_filtered = self.check_thresh(result_darknet)
+                # process image
+                if self.cam.reso:
+                    if arr.shape[0]!=self.cam.height or arr.shape[1]!=self.cam.width:
+                        arr = cv2.resize(arr,(self.cam.width, self.cam.height), interpolation = cv2.INTER_CUBIC)
+                img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
+                # if on page camera
+                if EtoB(self.E_state_real):
+                    self.Q_img_real.put((self.cam.id, result_filtered, self.cam,img_bytes))
                 # compare with last result to check if different
                 self.logger.debug('E_rec :{}'.format(EtoB(self.E_state)))
                 if self.base_condition(result_filtered) and EtoB(self.E_state):
                     self.logger.debug('>>> Result have changed <<< ')
                     date = time.strftime("%Y-%m-%d-%H-%M-%S")
-                    if self.cam.reso:
-                        if arr.shape[0]!=self.cam.height or arr.shape[1]!=self.cam.width:
-                            arr = cv2.resize(arr,(self.cam.width, self.cam.height), interpolation = cv2.INTER_CUBIC)
-                    img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
                     self.Q_img.put((date+'_'+str(ifile)+'.jpg',img_bytes))
                     self.logger.warning('Q_img size : {}'.format(self.Q_img.qsize()))
                     self.Q_result.put((date+'_'+str(ifile)+'.jpg', self.cam.id , result_filtered, result_darknet))

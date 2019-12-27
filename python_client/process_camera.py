@@ -17,10 +17,12 @@ import upload as up
 logger_pc = Logger('process_camera').run()
 
 Q_img = Queue()
+Q_img_real = Queue()
 Q_result = Queue()
 E_cam_start = pEvent()
 E_cam_stop = pEvent()
 E_state = pEvent()
+E_state_real = pEvent()
 lock = Lock()
 onLine = True
 
@@ -45,7 +47,7 @@ def main():
             for n, c in enumerate(cameras):
                 p = pc.ProcessCamera(c, n, Q_result,
                                    list_event,
-                                   len(cameras), Q_img, E_state)
+                                   len(cameras), Q_img, E_state, Q_img_real, E_state_real )
                 list_thread.append(p)
                 p.start()
             print('darknet is running...')

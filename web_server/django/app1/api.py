@@ -14,6 +14,7 @@ import json
 from django.db import transaction
 from django.http import HttpResponse
 from django.conf import settings
+from PIL import Image, ImageFont, ImageDraw
 
 @csrf_exempt
 def setCam(request):
@@ -47,19 +48,32 @@ def uploadImage(request):
     if request.method == 'POST':
         key = request.POST.get('key', 'default')
         img_name = request.POST.get('img_name', 'default')
+        result = request.POST.get('result', False)
         try :
             client = Client.objects.get(key=key)
         except :
             time.sleep(10)
             pass
-            return JsonResponse({'statut':False},safe=False)     
+            return JsonResponse({'statut':False},safe=False)
         img = request.FILES['myFile']
         size = len(img)
         img_path = settings.MEDIA_ROOT+'/'+str(client.id)+'/'+img_name
         os.makedirs(os.path.dirname(img_path), exist_ok=True)
-        with open(img_path, 'wb') as file:
-            file.write(img.read())
-        return JsonResponse([{'size':size, 'name':img.name},],safe=False)
+        if result is not False:
+            img_pil = Image.open(img)
+            draw = ImageDraw.Draw(img_pil)
+            result_filtered = json.loads(result)
+            for r in result_filtered :
+                box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
+                    ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
+                    ))))
+                draw.rectangle(box, outline="green", width = 3)
+                draw.text(box[1], r[0], fill="green", font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",30))
+            img_pil.save(img_path, "JPEG") 
+        else :    
+            with open(img_path, 'wb') as file:
+                file.write(img.read())
+        return JsonResponse([{'size':size, 'name':img_path},],safe=False)
     return "not post"
 
 @csrf_exempt

@@ -19,6 +19,7 @@ class Client(models.Model):
     key = models.CharField(max_length=200, default=secrets.token_hex )
     serial_box = models.CharField(max_length=20, blank = True)
     rec = models.BooleanField(default=False)
+    on_camera = models.BooleanField(default=False)
     change = models.BooleanField(default=False)
     access_no_free = models.BooleanField(default=False)
     access_adam = models.BooleanField(default=False)

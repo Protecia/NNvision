@@ -55,7 +55,7 @@ def main():
             list_event[0].set()
             pImageUpload = Process(target=up.uploadImage, args=(Q_img,))
             pResultUpload = Process(target=up.uploadResult, args=(Q_result,))
-            pState = Process(target=up.getState, args=(E_state,))
+            pState = Process(target=up.getState, args=(E_state,E_state_real))
             pImageUpload.start()
             pResultUpload.start()
             pState.start()

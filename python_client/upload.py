@@ -62,15 +62,22 @@ def uploadResult(Q):
         logger.warning('send json : {}'.format(resultJson))
         
 
-def getState(E):
+def getState(E, E_real):
     while True:
         try :
             r = requests.post(settings.SERVER+"getState", data = {'key': settings.KEY, } )
-            rec = json.loads(r.text)[0]['rec']
+            data = json.loads(r.text)[0]
+            rec =data['rec']
+            on_camera = data['on_camera']
             if rec :
                 E.set()
             else :
                 E.clear()
+            if on_camera :
+                E_real.set()
+            else :
+                E_real.clear()
+                
         except requests.exceptions.ConnectionError :
             logger.info('getState Can not find the remote server')
             time.sleep(5)

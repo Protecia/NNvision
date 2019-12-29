@@ -31,9 +31,10 @@ class Client(models.Model):
     image_panel_max_hight = models.IntegerField(default = 400)
     image_real_time_max_width = models.IntegerField(default = 500) 
     image_real_time_max_hight = models.IntegerField(default = 500)
+    logo_perso = models.CharField(max_length=20, default = 'no')
         
     def __str__(self):
-        return '{} -  {} -  {}'.format(self.first_name, self.name, self.adress, self.cp)
+        return '{} -  {} -  {}'.format(self.first_name, self.name, self.cp)
 
 
 
@@ -114,17 +115,6 @@ class Camera(models.Model):
 
     def __str__(self):
         return '{} - {}'.format(self.id, self.name)
-    
-class Scheme(models.Model):
-    brand = models.CharField(max_length=20)
-    url = models.CharField(max_length=200,blank=True)
-    rtsp = models.CharField(max_length=200,blank=True)
-    
-    def __str__(self):
-        return '{}'.format(self.brand)
-    
-    
-    
 
 # Informations about the detection of the cameras
 @python_2_unicode_compatible  # only if you need to support Python 2

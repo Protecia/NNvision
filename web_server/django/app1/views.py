@@ -39,7 +39,10 @@ def index(request):
         return redirect('/warning/0')
     if not request.user.is_authenticated or not request.user.has_perm('app1.camera'):
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
-    request.session['client']=Client.object.get(Profile__user=request.user)
+    if request.user.is_superuser :
+        return redirect('/admin')
+    client = Client.objects.get(profile__user=request.user)
+    request.session['client']=client.id
     d_action = request.POST.get('d_action')
     if d_action == 'start' and len(process()[0])==0:
         Camera.objects.all().update(rec=True)
@@ -69,7 +72,8 @@ def index(request):
         [ item.kill() for sublist in p for item in sublist]
         running = False
 
-    context = {'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH}, 'url_for_index' : '/','running':running, 'logo_client':settings.RESELLER_LOGO}
+    context = {'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH},
+               'url_for_index' : '/','running':running, 'logo_client':client.logo_perso}
     return render(request, 'app1/index.html',context)
 
 def warning(request, first_alert):

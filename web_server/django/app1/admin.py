@@ -3,7 +3,7 @@ from django.conf import settings
 
 # Register your models here.
 
-from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_info, Alert_adam, Alert_hook, Scheme
+from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_info, Alert_adam, Alert_hook
 
 class CameraAdmin(admin.ModelAdmin):
     exclude = ('rec','wait_for_set','update','from_client')
@@ -52,7 +52,6 @@ admin.site.register(Camera, CameraAdmin)
 admin.site.register(Profile)
 admin.site.register(Alert_info)
 admin.site.register(Client)
-admin.site.register(Scheme)
 if settings.ACCESS_ADAM:
     admin.site.register(Alert_adam)
 if settings.ACCESS_HOOK:

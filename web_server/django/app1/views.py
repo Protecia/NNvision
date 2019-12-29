@@ -101,15 +101,17 @@ def warning(request, first_alert):
 @permission_required('app1.camera')
 def camera(request):
     camera = Camera.objects.filter(active=True, client=request.session['client'])
-    Client.objects.filter(pk=request.session['client']).update(change=True, on_camera=True)
+    client = Client.objects.filter(pk=request.session['client'])
+    client.update(change=True, on_camera=True)
     camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]
-    context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH}, 'url_for_index' : '/','logo_client':settings.RESELLER_LOGO}
+    context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH}, 'url_for_index' : '/','logo_client':client.logo_perso}
     return render(request, 'app1/camera.html',context)
 
 
 @login_required
 @permission_required('app1.camera')
 def panel(request, nav, first):
+    client = Client.objects.filter(pk=request.session['client'])
     if request.method == 'POST':
         actionForm = request.POST.get("valid_filter", "")
         if actionForm == 'ok':
@@ -125,7 +127,7 @@ def panel(request, nav, first):
         img_alert_array = []
         form = AlertForm()
         context = { 'class':filter_class, 'form':form, 'first' : first,
-               'first_alert' : first, 'img_array' : img_array, 'img_alert_array' : img_alert_array, 'logo_client':settings.RESELLER_LOGO}
+               'first_alert' : first, 'img_array' : img_array, 'img_alert_array' : img_alert_array, 'logo_client':client.logo_perso}
         return render(request, 'app1/panel.html', context)
     if filter_class == "all" :
         if nav == 'd':
@@ -167,7 +169,7 @@ def panel(request, nav, first):
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
     form = AlertForm()
     context = { 'class':filter_class, 'form':form, 'first' : first,
-               'first_alert' : first_alert, 'img_array' : img_array, 'img_alert_array' : img_alert_array, 'logo_client':settings.RESELLER_LOGO}
+               'first_alert' : first_alert, 'img_array' : img_array, 'img_alert_array' : img_alert_array, 'logo_client':client.logo_perso}
     return render(request, 'app1/panel.html', context)
 
 @login_required
@@ -192,6 +194,7 @@ def warning_detail(request, id):
 @login_required
 @permission_required('app1.camera')
 def alert(request, id=0, id2=-1):
+    client = Client.objects.filter(pk=request.session['client'])
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         typeForm = request.POST.get("type", "")
@@ -243,7 +246,7 @@ def alert(request, id=0, id2=-1):
     #auto = [(a[0],a[1],DAY_CODE_STR[a[4]],a[-1]) for a in auto]
     return render(request, 'app1/alert.html', {'message' : form.non_field_errors,
            'category' : 'warning','form': form, 'alert':alert, 'aform':aform,
-           'auto':auto, 'no_free':settings.ACCESS_NO_FREE, 'adam':settings.ACCESS_ADAM, 'hook':settings.ACCESS_HOOK, 'logo_client':settings.RESELLER_LOGO })
+           'auto':auto, 'no_free':settings.ACCESS_NO_FREE, 'adam':settings.ACCESS_ADAM, 'hook':settings.ACCESS_HOOK, 'logo_client':client.logo_perso })
 
 @login_required
 @permission_required('app1.camera')
@@ -255,7 +258,7 @@ def last(request, cam):
 @permission_required('app1.camera')
 def get_last_analyse_img(request,cam_id):
     client = Client.objects.get(pk=request.session['client'])
-    path_img_box = os.path.join(settings.MEDIA_ROOT,client.id,'temp_img_cam'+str(cam_id)+'.jpg')
+    path_img_box = os.path.join(settings.MEDIA_ROOT,str(client.id),'temp_img_cam'+str(cam_id)+'.jpg')
     try :
         age = time.time()-os.path.getmtime(path_img_box)
     except FileNotFoundError :

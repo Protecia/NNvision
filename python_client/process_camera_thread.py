@@ -232,7 +232,8 @@ class ProcessCamera(Thread):
                 img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
                 # if on page camera
                 if EtoB(self.E_state_real):
-                    self.Q_img_real.put((self.cam.id, result_filtered, self.cam,img_bytes))
+                    self.Q_img_real.put((self.cam.id, result_filtered, img_bytes))
+                    self.logger.warning('Q_img_real size : {}'.format(self.Q_img_real.qsize()))
                 # compare with last result to check if different
                 self.logger.debug('E_rec :{}'.format(EtoB(self.E_state)))
                 if self.base_condition(result_filtered) and EtoB(self.E_state):

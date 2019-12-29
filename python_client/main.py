@@ -80,8 +80,8 @@ def main():
             pImageUpload.join()
             pState.join()
             pCameraDownload.join()
-            pResultUpload.joint()
-            pImageUploadRealTime.joint()
+            pResultUpload.join()
+            pImageUploadRealTime.join()
             
             logger.warning('Camera change restart !')
 
@@ -102,8 +102,8 @@ def main():
         pImageUpload.join()
         pState.join()
         pCameraDownload.join()
-        pResultUpload.joint()
-        pImageUploadRealTime.joint()
+        pResultUpload.join()
+        pImageUploadRealTime.join()
         print("Bye bye!")
 
 # start the threads

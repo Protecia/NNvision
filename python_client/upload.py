@@ -13,11 +13,12 @@ import json
 logger = Logger(__name__).run()
 
 def uploadImageRealTime(Q):
+    logger.warning('starting upload real time image')
     while True:
         cam, result , img = Q.get()
         logger.info('get image from queue real on cam  : {}'.format(cam))
         files = {'myFile': img}
-        imgJson = {'key': settings.KEY, 'img_name': 'temp_img_cam_'+cam, 'result' : json.dumps(result), 'real_time' : True}
+        imgJson = {'key': settings.KEY, 'img_name': 'temp_img_cam_'+cam, 'result' : json.dumps([(r[0].decode(),r[1],r[2]) for r in result]), 'real_time' : True}
     try :
         r = requests.post(settings.SERVER+"uploadimage", files=files, data = imgJson)
         logger.warning('send json image real : {}'.format(r.text))
@@ -25,9 +26,6 @@ def uploadImageRealTime(Q):
         logger.warning('uploadImageRealTime Can not find the remote server')
         pass
     
-
-
-
 def uploadImage(Q):
     server = True
     logger.warning('starting upload image')

@@ -100,45 +100,12 @@ def warning(request, first_alert):
 @login_required
 @permission_required('app1.camera')
 def camera(request):
-    p = process()
-    if len(p[0])==0 :
-        Camera.objects.all().update(rec=False)
-        Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
-    camera = Camera.objects.filter(active=True)
+    camera = Camera.objects.filter(active=True, client=request.session['client'])
+    Client.objects.filter(pk=request.session['client']).update(change=True, on_camera=True)
     camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]
     context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH}, 'url_for_index' : '/','logo_client':settings.RESELLER_LOGO}
     return render(request, 'app1/camera.html',context)
 
-@login_required
-@permission_required('app1.camera')
-def darknet(request):
-    d_action = request.POST.get('d_action')
-    p = process()
-    message = None
-    if d_action == 'start':
-        if len(p[0])>0 : message = "Darknet already running, stop ip if you want to restart"
-        else :
-            Camera.objects.all().update(rec=True)
-            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
-            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
-            time.sleep(2)
-    if d_action == 'stop' :
-        if len(p[0])==0 and len(p[1])==0 : message = "Servers are not running !"
-        else :
-            [ item.kill() for sublist in p for item in sublist]
-    context = { 'message' : message, 'category' : 'warning', 'd_action' :d_action, 'url_state' : '/darknet/state'}
-    return render(request, 'app1/darknet.html', context)
-
-def darknet_state(request):
-    p = process()
-    raw=''
-    if len(p[0])>0:
-        raw += 'Darknet server is running (PID : {}). '.format(p[0][0].pid)
-    if len(p[1])>0:
-        raw += 'Alert server is running (PID : {}). '.format(p[1][0].pid)
-    if len(p[0])==0 and len(p[1])==0 :
-        raw += 'Servers are stopped'
-    return HttpResponse(raw)
 
 @login_required
 @permission_required('app1.camera')
@@ -206,9 +173,8 @@ def panel(request, nav, first):
 @login_required
 @permission_required('app1.camera')
 def panel_detail(request, id):
-    img = Result.objects.get(id=id)
+    img = Result.objects.get(id=id, camera__client=request.session['client'])
     return render(request, 'app1/panel_detail.html', {'img':img, 'id':id})
-
 
 def warning_detail(request, id):
     img = Result.objects.get(id=id)
@@ -222,7 +188,6 @@ def warning_detail(request, id):
         return render(request, 'app1/panel_detail.html', {'img':img, 'id':id})
     else:
         return redirect('/')
-
 
 @login_required
 @permission_required('app1.camera')
@@ -280,18 +245,17 @@ def alert(request, id=0, id2=-1):
            'category' : 'warning','form': form, 'alert':alert, 'aform':aform,
            'auto':auto, 'no_free':settings.ACCESS_NO_FREE, 'adam':settings.ACCESS_ADAM, 'hook':settings.ACCESS_HOOK, 'logo_client':settings.RESELLER_LOGO })
 
-
 @login_required
 @permission_required('app1.camera')
 def last(request, cam):
     img = '/media/tempimg_cam'+str(cam)+'_box.jpg'
     return render(request, 'app1/last_img.html', {'img':img})
 
-
 @login_required
 @permission_required('app1.camera')
 def get_last_analyse_img(request,cam_id):
-    path_img_box = os.path.join(settings.MEDIA_ROOT,'tempimg_cam'+str(cam_id)+'_box.jpg')
+    client = Client.objects.get(pk=request.session['client'])
+    path_img_box = os.path.join(settings.MEDIA_ROOT,client.id,'temp_img_cam'+str(cam_id)+'.jpg')
     try :
         age = time.time()-os.path.getmtime(path_img_box)
     except FileNotFoundError :
@@ -316,7 +280,6 @@ def get_last_analyse_img(request,cam_id):
         except OSError:
             continue
     return response
-
 
 def thumbnail(request,path_im):
     client = Client.objects.get(pk=request.session['client'])

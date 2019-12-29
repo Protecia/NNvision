@@ -35,14 +35,6 @@ def setCam(request):
     return JsonResponse({'statut':True},safe=False)
 
 @csrf_exempt
-def getScheme(request):
-    key = request.POST.get('key', 'default')
-    if len(Client.objects.filter(key=key))>0 :
-        scheme = Scheme.objects.all()
-        return JsonResponse(list(scheme.values()), safe=False)
-    return JsonResponse('0',safe=False)
-
-@csrf_exempt
 def uploadImage(request):
     if request.method == 'POST':
         key = request.POST.get('key', 'default')

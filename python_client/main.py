@@ -14,7 +14,7 @@ from log import Logger
 import scan_camera as sc
 import upload as up
 
-logger_pc = Logger('process_camera').run()
+logger = Logger('process_camera').run()
 
 Q_img = Queue()
 Q_img_real = Queue()
@@ -34,10 +34,10 @@ def main():
             # start the process to synchronize cameras
             pCameraDownload = Process(target=sc.run, args=(1,lock, E_cam_start, E_cam_stop))
             pCameraDownload.start()
-            logger_pc.warning('scan camera launch, E_cam_start.is_set : {}  / E_cam_stopt.is_set : {}'.format(E_cam_start.is_set(),E_cam_stop.is_set()) )
+            logger.warning('scan camera launch, E_cam_start.is_set : {}  / E_cam_stopt.is_set : {}'.format(E_cam_start.is_set(),E_cam_stop.is_set()) )
             E_cam_start.wait()
             E_cam_stop.clear()
-            logger_pc.warning('scan camera launch, E_cam_start.is_set : {}  / E_cam_stopt.is_set : {}'.format(E_cam_start.is_set(),E_cam_stop.is_set()) )
+            logger.warning('scan camera launch, E_cam_start.is_set : {}  / E_cam_stopt.is_set : {}'.format(E_cam_start.is_set(),E_cam_stop.is_set()) )
             with lock :
                 with open('camera/camera.json', 'r') as json_file:
                     cameras = json.load(json_file, object_hook=lambda d: namedtuple('camera', d.keys())(*d.values()))
@@ -54,11 +54,13 @@ def main():
             # Just run4ever (until Ctrl-c...)
             list_event[0].set()
             pImageUpload = Process(target=up.uploadImage, args=(Q_img,))
+            pImageUploadRealTime = Process(target=up.uploadImageRealTime, args=(Q_img_real,))
             pResultUpload = Process(target=up.uploadResult, args=(Q_result,))
             pState = Process(target=up.getState, args=(E_state,E_state_real))
             pImageUpload.start()
             pResultUpload.start()
             pState.start()
+            pImageUploadRealTime.start()
             
             E_cam_stop.wait()
             E_cam_start.clear()
@@ -74,12 +76,14 @@ def main():
             pState.terminate()
             pCameraDownload.terminate()
             pResultUpload.terminate()
-            pImageUpload.join()()
+            pImageUploadRealTime.terminate()
+            pImageUpload.join()
             pState.join()
             pCameraDownload.join()
             pResultUpload.joint()
+            pImageUploadRealTime.joint()
             
-            logger_pc.warning('Camera change restart !')
+            logger.warning('Camera change restart !')
 
     except KeyboardInterrupt:
         for t in list_thread:
@@ -94,10 +98,12 @@ def main():
         pState.terminate()
         pCameraDownload.terminate()
         pResultUpload.terminate()
-        pImageUpload.join()()
+        pImageUploadRealTime.terminate()
+        pImageUpload.join()
         pState.join()
         pCameraDownload.join()
         pResultUpload.joint()
+        pImageUploadRealTime.joint()
         print("Bye bye!")
 
 # start the threads

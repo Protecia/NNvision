@@ -19,11 +19,12 @@ def uploadImageRealTime(Q):
         files = {'myFile': img}
         imgJson = {'key': settings.KEY, 'img_name': 'temp_img_cam_'+cam, 'result' : json.dumps(result), 'real_time' : True}
     try :
-        requests.post(settings.SERVER+"uploadimage", files=files, data = imgJson)
+        r = requests.post(settings.SERVER+"uploadimage", files=files, data = imgJson)
+        logger.warning('send json image real : {}'.format(r.text))
     except requests.exceptions.ConnectionError :
         logger.warning('uploadImageRealTime Can not find the remote server')
         pass
-    logger.warning('send json image real : {}'.format(imgJson))
+    
 
 
 

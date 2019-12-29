@@ -18,7 +18,7 @@ urlpatterns = [
     path('alert/suppr/<int:id>', views.alert, name='alert'),
     path('alert/suppr_auto/<int:id2>', views.alert, name='alert'),
     path('panel_detail/<int:id>', views.panel_detail, name='detail'),
-    path('camera/last/<int:cam>', views.last, name='last image'),
+    #path('camera/last/<int:cam>', views.last, name='last image'),
     path('img/last/<int:cam_id>', views.get_last_analyse_img, name='image'),
     path('thumbnail/<path:path_im>', views.thumbnail, name='thumbnail'),
     path('uploadimage', api.uploadImage),

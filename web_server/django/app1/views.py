@@ -319,6 +319,7 @@ def get_last_analyse_img(request,cam_id):
 
 
 def thumbnail(request,path_im):
+    client = Client.objects.get(pk=request.session['client'])
     try :
         path_im = os.path.join(settings.MEDIA_ROOT,path_im)
         im = Image.open(path_im)
@@ -327,7 +328,7 @@ def thumbnail(request,path_im):
         im = Image.open(path_img_broken)
         pass
     response = HttpResponse(content_type='image/jpg')
-    im.thumbnail((settings.IMAGE_PANEL_MAX_WIDTH,settings.IMAGE_PANEL_MAX_HIGHT), Image.ANTIALIAS)
+    im.thumbnail((client.image_panel_max_width,client.image_panel_max_hight), Image.ANTIALIAS)
     im.save(response, 'JPEG')
     return response
 

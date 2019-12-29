@@ -23,7 +23,7 @@ urlpatterns = [
     path('thumbnail/<path:path_im>', views.thumbnail, name='thumbnail'),
     path('uploadimage', api.uploadImage),
     path('getCam', api.getCam),
-    path('getScheme', api.getScheme),
+    #path('getScheme', api.getScheme),
     path('uploadresult', api.uploadResult),
     path('setCam', api.setCam),
     path('getState', api.getState),

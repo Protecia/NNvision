@@ -17,7 +17,7 @@ def uploadImageRealTime(Q):
         cam, result , img = Q.get()
         logger.info('get image from queue real on cam  : {}'.format(cam))
         files = {'myFile': img}
-        imgJson = {'key': settings.KEY, 'img_name': 'temp_img_cam_'+cam+'.jpg', 'result' : json.dumps(result)}
+        imgJson = {'key': settings.KEY, 'img_name': 'temp_img_cam_'+cam, 'result' : json.dumps(result), 'real_time' : True}
     try :
         requests.post(settings.SERVER+"uploadimage", files=files, data = imgJson)
     except requests.exceptions.ConnectionError :
@@ -31,10 +31,10 @@ def uploadImage(Q):
     server = True
     while True:
         if server :
-            img = Q.get()
-            logger.info('get image from queue : {}'.format(img[0]))
-            files = {'myFile': img[1]}
-            imgJson = {'key': settings.KEY, 'img_name': img[0]}
+            img_name, result, img = Q.get()
+            logger.info('get image from queue : {}'.format(img_name))
+            files = {'myFile': img}
+            imgJson = {'key': settings.KEY, 'img_name': img_name, 'result' : json.dumps(result), 'real_time' : False}
         try :
             requests.post(settings.SERVER+"uploadimage", files=files, data = imgJson)
             server = True

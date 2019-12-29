@@ -14,7 +14,6 @@ from threading import Thread, Lock
 import settings.settings as settings
 import os
 import darknet as dn
-import json
 from log import Logger
 
 logger = Logger('process_camera_thread').run()
@@ -239,7 +238,7 @@ class ProcessCamera(Thread):
                 if self.base_condition(result_filtered) and EtoB(self.E_state):
                     self.logger.debug('>>> Result have changed <<< ')
                     date = time.strftime("%Y-%m-%d-%H-%M-%S")
-                    self.Q_img.put((date+'_'+str(ifile)+'.jpg',img_bytes))
+                    self.Q_img.put((date+'_'+str(ifile),result_filtered, img_bytes))
                     self.logger.warning('Q_img size : {}'.format(self.Q_img.qsize()))
                     self.Q_result.put((date+'_'+str(ifile)+'.jpg', self.cam.id , result_filtered, result_darknet))
                     self.logger.warning('Q_result size : {}'.format(self.Q_result.qsize()))

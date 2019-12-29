@@ -34,7 +34,6 @@ def setCam(request):
             pass
     return JsonResponse({'statut':True},safe=False)
 
-
 @csrf_exempt
 def getScheme(request):
     key = request.POST.get('key', 'default')
@@ -49,6 +48,7 @@ def uploadImage(request):
         key = request.POST.get('key', 'default')
         img_name = request.POST.get('img_name', 'default')
         result = request.POST.get('result', False)
+        real_time = request.POST.get('real_time', True)
         try :
             client = Client.objects.get(key=key)
         except :
@@ -59,20 +59,19 @@ def uploadImage(request):
         size = len(img)
         img_path = settings.MEDIA_ROOT+'/'+str(client.id)+'/'+img_name
         os.makedirs(os.path.dirname(img_path), exist_ok=True)
-        if result is not False:
-            img_pil = Image.open(img)
-            draw = ImageDraw.Draw(img_pil)
-            result_filtered = json.loads(result)
-            for r in result_filtered :
-                box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
-                    ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
-                    ))))
-                draw.rectangle(box, outline="green", width = 3)
-                draw.text(box[1], r[0], fill="green", font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",30))
-            img_pil.save(img_path, "JPEG") 
-        else :    
-            with open(img_path, 'wb') as file:
+        if not real_time :
+            with open(img_path+'_no_box.jpg', 'wb') as file:
                 file.write(img.read())
+        img_pil = Image.open(img)
+        draw = ImageDraw.Draw(img_pil)
+        result_filtered = json.loads(result)
+        for r in result_filtered :
+            box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
+                ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
+                ))))
+            draw.rectangle(box, outline="green", width = 3)
+            draw.text(box[1], r[0], fill="green", font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",30))
+        img_pil.save(img_path+'.jpg', "JPEG")
         return JsonResponse([{'size':size, 'name':img_path},],safe=False)
     return "not post"
 
@@ -98,9 +97,6 @@ def uploadResult(request):
                               result_loc3=r[2][2],
                               result_loc4=r[2][3])
            object_DB.save()
-       
-
-
     return JsonResponse([{'statut':True},],safe=False)
 
 @csrf_exempt

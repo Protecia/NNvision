@@ -6,7 +6,7 @@ Created on Thu Dec 26 10:34:51 2019
 """
 import os
 import time
-from .models import Camera, Result, Client, Scheme, Object
+from .models import Camera, Result, Client, Object
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError

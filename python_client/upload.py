@@ -18,13 +18,13 @@ def uploadImageRealTime(Q):
         cam, result , img = Q.get()
         logger.info('get image from queue real on cam  : {}'.format(cam))
         files = {'myFile': img}
-        imgJson = {'key': settings.KEY, 'img_name': 'temp_img_cam_'+cam, 'result' : json.dumps([(r[0].decode(),r[1],r[2]) for r in result]), 'real_time' : True}
-    try :
-        r = requests.post(settings.SERVER+"uploadimage", files=files, data = imgJson)
-        logger.warning('send json image real : {}'.format(r.text))
-    except requests.exceptions.ConnectionError :
-        logger.warning('uploadImageRealTime Can not find the remote server')
-        pass
+        imgJson = {'key': settings.KEY, 'img_name': 'temp_img_cam_'+str(cam), 'result' : json.dumps([(r[0].decode(),r[1],r[2]) for r in result]), 'real_time' : True}
+        try :
+            r = requests.post(settings.SERVER+"uploadimage", files=files, data = imgJson)
+            logger.warning('send json image real : {}'.format(r.text))
+        except requests.exceptions.ConnectionError :
+            logger.warning('uploadImageRealTime Can not find the remote server')
+            pass
     
 def uploadImage(Q):
     server = True
@@ -49,9 +49,9 @@ def uploadImage(Q):
 
 def uploadResult(Q):
     server = True
+    logger.warning('starting upload result')
     while True:
         if server :
-            logger.warning('starting upload result')
             result = Q.get()
             logger.info('get result from queue : {}'.format(result))
             img, cam,  result_filtered, result_darknet = result[0], result[1], [(r[0].decode(),r[1],r[2]) for r in result[2] ], [(r[0].decode(),r[1],r[2]) for r in result[3] ]

@@ -243,7 +243,7 @@ class ProcessCamera(Thread):
                     self.logger.warning('Q_img size : {}'.format(self.Q_img.qsize()))
                     self.Q_result.put((date+'_'+str(ifile)+'.jpg', self.cam.id , result_filtered, result_darknet))
                     self.logger.warning('Q_result size : {}'.format(self.Q_result.qsize()))
-                    self.logger.warning('>>>>>>>>>>>>>>>--------- Result send to queue '
+                    self.logger.warning('>>>>>>>>>>>>>>>--------- Result change send to queue '
                     '-------------<<<<<<<<<<<<<<<<<<<<<\n')
                     self.result_DB = result_filtered
                 self.logger.info('brut result process in {}s '.format(time.time()-t))

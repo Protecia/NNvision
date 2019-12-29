@@ -101,7 +101,7 @@ def warning(request, first_alert):
 @permission_required('app1.camera')
 def camera(request):
     camera = Camera.objects.filter(active=True, client=request.session['client'])
-    client = Client.objects.filter(pk=request.session['client'])
+    client = Client.objects.get(pk=request.session['client'])
     client.update(change=True, on_camera=True)
     camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]
     context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH}, 'url_for_index' : '/','logo_client':client.logo_perso}
@@ -111,7 +111,7 @@ def camera(request):
 @login_required
 @permission_required('app1.camera')
 def panel(request, nav, first):
-    client = Client.objects.filter(pk=request.session['client'])
+    client = Client.objects.get(pk=request.session['client'])
     if request.method == 'POST':
         actionForm = request.POST.get("valid_filter", "")
         if actionForm == 'ok':
@@ -194,7 +194,7 @@ def warning_detail(request, id):
 @login_required
 @permission_required('app1.camera')
 def alert(request, id=0, id2=-1):
-    client = Client.objects.filter(pk=request.session['client'])
+    client = Client.objects.get(pk=request.session['client'])
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         typeForm = request.POST.get("type", "")

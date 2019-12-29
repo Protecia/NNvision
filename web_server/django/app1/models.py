@@ -31,7 +31,7 @@ class Client(models.Model):
     image_panel_max_hight = models.IntegerField(default = 400)
     image_real_time_max_width = models.IntegerField(default = 500) 
     image_real_time_max_hight = models.IntegerField(default = 500)
-    logo_perso = models.CharField(max_length=20, default = 'no')
+    logo_perso = models.CharField(max_length=20, null=True)
         
     def __str__(self):
         return '{} -  {} -  {}'.format(self.first_name, self.name, self.cp)

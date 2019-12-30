@@ -14,7 +14,7 @@ from log import Logger
 import scan_camera as sc
 import upload as up
 
-logger = Logger('process_camera').run()
+logger = Logger(__name__).run()
 
 Q_img = Queue()
 Q_img_real = Queue()
@@ -26,14 +26,20 @@ E_state_real = pEvent()
 lock = Lock()
 onLine = True
 
-
 def main():
-    
     try:
+        pCameraDownload = Process(target=sc.run, args=(1,lock, E_cam_start, E_cam_stop))
+        pCameraDownload.start()
+        pImageUpload = Process(target=up.uploadImage, args=(Q_img,))
+        pImageUploadRealTime = Process(target=up.uploadImageRealTime, args=(Q_img_real,))
+        pResultUpload = Process(target=up.uploadResult, args=(Q_result,))
+        pState = Process(target=up.getState, args=(E_state,E_state_real))
+        pImageUpload.start()
+        pResultUpload.start()
+        pState.start()
+        pImageUploadRealTime.start()
         while(True):
             # start the process to synchronize cameras
-            pCameraDownload = Process(target=sc.run, args=(1,lock, E_cam_start, E_cam_stop))
-            pCameraDownload.start()
             logger.warning('scan camera launch, E_cam_start.is_set : {}  / E_cam_stopt.is_set : {}'.format(E_cam_start.is_set(),E_cam_stop.is_set()) )
             E_cam_start.wait()
             E_cam_stop.clear()
@@ -53,15 +59,6 @@ def main():
             print('darknet is running...')
             # Just run4ever (until Ctrl-c...)
             list_event[0].set()
-            pImageUpload = Process(target=up.uploadImage, args=(Q_img,))
-            pImageUploadRealTime = Process(target=up.uploadImageRealTime, args=(Q_img_real,))
-            pResultUpload = Process(target=up.uploadResult, args=(Q_result,))
-            pState = Process(target=up.getState, args=(E_state,E_state_real))
-            pImageUpload.start()
-            pResultUpload.start()
-            pState.start()
-            pImageUploadRealTime.start()
-            
             E_cam_stop.wait()
             E_cam_start.clear()
             for t in list_thread:
@@ -72,19 +69,7 @@ def main():
                 except AttributeError:
                     pass
                 t.join()
-            pImageUpload.terminate()
-            pState.terminate()
-            pCameraDownload.terminate()
-            pResultUpload.terminate()
-            pImageUploadRealTime.terminate()
-            pImageUpload.join()
-            pState.join()
-            pCameraDownload.join()
-            pResultUpload.join()
-            pImageUploadRealTime.join()
-            
             logger.warning('Camera change restart !')
-
     except KeyboardInterrupt:
         for t in list_thread:
             t.running=False
@@ -99,11 +84,6 @@ def main():
         pCameraDownload.terminate()
         pResultUpload.terminate()
         pImageUploadRealTime.terminate()
-        pImageUpload.join()
-        pState.join()
-        pCameraDownload.join()
-        pResultUpload.join()
-        pImageUploadRealTime.join()
         print("Bye bye!")
 
 # start the threads

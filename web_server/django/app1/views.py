@@ -15,6 +15,7 @@ from .process_alert import stop_adam_all
 from PIL import Image
 from django.utils import translation
 from crontab import CronTab
+from threading import Thread
 
 # Create your views here.
 
@@ -45,7 +46,7 @@ def index(request):
     request.session['client']=client.id
     d_action = request.POST.get('d_action')
     if d_action == 'start' and len(process()[0])==0:
-        Camera.objects.all().update(rec=True)
+       
         #if settings.DEBUG:
         if True:
             with open(os.path.join(settings.BASE_DIR,'process_camera.log'), 'w') as log:
@@ -100,12 +101,18 @@ def warning(request, first_alert):
 @login_required
 @permission_required('app1.camera')
 def camera(request):
+    def stop_camera():
+        time.sleep(settings.TIME_ON_CAMERA)
+        client.update(change=True, on_camera=False)
     camera = Camera.objects.filter(active=True, client=request.session['client'])
-    client = Client.objects.get(pk=request.session['client'])
+    client = Client.objects.filter(pk=request.session['client'])
     client.update(change=True, on_camera=True)
+    thread = Thread(target = stop_camera)
+    thread.start()
     camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]
-    context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH}, 'url_for_index' : '/','logo_client':client.logo_perso}
+    context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH}, 'url_for_index' : '/','logo_client':client[0].logo_perso}
     return render(request, 'app1/camera.html',context)
+
 
 
 @login_required

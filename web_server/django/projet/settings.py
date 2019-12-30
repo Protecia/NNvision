@@ -163,11 +163,8 @@ ACCESS_HOOK = True
 WAIT_BEFORE_DETECTION = 20
 DATASET_TEST = False
 SPACE_LEFT = 300 # en Mo
-IMAGE_PANEL_MAX_WIDTH = 300  # pixels
-IMAGE_PANEL_MAX_HIGHT = 300
-IMAGE_REAL_TIME_MAX_WIDTH = 300
-IMAGE_REAL_TIME_MAX_HIGH = 300
+
 
 RESELLER_LOGO = None  # None if you want nothing
 USER_LANGUAGE = 'fr'
- 
+TIME_ON_CAMERA = 60 # the duration to display on live camera before stop

@@ -25,7 +25,7 @@ def uploadImageRealTime(Q):
         except requests.exceptions.ConnectionError :
             logger.warning('uploadImageRealTime Can not find the remote server')
             pass
-    
+
 def uploadImage(Q):
     server = True
     logger.warning('starting upload image')
@@ -45,7 +45,6 @@ def uploadImage(Q):
             server = False
             logger.warning('getState Can not find the remote server')
             pass
-        
 
 def uploadResult(Q):
     server = True
@@ -65,8 +64,6 @@ def uploadResult(Q):
             server = False
             logger.warning('uploadResult Can not find the remote server')
             pass
-        
-        
 
 def getState(E, E_real):
     while True:
@@ -83,7 +80,6 @@ def getState(E, E_real):
                 E_real.set()
             else :
                 E_real.clear()
-                
         except requests.exceptions.ConnectionError :
             logger.info('getState Can not find the remote server')
             time.sleep(5)

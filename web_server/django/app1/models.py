@@ -91,7 +91,6 @@ class Camera(models.Model):
     brand  = models.CharField(max_length=20, default='unknow')
     model = models.CharField(max_length=100, default='unknow')
     active = models.BooleanField(default=False)
-    rec = models.BooleanField(default=True)
     ip = models.GenericIPAddressField(null=True, unique=True)
     port_onvif = models.IntegerField(default = 80)
     url = models.URLField(blank=True)

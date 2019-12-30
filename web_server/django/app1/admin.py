@@ -6,7 +6,7 @@ from django.conf import settings
 from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_info, Alert_adam, Alert_hook
 
 class CameraAdmin(admin.ModelAdmin):
-    exclude = ('rec','wait_for_set','update','from_client')
+    exclude = ('wait_for_set','update','from_client')
     '''
     def delete_model(self, request, obj):
         client = Profile.objects.get(user=request.user).client

@@ -12,23 +12,6 @@ from django.utils.translation import ugettext_lazy as _
 
 class AlertForm(forms.ModelForm):
     camera = forms.ModelMultipleChoiceField(queryset=Camera.objects, widget=forms.CheckboxSelectMultiple, required=False )
-   
-    def clean(self):
-        cleaned_data = super().clean()
-        adam = cleaned_data.get("adam")
-        adam_channel_0 = cleaned_data.get("adam_channel_0")
-        adam_channel_1 = cleaned_data.get("adam_channel_1")
-        adam_channel_2 = cleaned_data.get("adam_channel_2")
-        adam_channel_3 = cleaned_data.get("adam_channel_3")
-        adam_channel_4 = cleaned_data.get("adam_channel_4")
-        adam_channel_5 = cleaned_data.get("adam_channel_5")
-        print(adam)
-
-        if  (adam!=None) != ( adam_channel_1 or adam_channel_2 or adam_channel_3 or adam_channel_4 or adam_channel_5 or adam_channel_0) :
-            # Only do something if both fields are valid so far.
-            raise forms.ValidationError(
-                "If you use Adam box, you need to choose a chanel and a box "
-            )
                 
     class Meta:
         model = Alert

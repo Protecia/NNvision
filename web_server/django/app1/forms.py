@@ -6,12 +6,11 @@ Created on Tue Mar 13 12:32:32 2018
 """
 
 from django import forms
-from .models import Alert, Alert_adam, Camera
+from .models import Alert, Camera
 from django.utils.translation import ugettext_lazy as _
 
 
 class AlertForm(forms.ModelForm):
-    adam = forms.ModelChoiceField(queryset=Alert_adam.objects, empty_label=None, widget=forms.RadioSelect, required=False)
     camera = forms.ModelMultipleChoiceField(queryset=Camera.objects, widget=forms.CheckboxSelectMultiple, required=False )
    
     def clean(self):

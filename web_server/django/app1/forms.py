@@ -15,14 +15,11 @@ class AlertForm(forms.ModelForm):
                 
     class Meta:
         model = Alert
-        fields = ['camera','stuffs', 'actions','sms','call','alarm','mail','hook','adam',
-                  'adam_channel_0','adam_channel_1','adam_channel_2','adam_channel_3','adam_channel_4','adam_channel_5']
+        fields = ['camera','stuffs', 'actions','sms','call','alarm','mail']
         widgets = {
             'actions': forms.RadioSelect(),
             'adam': forms.RadioSelect()}
-        labels = {
-            "adam": _("Adam box"),
-            "hook": _("External URL")}
+        
         
 DAY_CODE_STR= {'*':_('Every days'),
                '1':_('Monday'),

@@ -38,7 +38,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projet.settings")
 import django
 django.setup()
 
-from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_info, Camera, Client
+from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_type, Camera, Client
 
 # Your Account SID from twilio.com/console
 account_sid = settings.ACCOUNT_SID

@@ -11,7 +11,6 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Count
 from .models import Camera, Result, Alert, Client
 from .forms import AlertForm, AutomatForm, DAY_CODE_STR
-from .process_alert import stop_adam_all
 from PIL import Image
 from django.utils import translation
 from crontab import CronTab

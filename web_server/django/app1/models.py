@@ -9,7 +9,6 @@ import pytz
 from django.utils.translation import ugettext_lazy as _
 import secrets
 
-
 class Client(models.Model):
     first_name = models.CharField(max_length=200, blank = True)
     name = models.CharField(max_length=200, blank = True)
@@ -21,24 +20,18 @@ class Client(models.Model):
     rec = models.BooleanField(default=False)
     on_camera = models.BooleanField(default=False)
     change = models.BooleanField(default=False)
-    access_no_free = models.BooleanField(default=False)
-    access_adam = models.BooleanField(default=False)
-    access_telegram = models.BooleanField(default=False)
     wait_before_detection = models.IntegerField(default = 20)
     dataset_test = models.BooleanField(default=False)
-    space_allowed =  models.IntegerField(default = 1000)
+    space_allowed =  models.IntegerField(default = 1000) # en Mo
     image_panel_max_width = models.IntegerField(default = 400)
     image_panel_max_hight = models.IntegerField(default = 400)
-    image_real_time_max_width = models.IntegerField(default = 500) 
+    image_real_time_max_width = models.IntegerField(default = 500)
     image_real_time_max_hight = models.IntegerField(default = 500)
     logo_perso = models.CharField(max_length=20, null=True, blank=True)
-        
+
     def __str__(self):
         return '{} -  {} -  {}'.format(self.first_name, self.name, self.cp)
 
-
-
-@python_2_unicode_compatible
 class Profile(models.Model):
     client = models.ForeignKey(Client, default=1, on_delete=models.CASCADE)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -50,7 +43,6 @@ class Profile(models.Model):
         verbose_name = 'user'
         verbose_name_plural = 'users'
         permissions = [('camera','>>> Can view camera'),('dataset','>>> Can make dataset')]
-
     email_0 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)
     email_1 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)
     email_2 = models.CharField(validators=[EmailValidator],max_length=30, blank = True)
@@ -73,15 +65,9 @@ class Profile(models.Model):
     phone_number_8 = models.CharField(validators=[phone_regex], max_length=17, blank=True)
     phone_number_9 = models.CharField(validators=[phone_regex], max_length=17, blank=True)
 
-
     def __str__(self):
         return 'user : {} - phone_number : {} - alert : {}'.format(self.user, self.phone_number, self.alert)
 
-
-# Create your models here.
-
-# Informations about the camera you are using
-@python_2_unicode_compatible  # only if you need to support Python 2
 class Camera(models.Model):
     AUTH_CHOICES = (
         ('B', 'Basic'),
@@ -116,7 +102,6 @@ class Camera(models.Model):
         return '{} - {}'.format(self.id, self.name)
 
 # Informations about the detection of the cameras
-@python_2_unicode_compatible  # only if you need to support Python 2
 class Result(models.Model):
     camera = models.ForeignKey(Camera, on_delete=models.CASCADE)
     #file = models.FilePathField(path='/NNvivison/media_root/images', recursive=True, allow_folders=True, default='detect' )
@@ -127,7 +112,6 @@ class Result(models.Model):
     def __str__(self):
         return 'Camera : {} - at {}'.format(self.camera.name, self.time.astimezone(pytz.timezone('Europe/Paris')))
 
-@python_2_unicode_compatible  # only if you need to support Python 2
 class Object(models.Model):
     result = models.ForeignKey(Result, on_delete=models.CASCADE)
     result_object = models.CharField(max_length=20, default='')
@@ -138,7 +122,6 @@ class Object(models.Model):
     result_loc4 = models.DecimalField(default=0, max_digits=6, decimal_places=2)
     def __str__(self):
         return 'Objetc : {} with p={}'.format(self.result_object, self.result_prob)
-
 
 STUFFS_CHOICES = ((1,_('person')),
                   (2,_('bike')),
@@ -163,7 +146,6 @@ STUFFS_CHOICES = ((1,_('person')),
                   (21,_('book')),
                   (22,_('clock')),)
 
-
 ACTIONS_CHOICES = ((1,_('appear')),
                    (2,_('disappear')),
                    (3,_('present'))
@@ -177,29 +159,6 @@ ADAM_CHANNEL = ((1,1),
                 (6,6),
                    )
 
-
-class Alert_adam(models.Model):
-    ip = models.GenericIPAddressField(null=True, unique=True)
-    auth = models.CharField(max_length=20, null=True)
-    password = models.CharField(max_length=20, null=True)
-    delay = models.DurationField(default=timedelta(seconds=20))
-    duration = models.DurationField(default=timedelta(seconds=3600))
-
-    def __str__(self):
-        return '{} '.format(self.ip)
-
-class Alert_hook(models.Model):
-    url = models.URLField(null=True, unique=True)
-    auth = models.CharField(max_length=20, null=True, blank =True)
-    password = models.CharField(max_length=20, null=True, blank =True)
-    delay = models.DurationField(default=timedelta(seconds=20))
-    resent = models.DurationField(default=timedelta(seconds=300))
-
-    def __str__(self):
-        return '{} '.format(self.url)
-
-
-
 @python_2_unicode_compatible  # only if you need to support Python 2
 class Alert(models.Model):
     actions_reverse = dict((v, k) for k, v in ACTIONS_CHOICES)
@@ -211,16 +170,9 @@ class Alert(models.Model):
     actions = models.IntegerField(choices=ACTIONS_CHOICES, default=1)
     mail = models.BooleanField(default=True)
     sms = models.BooleanField(default=False)
+    telegram = models.BooleanField(default=False)
     call = models.BooleanField(default=False)
     alarm = models.BooleanField(default=False)
-    adam = models.ForeignKey(Alert_adam, on_delete=models.CASCADE, null =True, blank=True)
-    adam_channel_0 = models.BooleanField(default=False)
-    adam_channel_1 = models.BooleanField(default=False)
-    adam_channel_2 = models.BooleanField(default=False)
-    adam_channel_3 = models.BooleanField(default=False)
-    adam_channel_4 = models.BooleanField(default=False)
-    adam_channel_5 = models.BooleanField(default=False)
-    hook = models.BooleanField(default=False)
     mass_alarm = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
     # warning on naive date, could be : datetime(year=2000,month=1,day=1,tzinfo=pytz.timezone(settings.TIME_ZONE))
@@ -238,6 +190,7 @@ class Alert(models.Model):
 
 ALERT_CHOICES = (('mail','mail'),
                    ('sms','sms'),
+                   ('telegram','telegram'),
                    ('mass_alarm','mass_alarm'),
                    ('call','call'),
                    ('alarm','alarm'),
@@ -254,20 +207,11 @@ class Alert_when(models.Model):
     def __str__(self):
         return '{} at {} to {}'.format(self.what, self.when.astimezone(pytz.timezone('Europe/Paris')), self.who)
 
-class Alert_info(models.Model):
-    mail_delay = models.DurationField(default=timedelta(seconds=0))
-    mail_resent = models.DurationField(default=timedelta(seconds=300))
-    mail_post_wait = models.DurationField(default=timedelta(seconds=60))
-    sms_delay = models.DurationField(default=timedelta(seconds=30))
-    sms_resent = models.DurationField(default=timedelta(seconds=300))
-    sms_post_wait = models.DurationField(default=timedelta(seconds=60))
-    call_delay = models.DurationField(default=timedelta(seconds=60))
-    call_resent = models.DurationField(default=timedelta(seconds=300))
-    call_post_wait = models.DurationField(default=timedelta(seconds=60))
-    alarm_delay = models.DurationField(default=timedelta(seconds=0))
-    alarm_resent = models.DurationField(default=timedelta(seconds=300))
-
-
-
-
+class Alert_type(models.Model):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    allowed = models.CharField(max_length=10, choices=ALERT_CHOICES)
+    priority = models.Integerfield()
+    delay = models.DurationField(default=timedelta(seconds=0))
+    resent = models.DurationField(default=timedelta(seconds=300))
+    post_wait = models.DurationField(default=timedelta(seconds=60))
 

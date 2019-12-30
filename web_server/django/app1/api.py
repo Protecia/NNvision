@@ -15,6 +15,39 @@ from django.db import transaction
 from django.http import HttpResponse
 from django.conf import settings
 from PIL import Image, ImageFont, ImageDraw
+import subprocess
+import glob
+
+def delete_space(client):
+    ##### check the space on disk to respect the quota #######
+    path = os.path.join(settings.MEDIA_ROOT,str(client.id))
+    size = int(subprocess.check_output(['du','-sh', path]).split()[0].decode('utf-8').split('M')[0])
+    if size>client.space_allowed:
+        r_to_delete = Result.objects.all()[:300]
+        for im_d in r_to_delete:
+            if 'jpg' in  im_d.file :
+                try :
+                    os.remove(os.path.join(path,im_d.file))
+                except OSError:
+                    pass
+            im_d.delete()
+
+def purge_files(client):
+        r = Result.objects.all().order_by('time')
+        if len(r)>0 :
+            r = r[0]
+            time_older = r.time.timestamp()
+            path = settings.MEDIA_ROOT+'/'+r.file1.name.split('/')[0]
+            os.chdir(path)
+            for file in glob.glob("*.jpg"):
+                 if os.path.getctime(file) < time_older :
+                     os.remove(file)
+            path = settings.MEDIA_ROOT+'/'+r.file2.name.split('/')[0]
+            os.chdir(path)
+            for file in glob.glob("*.jpg"):
+                 if os.path.getctime(file) < time_older :
+                     os.remove(file)
+
 
 @csrf_exempt
 def setCam(request):
@@ -47,6 +80,7 @@ def uploadImage(request):
             time.sleep(10)
             pass
             return JsonResponse({'statut':False},safe=False)
+        delete_space(client)
         img = request.FILES['myFile']
         size = len(img)
         img_path = settings.MEDIA_ROOT+'/'+str(client.id)+'/'+img_name

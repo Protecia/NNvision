@@ -11,11 +11,15 @@ import os
 import sys
 import time
 import pytz
+import glob
+import requests
+import json
+import xml.etree.ElementTree as ET
 from django.conf import settings
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler
 from collections import Counter
-from twilio.rest import Client as Client_twilio
+from twilio.rest import Client
 from django.core.mail import EmailMessage
 from django.utils.translation import gettext as _
 from django.utils.translation import activate 
@@ -38,13 +42,15 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projet.settings")
 import django
 django.setup()
 
-from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_info, Camera, Client
+from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_info, Camera, Alert_adam, Alert_hook
 
 # Your Account SID from twilio.com/console
 account_sid = settings.ACCOUNT_SID
 # Your Auth Token from twilio.com/console
 auth_token  = settings.AUTH_TOKEN
-client_tw = Client_twilio(account_sid, auth_token)
+
+client = Client(account_sid, auth_token)
+#from django.contrib.auth.models import User
 
 #------------------------------------------------------------------------------
 # a simple config to create a file log - change the level to warning in
@@ -62,13 +68,66 @@ if __name__ == '__main__':
     file_handler.setLevel(level)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
+#stream_handler = logging.StreamHandler()
+#stream_handler.setLevel(level)
+#logger.addHandler(stream_handler)
 #------------------------------------------------------------------------------
 def old(query):
     if query is not None :
         return query.when
     else:
         return datetime(2000,1,1,tzinfo=pytz.utc)
-           
+    
+
+def purge_files():
+    r = Result.objects.all().order_by('time')
+    if len(r)>0 :
+        r = r[0]
+        time_older = r.time.timestamp()
+        path = settings.MEDIA_ROOT+'/'+r.file1.name.split('/')[0]
+        os.chdir(path)
+        for file in glob.glob("*.jpg"):
+             if os.path.getctime(file) < time_older :
+                 os.remove(file)
+        path = settings.MEDIA_ROOT+'/'+r.file2.name.split('/')[0]
+        os.chdir(path)
+        for file in glob.glob("*.jpg"):
+             if os.path.getctime(file) < time_older :
+                 os.remove(file)
+
+def check_space(mo):
+        ##### check the space on disk to avoid filling the sd card #######
+        sb = os.statvfs(settings.MEDIA_ROOT)
+        sm = sb.f_bavail * sb.f_frsize / 1024 / 1024
+        logger.info('space left is  {} MO'.format(sm))
+        while sm < mo :
+            r_to_delete = Result.objects.all()[:300]
+            for im_d in r_to_delete:
+                if 'jpg' in  im_d.file1.name :
+                    im_d.file1.delete()
+                if 'jpg' in  im_d.file2.name :
+                    im_d.file2.delete()
+                im_d.delete()
+            sb = os.statvfs(settings.MEDIA_ROOT)
+            sm = sb.f_bavail * sb.f_frsize / 1024 / 1024
+            logger.info('new space space left after delete is  {} MO'.format(sm))
+        ###################################################################  
+
+def stop_adam_all():
+    logger = logging.getLogger()
+    adam_request = Alert_adam.objects.all()
+    for adam_box in adam_request :
+        cmd = 'http://'+adam_box.ip+'/digitaloutput/all/value'
+        data = 'DO0=0&DO1=0&DO2=0&DO3=0&DO4=0&DO5=0'
+        try:
+            r = requests.post(cmd, auth=(adam_box.auth,adam_box.password), headers={"content-type":"text"}, data=data, timeout=2)
+            if r.status_code == 200:
+                logger.debug('adam stopped with request : {} {} {} {}'.format(cmd,adam_box.auth,adam_box.password,data))
+        except requests.exceptions.ConnectionError:
+            logger.warning('adam not responding on ip : {}'.format(adam_box.ip))
+            pass
+        time.sleep(0.5)
+        
 class Process_alert(object):
     def __init__(self):
         self.user = Profile.objects.filter(alert=True).select_related()
@@ -87,7 +146,7 @@ class Process_alert(object):
             c = Counter([i.result_object for i in o])
             logger.info('getting last object init : {}'.format(c))
             self.check_alert(result, 'present',c)
-            
+    
     def check_alert(self, result, alert_type, object_counter):
             for s in object_counter :
                     a=False
@@ -136,7 +195,6 @@ class Process_alert(object):
                     ,alert.when,t-alert.when))
         logger.debug('sms : {} / call : {} / alarm : {} / mail : {}'.format(
                 alert.sms,alert.call,alert.alarm,alert.mail))
-        list_alert = [alert.mail, alert ]
         
         if alert.mail :
             if delay.mail_delay < t-alert.when:
@@ -162,12 +220,47 @@ class Process_alert(object):
         else :
             sms_post_wait = timedelta(seconds=0)
                     
+        if alert.adam is not None :
+            if alert.adam.delay < t-alert.when:
+                logger.debug('>>>>>>> go to active adam <<<<<<<<<<<')
+                
+                last = old(Alert_when.objects.filter(what='adam', 
+                                                     stuffs=alert.stuffs,
+                                                     action=alert.actions).last())
+                if last < alert.when :
+                    self.start_adam(alert,t, {0 : alert.adam_channel_0,
+                                                          1 : alert.adam_channel_1,
+                                                          2 : alert.adam_channel_2,
+                                                          3 : alert.adam_channel_3,
+                                                          4 : alert.adam_channel_4,
+                                                          5 : alert.adam_channel_5})
+                else :
+                    if t-last > alert.adam.duration :
+                        logger.debug('>>>>>>> go to inactive adam <<<<<<<<<<<')
+                        self.stop_adam(alert,t, {0 : alert.adam_channel_0,
+                                                             1 : alert.adam_channel_1,
+                                                             2 : alert.adam_channel_2,
+                                                             3 : alert.adam_channel_3,
+                                                             4 : alert.adam_channel_4,
+                                                             5 : alert.adam_channel_5})
+                    
+        if alert.hook:
+            hook_request = Alert_hook.objects.all()
+            for hook in hook_request:
+                if hook.delay < t-alert.when:
+                    logger.debug('>>>>>>> go to send hook <<<<<<<<<<<')
+                    last = old(Alert_when.objects.filter(what='hook', 
+                                                     stuffs=alert.stuffs,
+                                                     action=alert.actions).last())
+                    if t-last > hook.resent :
+                        logger.debug('>>>>>>> go to send hook <<<<<<<<<<<')
+                        self.send_hook(alert,hook, t)        
 #############################################################################################
                     
-    def send_mail(self, alert, user):
+    def send_mail(self, alert):
         activate(settings.USER_LANGUAGE)
         list_mail = []
-        for u in user :
+        for u in self.user :
             list_mail.append(u.user.email)
         sender ="contact@protecia.com"
         body = _("Origin of detection") +"  : {}".format(Alert.stuffs_d[alert.stuffs])+"   ---  "+_("Type of detection")+" :  {}".format(Alert.actions_d[alert.actions])
@@ -188,24 +281,96 @@ class Process_alert(object):
         Alert_when(what='mail', who=list_mail, stuffs=alert.stuffs, action=alert.actions).save()
         activate('en')
             
-    def send_sms(self, alert,t,user):
+    def send_sms(self, alert,t):
         activate(settings.USER_LANGUAGE)
-        for u in user :
+        for u in self.user :
             to = u.phone_number
             sender ="+33757916187"
             body = _("Origin of detection") +"  : {}".format(Alert.stuffs_d[alert.stuffs])+"   ---  "+_("Type of detection")+" :  {}".format(Alert.actions_d[alert.actions])
             body += "\n"+_("Time of detection")+" : {:%d-%m-%Y - %H:%M:%S}".format(t.astimezone(pytz.timezone(settings.TIME_ZONE)))
             body += "n"+_("Please check the images")+" : {} ".format(self.public_site+'/warning/0')
             try:
-                client_tw.messages.create(to=to, from_=sender,body=body)
+                client.messages.create(to=to, from_=sender,body=body)
             except TwilioRestException:
                 pass
-            client_tw.messages.create(to=to, from_=sender,body=body)
+            client.messages.create(to=to, from_=sender,body=body)
             logger.warning('sms send to : {}'.format(to))
             Alert_when(what='sms', who='to', stuffs=alert.stuffs, action=alert.actions).save()
         activate('en')
     
+    def start_adam(self, alert, t, channel):
+        cmd = 'http://'+alert.adam.ip+'/digitaloutput/all/value'
+        try:
+            r = requests.get(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, timeout=2)
+        except requests.exceptions.ConnectionError :
+            logger.warning('adam not responding on ip : {}'.format(alert.adam.ip))
+            return
+        xml = ET.fromstring(r.text)
+        adam_state = {}
+        for state in xml.findall('DO'):
+            state.find('ID').text
+            adam_state[int(state.find('ID').text)]=state.find('VALUE').text
+        for nb,c in channel.items() :
+            if c :
+                adam_state[nb] = '1'
+        data = ''
+        for i in adam_state:
+            data += "DO"+str(i)+"="+adam_state[i]+"&"
+        try:    
+            r = requests.post(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, data=data, timeout=2)
+            if r.status_code == 200:
+                logger.warning('adam started on ip : {}'.format(alert.adam.ip))
+                logger.debug('with request : {} {} {} {}'.format(cmd,alert.adam.auth,alert.adam.password,data))
+                Alert_when(what='adam', who='', stuffs=alert.stuffs, action=alert.actions).save()       
+        except requests.exceptions.ConnectionError :
+            logger.warning('adam not responding on ip : {}'.format(alert.adam.ip))
+            pass
+        time.sleep(0.5)
+       
+    def stop_adam(self, alert, t, channel):
+        cmd = 'http://'+alert.adam.ip+'/digitaloutput/all/value'
+        try:
+            r = requests.get(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, timeout=2)
+        except requests.exceptions.ConnectionError :
+            logger.warning('adam not responding on ip : {}'.format(alert.adam.ip))
+            return
+        xml = ET.fromstring(r.text)
+        adam_state = {}
+        for state in xml.findall('DO'):
+            state.find('ID').text
+            adam_state[int(state.find('ID').text)]=state.find('VALUE').text
+        for nb,c in channel.items() :
+            if c :
+                adam_state[nb] = '0'
+        data = ''
+        for i in adam_state:
+            data += "DO"+str(i)+"="+adam_state[i]+"&" 
+        try:
+            r = requests.post(cmd, auth=(alert.adam.auth,alert.adam.password), headers={"content-type":"text"}, data=data, timeout=2)
+            if r.status_code == 200:
+                logger.warning('adam stop on ip : {}'.format(alert.adam.ip))
+                logger.debug('with request : {} {} {} {}'.format(cmd,alert.adam.auth,alert.adam.password,data))
+        except requests.exceptions.ConnectionError :
+            logger.warning('adam not responding on ip : {}'.format(alert.adam.ip))
+            pass
+        time.sleep(0.5)
+        
+    def send_hook(self,alert,hook,t):
+        url = hook.url
+        data = {'object': str(Alert.stuffs_d[alert.stuffs]), 'action': str(Alert.actions_d[alert.actions]), 'time':alert.when.strftime("%m/%d/%Y, %H:%M:%S")}
+        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        try:
+            r = requests.post(url, data=json.dumps(data), headers=headers, timeout=2)
+            if r.status_code == 200:
+                logger.warning('hook send to : {}'.format(url))
+                logger.debug('with data : {}'.format(data))
+                Alert_when(what='hook', who=url, stuffs=alert.stuffs, action=alert.actions).save() 
+        except requests.exceptions.ConnectionError :
+            logger.warning('hook not responding on url : {}'.format(url))
+            pass
+
     def run(self,_time):
+           
         while(self.running):
             check_space(settings.SPACE_LEFT)   
             #get last objects

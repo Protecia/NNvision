@@ -73,7 +73,7 @@ def index(request):
         [ item.kill() for sublist in p for item in sublist]
         running = False
 
-    context = {'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH},
+    context = {'info' : {'version' : settings.VERSION, 'client' : client},
                'url_for_index' : '/','running':running, 'logo_client':client.logo_perso}
     return render(request, 'app1/index.html',context)
 
@@ -253,7 +253,7 @@ def alert(request, id=0, id2=-1):
     #auto = [(a[0],a[1],DAY_CODE_STR[a[4]],a[-1]) for a in auto]
     return render(request, 'app1/alert.html', {'message' : form.non_field_errors,
            'category' : 'warning','form': form, 'alert':alert, 'aform':aform,
-           'auto':auto, 'no_free':settings.ACCESS_NO_FREE, 'adam':settings.ACCESS_ADAM, 'hook':settings.ACCESS_HOOK, 'logo_client':client.logo_perso })
+           'auto':auto, 'no_free':client.access_no_free, 'adam':client.access_adam, 'telefram':client.access_telegram, 'logo_client':client.logo_perso })
 
 @login_required
 @permission_required('app1.camera')
@@ -265,7 +265,7 @@ def last(request, cam):
 @permission_required('app1.camera')
 def get_last_analyse_img(request,cam_id):
     client = Client.objects.get(pk=request.session['client'])
-    path_img_box = os.path.join(settings.MEDIA_ROOT,str(client.id),'temp_img_cam'+str(cam_id)+'.jpg')
+    path_img_box = os.path.join(settings.MEDIA_ROOT,str(client.id),'temp_img_cam_'+str(cam_id)+'.jpg')
     try :
         age = time.time()-os.path.getmtime(path_img_box)
     except FileNotFoundError :
@@ -284,7 +284,7 @@ def get_last_analyse_img(request,cam_id):
             continue
         response = HttpResponse(content_type='image/jpg')
         try:
-            im.thumbnail((settings.IMAGE_REAL_TIME_MAX_WIDTH,settings.IMAGE_REAL_TIME_MAX_HIGH), Image.ANTIALIAS)
+            im.thumbnail((client.image_real_time_max_width,client.image_real_time_max_high), Image.ANTIALIAS)
             im.save(response, 'JPEG')
             break
         except OSError:

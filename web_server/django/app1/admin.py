@@ -43,7 +43,7 @@ class CameraAdmin(admin.ModelAdmin):
         excluded = super().get_exclude(request, obj) or [] # get overall excluded fields
 
         if not request.user.is_superuser: # if user is not a superuser
-            return excluded + ('client')
+            return excluded + ('client',)
 
         return excluded # otherwise return the default excluded fields if any
 

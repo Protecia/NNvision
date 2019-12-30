@@ -210,7 +210,7 @@ class Alert_when(models.Model):
 class Alert_type(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     allowed = models.CharField(max_length=10, choices=ALERT_CHOICES)
-    priority = models.Integerfield()
+    priority = models.IntegerField(default=1)
     delay = models.DurationField(default=timedelta(seconds=0))
     resent = models.DurationField(default=timedelta(seconds=300))
     post_wait = models.DurationField(default=timedelta(seconds=60))

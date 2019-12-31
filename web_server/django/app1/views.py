@@ -9,7 +9,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Count
-from .models import Camera, Result, Alert, Client
+from .models import Camera, Result, Alert, Client, Alert_type, ALERT_CHOICES
 from .forms import AlertForm, AutomatForm, DAY_CODE_STR
 from PIL import Image
 from django.utils import translation
@@ -201,6 +201,8 @@ def warning_detail(request, id):
 @permission_required('app1.camera')
 def alert(request, id=0, id2=-1):
     client = Client.objects.get(pk=request.session['client'])
+    alert_type = Alert_type.objects.filter(client=request.session['client'])
+    autorization = dict([(a[0],True) if  a[0] in [a.allowed for a in alert_type] else (a[0],False) for a in ALERT_CHOICES ])
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         typeForm = request.POST.get("type", "")
@@ -252,7 +254,7 @@ def alert(request, id=0, id2=-1):
     #auto = [(a[0],a[1],DAY_CODE_STR[a[4]],a[-1]) for a in auto]
     return render(request, 'app1/alert.html', {'message' : form.non_field_errors,
            'category' : 'warning','form': form, 'alert':alert, 'aform':aform,
-           'auto':auto, 'no_free':client.access_no_free, 'adam':client.access_adam, 'telefram':client.access_telegram, 'logo_client':client.logo_perso })
+           'auto':auto, 'autorization' : autorization , 'logo_client':client.logo_perso })
 
 @login_required
 @permission_required('app1.camera')

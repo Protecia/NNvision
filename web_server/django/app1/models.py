@@ -214,4 +214,10 @@ class Alert_type(models.Model):
     delay = models.DurationField(default=timedelta(seconds=0))
     resent = models.DurationField(default=timedelta(seconds=300))
     post_wait = models.DurationField(default=timedelta(seconds=60))
+    
+    class Meta:
+        unique_together = ('client', 'allowed')
+    
+    def __str__(self):
+        return 'client : {} / allowed : {} '.format(Alert_type.client, Alert.type.allowed)
 

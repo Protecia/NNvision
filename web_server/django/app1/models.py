@@ -16,7 +16,7 @@ class Client(models.Model):
     cp = models.CharField(max_length=200, blank = True)
     city = models.CharField(max_length=200, blank = True)
     key = models.CharField(max_length=200, default=secrets.token_hex )
-    folder = secrets.token_urlsafe
+    folder = models.CharField(max_length=200, default=secrets.token_urlsafe)
     serial_box = models.CharField(max_length=20, blank = True)
     rec = models.BooleanField(default=False)
     on_camera = models.BooleanField(default=False)

@@ -157,14 +157,11 @@ AUTH_TOKEN  = "97c36acf2c85e62436181e878305f982"
 
 VERSION='2.0'
 PUBLIC_SITE='http://'
-ACCESS_NO_FREE = True
-ACCESS_ADAM = True
-ACCESS_HOOK = True
+
 WAIT_BEFORE_DETECTION = 20
 DATASET_TEST = False
-SPACE_LEFT = 300 # en Mo
 
 
-RESELLER_LOGO = None  # None if you want nothing
 USER_LANGUAGE = 'fr'
 TIME_ON_CAMERA = 60 # the duration to display on live camera before stop
+TELEGRAM_TOKEN = '988625521:AAHf4DF2kwocwEL89TVJoOvNxTRPZxF0g94'

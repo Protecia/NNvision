@@ -33,10 +33,13 @@ class Client(models.Model):
         return '{} -  {} -  {}'.format(self.first_name, self.name, self.cp)
 
 class Profile(models.Model):
+    def get_token():
+        return secrets.token_urlsafe(6)
     client = models.ForeignKey(Client, default=1, on_delete=models.CASCADE)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
     phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True) # validators should be a list
+    telegram_token = models.CharField(max_length=64, default=get_token)
     alert = models.BooleanField(default="False")
     class Meta:
         ordering = ['user']
@@ -67,6 +70,11 @@ class Profile(models.Model):
 
     def __str__(self):
         return 'user : {} - phone_number : {} - alert : {}'.format(self.user, self.phone_number, self.alert)
+
+class Telegram(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    chat_id = models.IntegerField()
+
 
 class Camera(models.Model):
     AUTH_CHOICES = (

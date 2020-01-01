@@ -11,11 +11,17 @@ from django.utils.translation import ugettext_lazy as _
 
 
 class AlertForm(forms.ModelForm):
-    camera = forms.ModelMultipleChoiceField(queryset=Camera.objects, widget=forms.CheckboxSelectMultiple, required=False )
-                
+    
+    camera = forms.ModelMultipleChoiceField(queryset=None, widget=forms.CheckboxSelectMultiple, required=False )
+    
+    def __init__(self, *args, **kwargs):
+        client = kwargs.pop('client')
+        super().__init__(*args, **kwargs)
+        self.fields['camera'].queryset = Camera.objects.filter(client=client)
+        
     class Meta:
         model = Alert
-        fields = ['camera','stuffs', 'actions','sms','call','alarm','mail']
+        fields = ['camera','stuffs', 'actions','sms', 'telegram', 'call','alarm','mail', 'mass_alarm']
         widgets = {
             'actions': forms.RadioSelect(),
             'adam': forms.RadioSelect()}

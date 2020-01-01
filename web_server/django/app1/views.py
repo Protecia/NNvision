@@ -238,7 +238,7 @@ def alert(request, id=0, id2=-1):
                 form = AlertForm()
     # if a GET (or any other method) we'll create a blank form
     else:
-        form = AlertForm()
+        form = AlertForm(client=request.session['client'])
         aform = AutomatForm()
     if id !=0 :
         Alert.objects.get(pk=id).delete()

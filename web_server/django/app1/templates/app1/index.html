@@ -24,9 +24,9 @@
           <img  width="120" height="50" data-interchange="[{% get_static_prefix %}app1/img/logo_protecia.jpg, retina]" src="{% get_static_prefix %}app1/img/logo_protecia.jpg" alt="NNvision">
       
         </a>
-        {% if logo_client %}
+        {% if client.logo_perso %}
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <img    src="{% get_static_prefix %}app1/img/{{ logo_client}}" %}">
+        <img    src="{% get_static_prefix %}app1/img/{{ client.logo_perso}}" %}">
         {% endif %}
 	  </div>
 	   

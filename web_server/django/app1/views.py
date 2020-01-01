@@ -9,7 +9,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Count
-from .models import Camera, Result, Alert, Client, Alert_type, ALERT_CHOICES
+from .models import Camera, Result, Alert, Client, Alert_type, Profile, Telegram, ALERT_CHOICES
 from .forms import AlertForm, AutomatForm, DAY_CODE_STR
 from PIL import Image
 from django.utils import translation
@@ -73,7 +73,7 @@ def index(request):
         running = False
 
     context = {'info' : {'version' : settings.VERSION, 'client' : client},
-               'url_for_index' : '/','running':running, 'logo_client':client.logo_perso}
+               'url_for_index' : '/','running':running, 'client':client}
     return render(request, 'app1/index.html',context)
 
 def warning(request, first_alert):
@@ -83,7 +83,6 @@ def warning(request, first_alert):
         for a in alert :
             a.active = False
             a.save()
-        stop_adam_all()
         return redirect('/')
 
     alert = alert.first()
@@ -133,7 +132,7 @@ def panel(request, nav, first):
         img_alert_array = []
         form = AlertForm()
         context = { 'class':filter_class, 'form':form, 'first' : first,
-               'first_alert' : first, 'img_array' : img_array, 'img_alert_array' : img_alert_array, 'logo_client':client.logo_perso}
+               'first_alert' : first, 'img_array' : img_array, 'img_alert_array' : img_alert_array, 'client':client}
         return render(request, 'app1/panel.html', context)
     if filter_class == "all" :
         if nav == 'd':
@@ -175,7 +174,7 @@ def panel(request, nav, first):
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
     form = AlertForm()
     context = { 'class':filter_class, 'form':form, 'first' : first,
-               'first_alert' : first_alert, 'img_array' : img_array, 'img_alert_array' : img_alert_array, 'logo_client':client.logo_perso}
+               'first_alert' : first_alert, 'img_array' : img_array, 'img_alert_array' : img_alert_array, 'client':client}
     return render(request, 'app1/panel.html', context)
 
 @login_required
@@ -248,13 +247,21 @@ def alert(request, id=0, id2=-1):
         cron.write()
 
     # get all the alert and all the automatism
-    alert = Alert.objects.all()
+    alert = Alert.objects.filter(camera__client=request.session['client'])
     cron = CronTab(user=True)
     auto = [(c.minute.render(), c.hour.render(), DAY_CODE_STR[c.dow.render()], c.command.split()[2]) for c in cron]
+    # test the telegram token
+    user = Profile.objects.get(pk=request.user)
+    telegram_token = user.telegram_token
+    chat_id = Telegram.objects.filter(profile=user)
+    if len(chat_id)==0:
+        chat_id=None
+    
+    
     #auto = [(a[0],a[1],DAY_CODE_STR[a[4]],a[-1]) for a in auto]
     return render(request, 'app1/alert.html', {'message' : form.non_field_errors,
            'category' : 'warning','form': form, 'alert':alert, 'aform':aform,
-           'auto':auto, 'autorization' : autorization , 'logo_client':client.logo_perso })
+           'auto':auto, 'autorization' : autorization , 'client':client, 'telegram_token' : telegram_token, 'chat_id' : chat_id  })
 
 @login_required
 @permission_required('app1.camera')

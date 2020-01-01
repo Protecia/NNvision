@@ -25,9 +25,9 @@ fieldset.inlineLabels ul {list-style:none}
         <a href="/">
           <img width="100" height="38" data-interchange="[{% get_static_prefix %}app1/img/logo_protecia.jpg, retina]" src="{% get_static_prefix %}app1/img/logo_protecia.jpg" alt="NNvision">
         </a>
-        {% if logo_client %}
+        {% if client.logo_perso %}
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <img    src="{% get_static_prefix %}app1/img/{{ logo_client}}" %}">
+        <img    src="{% get_static_prefix %}app1/img/{{ client.logo_perso}}" %}">
         {% endif %}
       </div>
       <div class="top-bar-right">

@@ -18,7 +18,7 @@
 	<div class="large-10 columns">{% trans 'Alert settled' %}
 	{% for res in alert %}<code id="robot-state" class="accesslog hljs"> {{ res.get_stuffs_display }} {{ res.get_actions_display }} ({% for cam in res.camera.all %} *{{cam.name}}*  {% endfor %})  --->  
 	                                                                    {% if res.mail %}Mail{% endif %}
-	                                                                    {% if res.mail %}Mail{% endif %}                                                                  
+	                                                                    {% if res.telegram %}Telegram{% endif %}                                                                  
                                                                         {% if res.sms %}Sms{% endif %}
                                                                         {% if res.call %}call{% endif %}
                                                                         {% if res.alarm %}Alarm{% endif %}
@@ -104,10 +104,10 @@ function toggle(source) {
 	
   </div>
 </div>
-
+<br>
 {% if not chat_id %}
-<div class="row" style="border: 1px solid #466d98;"><div class="large-15 columns">
-    {% trans 'You don't have any Telegram id set.' %}{% trans ' Please send '  %}/register {{telegram_token}}{% trans ' to ProteciaBot on your Telegram app.'  %}
+<div class="row" style="border: 1px solid #466d98;"><div class="large-12 columns">
+    {% trans 'You don\'t have any Telegram id set.' %}{% trans ' Please send '  %}/register {{telegram_token}}{% trans ' to ProteciaBot on your Telegram app.'  %}
 </div></div>
 {% endif %}
 

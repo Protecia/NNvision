@@ -290,7 +290,7 @@ def get_last_analyse_img(request,cam_id):
             continue
         response = HttpResponse(content_type='image/jpg')
         try:
-            im.thumbnail((client.image_real_time_max_width,client.image_real_time_max_high), Image.ANTIALIAS)
+            im.thumbnail((client.image_real_time_max_width,client.image_real_time_max_hight), Image.ANTIALIAS)
             im.save(response, 'JPEG')
             break
         except OSError:

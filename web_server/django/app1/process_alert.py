@@ -22,6 +22,7 @@ from django.utils.translation import activate
 #from django.db import DatabaseError
 from socket import gaierror
 from twilio.base.exceptions import TwilioRestException
+from django.db.models import Count
 
 #------------------------------------------------------------------------------
 # Because this script have to be run in a separate process from manage.py
@@ -38,7 +39,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projet.settings")
 import django
 django.setup()
 
-from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_type, Camera, Client
+from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_type, Camera
 
 # Your Account SID from twilio.com/console
 account_sid = settings.ACCOUNT_SID
@@ -68,19 +69,22 @@ def old(query):
         return query.when
     else:
         return datetime(2000,1,1,tzinfo=pytz.utc)
+    
+
            
 class Process_alert(object):
-    def __init__(self):
-        self.user = Profile.objects.filter(alert=True).select_related()
+    def __init__(self, client):
+        self.user = Profile.objects.filter(alert=True, client=client).select_related()
         self.public_site = settings.PUBLIC_SITE
         self.running=True
-        self.result = Result.objects.all().last()
-        alert = Alert.objects.filter(active = True)
+        self.result = Result.objects.filter(camera__client=client).last()
+        self.client = client
+        alert = Alert.objects.filter(active = True, camera__client=self.client).annotate(c=Count('camera'))
         for a in alert :
             a.active = False
             a.save()
         # case where present alert is on at the launch
-        cam = Camera.objects.filter(active=True)
+        cam = Camera.objects.filter(active=True, client=client)
         for c in cam:
             result = Result.objects.filter(camera=c).last()  
             o = Object.objects.filter(result=result)
@@ -112,9 +116,8 @@ class Process_alert(object):
         i=0
         wait=True
         while wait:
-            check_space(settings.SPACE_LEFT)
             logger.info('start waiting for no detection : {}s'.format(i))
-            rn = Result.objects.all().last()
+            rn = Result.objects.filter(camera__client=self.client).last()
             if rn == None:
                 i+=1
             elif rn.id == self.result.id :
@@ -130,90 +133,79 @@ class Process_alert(object):
 #-------------------- this function send alert when necessary ----------------------------
     # alert is retrieve from models.Alert
     def warn(self, alert):
-        delay = Alert_info.objects.get()
         t = datetime.now(pytz.utc)
         logger.debug('warn in action at {} / alert timer is {} / timedelta : {}'.format(t
                     ,alert.when,t-alert.when))
         logger.debug('sms : {} / call : {} / alarm : {} / mail : {}'.format(
                 alert.sms,alert.call,alert.alarm,alert.mail))
-        list_alert = [alert.mail, alert ]
-        
-        if alert.mail :
-            if delay.mail_delay < t-alert.when:
-                last = old(Alert_when.objects.filter(what='mail', 
-                                                     stuffs=alert.stuffs,
-                                                     action=alert.actions).last())
-                if t-last > delay.mail_resent :
-                    logger.debug('>>>>>>> go to send mail <<<<<<<<<<<')
-                    self.send_mail(alert)
-            mail_post_wait = delay.mail_post_wait
-        else :
-            mail_post_wait = timedelta(seconds=0)
-       
-        if alert.sms :
-            if delay.sms_delay + mail_post_wait  < t-alert.when:
-                last = old(Alert_when.objects.filter(what='sms', 
-                                                     stuffs=alert.stuffs,
-                                                     action=alert.actions).last())
-                if t-last > delay.sms_resent :
-                    logger.debug('>>>>>>> go to send sms <<<<<<<<<<<')
-                    self.send_sms(alert,t)
-            sms_post_wait = delay.sms_post_wait
-        else :
-            sms_post_wait = timedelta(seconds=0)
+        list_alert = Alert_type.objects.filter(client=self.client).order_by('priority')
+        post_wait = timedelta(seconds=0)
+        for l in list_alert:
+            if getattr(alert,l.allowed) :
+                if l.delay + post_wait < t-alert.when:
+                    last = old(Alert_when.objects.filter(client = self.client,
+                                                         what=l.allowed, 
+                                                         stuffs=alert.stuffs,
+                                                         action=alert.actions).last())
+                    if t-last > l.resent :
+                        logger.debug('>>>>>>> go to send {} <<<<<<<<<<<'.format(l.allowed))
+                        self.send(alert, l.allowed, self.user,  t)
+                post_wait = l.post_wait
+            else :
+                post_wait = timedelta(seconds=0)
                     
 #############################################################################################
                     
-    def send_mail(self, alert, user):
-        activate(settings.USER_LANGUAGE)
-        list_mail = []
-        for u in user :
-            list_mail.append(u.user.email)
-        sender ="contact@protecia.com"
-        body = _("Origin of detection") +"  : {}".format(Alert.stuffs_d[alert.stuffs])+"   ---  "+_("Type of detection")+" :  {}".format(Alert.actions_d[alert.actions])
-        body += "<br>"+_("Time of detection")+" : {:%d-%m-%Y - %H:%M:%S}".format(alert.last.astimezone(pytz.timezone(settings.TIME_ZONE)))
-        body += "<br>"+_("Please check the images")+" : {} ".format(self.public_site+'/warning/0')
-        try:
-            message = EmailMessage( 'Protecia Alert !!!',
-                                    body,
-                                    sender,
-                                    list_mail)
-            message.content_subtype = "html"
-            message.attach_file(settings.MEDIA_ROOT+'/'+alert.img_name)
-            message.send(fail_silently=False,)
-        except (gaierror, FileNotFoundError) :
-            logger.warning('Error in send_mail !!!! :')
-            pass
-        logger.warning('mail send to : {}'.format(list_mail))
-        Alert_when(what='mail', who=list_mail, stuffs=alert.stuffs, action=alert.actions).save()
-        activate('en')
-            
-    def send_sms(self, alert,t,user):
-        activate(settings.USER_LANGUAGE)
-        for u in user :
-            to = u.phone_number
-            sender ="+33757916187"
+    def send(self, alert, canal, user, t):
+        if canal == 'mail':
+            activate(settings.USER_LANGUAGE)
+            list_mail = []
+            for u in user :
+                list_mail.append(u.user.email)
+            sender ="contact@protecia.com"
             body = _("Origin of detection") +"  : {}".format(Alert.stuffs_d[alert.stuffs])+"   ---  "+_("Type of detection")+" :  {}".format(Alert.actions_d[alert.actions])
-            body += "\n"+_("Time of detection")+" : {:%d-%m-%Y - %H:%M:%S}".format(t.astimezone(pytz.timezone(settings.TIME_ZONE)))
-            body += "n"+_("Please check the images")+" : {} ".format(self.public_site+'/warning/0')
+            body += "<br>"+_("Time of detection")+" : {:%d-%m-%Y - %H:%M:%S}".format(alert.last.astimezone(pytz.timezone(settings.TIME_ZONE)))
+            body += "<br>"+_("Please check the images")+" : {} ".format(self.public_site+'/warning/0')
             try:
-                client_tw.messages.create(to=to, from_=sender,body=body)
-            except TwilioRestException:
+                message = EmailMessage( 'Protecia Alert !!!',
+                                        body,
+                                        sender,
+                                        list_mail)
+                message.content_subtype = "html"
+                message.attach_file(settings.MEDIA_ROOT+'/'+alert.img_name)
+                message.send(fail_silently=False,)
+            except (gaierror, FileNotFoundError) :
+                logger.warning('Error in send_mail !!!! :')
                 pass
-            client_tw.messages.create(to=to, from_=sender,body=body)
-            logger.warning('sms send to : {}'.format(to))
-            Alert_when(what='sms', who='to', stuffs=alert.stuffs, action=alert.actions).save()
-        activate('en')
+            logger.warning('mail send to : {}'.format(list_mail))
+            Alert_when(what='mail', who=list_mail, stuffs=alert.stuffs, action=alert.actions).save()
+            activate('en')
+            
+        if canal == 'sms':
+            activate(settings.USER_LANGUAGE)
+            for u in user :
+                to = u.phone_number
+                sender ="+33757916187"
+                body = _("Origin of detection") +"  : {}".format(Alert.stuffs_d[alert.stuffs])+"   ---  "+_("Type of detection")+" :  {}".format(Alert.actions_d[alert.actions])
+                body += "\n"+_("Time of detection")+" : {:%d-%m-%Y - %H:%M:%S}".format(t.astimezone(pytz.timezone(settings.TIME_ZONE)))
+                body += "n"+_("Please check the images")+" : {} ".format(self.public_site+'/warning/0')
+                try:
+                    client_tw.messages.create(to=to, from_=sender,body=body)
+                except TwilioRestException:
+                    pass
+                client_tw.messages.create(to=to, from_=sender,body=body)
+                logger.warning('sms send to : {}'.format(to))
+                Alert_when(what='sms', who='to', stuffs=alert.stuffs, action=alert.actions).save()
+            activate('en')
     
     def run(self,_time):
         while(self.running):
-            check_space(settings.SPACE_LEFT)   
             #get last objects
             o = Object.objects.filter(result=self.result)
             c = Counter([i.result_object for i in o])
             logger.info('getting last object : {}'.format(c))   
             # Is there new result
-            rn = Result.objects.filter(pk__gt=getattr(self.result,'id',0))
+            rn = Result.objects.filter(pk__gt=getattr(self.result,'id',0), camera__client=self.client)
             for r in rn:
                 logger.info('new result in databases : {}'.format(r))
                 on = Object.objects.filter(result=r)
@@ -228,19 +220,15 @@ class Process_alert(object):
                 disappear = c-cn
                 self.check_alert(r, 'disappear',disappear)
                 self.result = r
-            alert = Alert.objects.filter(active = True)
+            alert = Alert.objects.filter(active = True, camera__client=self.client).annotate(c=Count('camera'))
             for a in alert :
                 self.warn(a)
             time.sleep(_time)
 
 def main():
+    client = sys.argv[0]
     activate('en')
-    purge_files()
-    sb = os.statvfs(settings.MEDIA_ROOT)
-    sm = sb.f_bavail * sb.f_frsize / 1024 / 1024
-    logger.warning('space left is  {} MO'.format(sm))
-    check_space(settings.SPACE_LEFT)
-    process_alert=Process_alert()
+    process_alert=Process_alert(client)
     print("Waiting...")
     process_alert.wait(settings.WAIT_BEFORE_DETECTION)
     print("Alert are running !")

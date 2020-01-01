@@ -59,7 +59,6 @@ def index(request):
             Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
         time.sleep(2)
     if d_action == 'stop' :
-        stop_adam_all()
         p = process()
         [ item.kill() for sublist in p for item in sublist]
         time.sleep(2)
@@ -247,12 +246,12 @@ def alert(request, id=0, id2=-1):
         cron.write()
 
     # get all the alert and all the automatism
-    alert = Alert.objects.filter(camera__client=request.session['client'])
+    alert = Alert.objects.filter(camera__client=request.session['client']).annotate(c=Count('camera'))
     cron = CronTab(user=True)
     auto = [(c.minute.render(), c.hour.render(), DAY_CODE_STR[c.dow.render()], c.command.split()[2]) for c in cron]
     # test the telegram token
     telegram_token = Profile.objects.get(user=request.user).telegram_token
-    chat_id = Telegram.objects.filter(profile=request.user)
+    chat_id = Telegram.objects.filter(profile=request.user.id)
     if len(chat_id)==0:
         chat_id=None
     

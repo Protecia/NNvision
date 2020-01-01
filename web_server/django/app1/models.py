@@ -207,6 +207,7 @@ ALERT_CHOICES = (('mail','mail'),
                    )
 
 class Alert_when(models.Model):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE)
     what = models.CharField(max_length=10, choices=ALERT_CHOICES)
     action = models.IntegerField(default =1)
     stuffs = models.IntegerField(default =1)
@@ -227,5 +228,5 @@ class Alert_type(models.Model):
         unique_together = ('client', 'allowed')
     
     def __str__(self):
-        return 'client : {} / allowed : {} '.format(Alert_type.client, Alert.type.allowed)
+        return 'client : {} / allowed : {} '.format(Alert_type.client, Alert_type.allowed)
 

@@ -130,7 +130,7 @@ def panel(request, nav, first):
     if not Result.objects.filter(camera__client=request.session['client']):
         img_array = []
         img_alert_array = []
-        form = AlertForm()
+        form = AlertForm(client=request.session['client'])
         context = { 'class':filter_class, 'form':form, 'first' : first,
                'first_alert' : first, 'img_array' : img_array, 'img_alert_array' : img_alert_array, 'client':client}
         return render(request, 'app1/panel.html', context)
@@ -172,7 +172,7 @@ def panel(request, nav, first):
             first = len(Result.objects.filter(camera__client=request.session['client'], time__gte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object')))
     img_array = [imgs[i:i + 3] for i in range(0, len(imgs), 3)]
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
-    form = AlertForm()
+    form = AlertForm(client=request.session['client'])
     context = { 'class':filter_class, 'form':form, 'first' : first,
                'first_alert' : first_alert, 'img_array' : img_array, 'img_alert_array' : img_alert_array, 'client':client}
     return render(request, 'app1/panel.html', context)
@@ -207,7 +207,7 @@ def alert(request, id=0, id2=-1):
         typeForm = request.POST.get("type", "")
         # create a form instance and populate it with data from the request:
         if typeForm == "alert":
-            form = AlertForm(request.POST)
+            form = AlertForm(request.POST, client=request.session['client'])
             # check whether it's valid:
             if form.is_valid()  :
                 form.save()
@@ -234,7 +234,7 @@ def alert(request, id=0, id2=-1):
                 # redirect to a new URL:
                 return HttpResponseRedirect('/alert')
             else :
-                form = AlertForm()
+                form = AlertForm(client=request.session['client'])
     # if a GET (or any other method) we'll create a blank form
     else:
         form = AlertForm(client=request.session['client'])
@@ -251,9 +251,8 @@ def alert(request, id=0, id2=-1):
     cron = CronTab(user=True)
     auto = [(c.minute.render(), c.hour.render(), DAY_CODE_STR[c.dow.render()], c.command.split()[2]) for c in cron]
     # test the telegram token
-    user = Profile.objects.get(pk=request.user)
-    telegram_token = user.telegram_token
-    chat_id = Telegram.objects.filter(profile=user)
+    telegram_token = Profile.objects.get(user=request.user).telegram_token
+    chat_id = Telegram.objects.filter(profile=request.user)
     if len(chat_id)==0:
         chat_id=None
     

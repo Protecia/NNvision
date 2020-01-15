@@ -1,3 +1,3 @@
 #!/bin/bash
 
-#python3 /NNvision/process_camera.py
+python3 /NNvision/main.py

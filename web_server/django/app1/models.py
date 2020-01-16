@@ -1,7 +1,6 @@
 from __future__ import unicode_literals
 
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator, EmailValidator, MaxValueValidator, MinValueValidator, URLValidator
 from datetime import datetime, timedelta
@@ -31,7 +30,7 @@ class Client(models.Model):
     logo_perso = models.CharField(max_length=20, null=True, blank=True)
 
     def __str__(self):
-        return '{} -  {} -  {}'.format(self.first_name, self.name, self.cp)
+        return '{} -  {} -  {}'.format(self.adress, self.cp, self.city)
 
 class Profile(models.Model):
     def get_token():
@@ -168,7 +167,6 @@ ADAM_CHANNEL = ((1,1),
                 (6,6),
                    )
 
-@python_2_unicode_compatible  # only if you need to support Python 2
 class Alert(models.Model):
     actions_reverse = dict((v, k) for k, v in ACTIONS_CHOICES)
     stuffs_reverse = dict((v, k) for k, v in STUFFS_CHOICES)

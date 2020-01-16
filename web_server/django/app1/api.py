@@ -83,7 +83,7 @@ def uploadImage(request):
         delete_space(client)
         img = request.FILES['myFile']
         size = len(img)
-        img_path = settings.MEDIA_ROOT+'/'+str(client.id)+'/'+img_name
+        img_path = settings.MEDIA_ROOT+'/'+client.folder+'/'+img_name
         os.makedirs(os.path.dirname(img_path), exist_ok=True)
         if not real_time :
             with open(img_path+'_no_box.jpg', 'wb') as file:

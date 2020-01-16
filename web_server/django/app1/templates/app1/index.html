@@ -44,11 +44,8 @@
 		<ul class="menu">
 		<a href="/admin" >Administration</a>
 		</ul>
-		<ul class="menu">
-		<a href="/accounts/logout/" >Logout</a>
-		</ul>
-		<ul class="menu">
-		{{ user.get_username }}
+		<ul class="menu">{% if user.is_authenticated %}
+		{{ user.get_username }}(<a href="/accounts/logout/" >Logout</a>){% endif %}
 		</ul>
       </div>
     </nav>

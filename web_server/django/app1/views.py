@@ -3,7 +3,7 @@
 import os
 import time
 import psutil as ps
-from subprocess import Popen, STDOUT, call
+from subprocess import Popen, STDOUT
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
@@ -18,17 +18,15 @@ from threading import Thread
 
 # Create your views here.
 
-def process():
-    _process = [[],[]]
+def process(key):
     for p in ps.process_iter():
         try :
             for n in p.cmdline():
-                if 'process_camera' in n : _process[0].append(p)
-                if 'process_alert' in n : _process[1].append(p)
+                if key in n :
+                    return p
         except ps.AccessDenied :
             pass
-    return _process
-
+    return False
 
 def index(request):
     user_language = 'fr'
@@ -44,33 +42,28 @@ def index(request):
     client = Client.objects.get(profile__user=request.user)
     request.session['client']=client.id
     d_action = request.POST.get('d_action')
-    if d_action == 'start' and len(process()[0])==0:
-       
-        #if settings.DEBUG:
-        if True:
-            with open(os.path.join(settings.BASE_DIR,'process_camera.log'), 'w') as log:
-                Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')],
-                      stdout=log, stderr=STDOUT)
+    if d_action == 'start' and not process(client.key):
+        if settings.DEBUG:
             with open(os.path.join(settings.BASE_DIR,'process_alert.log'), 'w') as loga:
-                Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')],
+                Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py'), client.key],
                       stdout=loga, stderr=STDOUT)
         else:
-            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
-            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')])
+            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py'),client.key])
+        client.change = True
+        client.rec =  True
+        client.save()
         time.sleep(2)
     if d_action == 'stop' :
-        p = process()
-        [ item.kill() for sublist in p for item in sublist]
+        process(client.key).kill()
+        client.change = True
+        client.rec =  False
+        client.save()
         time.sleep(2)
-    p = process()
-    if len(p[0])>0 and len(p[1])>0 :
+    p = process(client.key)
+    if p:
         running = True
-    elif len(p[0])==0 and len(p[1])==0:
-        running = False
     else :
-        [ item.kill() for sublist in p for item in sublist]
         running = False
-
     context = {'info' : {'version' : settings.VERSION, 'client' : client},
                'url_for_index' : '/','running':running, 'client':client}
     return render(request, 'app1/index.html',context)
@@ -254,8 +247,8 @@ def alert(request, id=0, id2=-1):
     chat_id = Telegram.objects.filter(profile=request.user.id)
     if len(chat_id)==0:
         chat_id=None
-    
-    
+
+
     #auto = [(a[0],a[1],DAY_CODE_STR[a[4]],a[-1]) for a in auto]
     return render(request, 'app1/alert.html', {'message' : form.non_field_errors,
            'category' : 'warning','form': form, 'alert':alert, 'aform':aform,

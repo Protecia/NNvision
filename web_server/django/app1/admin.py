@@ -1,11 +1,21 @@
 from django.contrib import admin
 from django.conf import settings
 from django.forms.models import ModelForm
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth.models import Group
 from django.utils.translation import ugettext_lazy as _
 
 # Register your models here.
 
 from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_type
+from models import User
+
+@receiver(post_save, sender= User)
+def add_group_permission(sender, instance, created, **kwargs):
+    if created:
+        g = Group.objects.get(name='utilisateurs standards')
+        g.user_set.add(instance)
 
 class CameraAdmin(admin.ModelAdmin):
     exclude = ('wait_for_set','update','from_client')

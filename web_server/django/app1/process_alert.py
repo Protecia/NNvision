@@ -47,24 +47,31 @@ account_sid = settings.ACCOUNT_SID
 auth_token  = settings.AUTH_TOKEN
 client_tw = Client_twilio(account_sid, auth_token)
 
-#------------------------------------------------------------------------------
-# a simple config to create a file log - change the level to warning in
-# production
-#------------------------------------------------------------------------------
-if __name__ == '__main__':
-    
-#------------------------------------------------------------------------------
+
+
+
 def old(query):
     if query is not None :
         return query.when
     else:
         return datetime(2000,1,1,tzinfo=pytz.utc)
 
-
-
 class Process_alert(object):
     def __init__(self, key):
         self.client = Client.objects.get(key=key)
+        ####### log #######
+        if settings.DEBUG :
+            level=logging.DEBUG
+        else:
+            level=logging.WARNING
+        self.logger = logging.getLogger(str(self.client.id))
+        self.logger.setLevel(level)
+        formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+        file_handler = RotatingFileHandler(os.path.join(settings.BASE_DIR,'log','alert'+str(self.client.id)+'.log'), 'a', 10000000, 1)
+        file_handler.setLevel(level)
+        file_handler.setFormatter(formatter)
+        self.logger.addHandler(file_handler)
+        ####################
         self.user = Profile.objects.filter(alert=True, client=self.client).select_related()
         self.public_site = settings.PUBLIC_SITE
         self.running=True
@@ -79,7 +86,7 @@ class Process_alert(object):
             result = Result.objects.filter(camera=c).last()
             o = Object.objects.filter(result=result)
             c = Counter([i.result_object for i in o])
-            logger.info('getting last object init : {}'.format(c))
+            self.logger.info('getting last object init : {}'.format(c))
             self.check_alert(result, 'present',c)
 
     def check_alert(self, result, alert_type, object_counter):
@@ -91,7 +98,7 @@ class Process_alert(object):
                                                  actions=Alert.actions_reverse[alert_type],
                                                  camera=result.camera).first()
                     if a :
-                        logger.info(alert_type+' alert : {}'.format(a))
+                        self.logger.info(alert_type+' alert : {}'.format(a))
                         result.alert= True
                         result.save()
                         a.img_name = result.file2.name
@@ -106,7 +113,7 @@ class Process_alert(object):
         i=0
         wait=True
         while wait:
-            logger.info('start waiting for no detection : {}s'.format(i))
+            self.logger.info('start waiting for no detection : {}s'.format(i))
             rn = Result.objects.filter(camera__client=self.client).last()
             if rn == None:
                 i+=1
@@ -118,15 +125,15 @@ class Process_alert(object):
             time.sleep(1)
             if i>self.client.wait_before_detection :
                 wait=False
-                logger.info('waiting {} s, end loop'.format(i))
+                self.logger.info('waiting {} s, end loop'.format(i))
 
 #-------------------- this function send alert when necessary ----------------------------
     # alert is retrieve from models.Alert
     def warn(self, alert):
         t = datetime.now(pytz.utc)
-        logger.debug('warn in action at {} / alert timer is {} / timedelta : {}'.format(t
+        self.logger.debug('warn in action at {} / alert timer is {} / timedelta : {}'.format(t
                     ,alert.when,t-alert.when))
-        logger.debug('sms : {} / call : {} / alarm : {} / mail : {}'.format(
+        self.logger.debug('sms : {} / call : {} / alarm : {} / mail : {}'.format(
                 alert.sms,alert.call,alert.alarm,alert.mail))
         list_alert = Alert_type.objects.filter(client=self.client).order_by('priority')
         post_wait = timedelta(seconds=0)
@@ -138,7 +145,7 @@ class Process_alert(object):
                                                          stuffs=alert.stuffs,
                                                          action=alert.actions).last())
                     if t-last > l.resent :
-                        logger.debug('>>>>>>> go to send {} <<<<<<<<<<<'.format(l.allowed))
+                        self.logger.debug('>>>>>>> go to send {} <<<<<<<<<<<'.format(l.allowed))
                         self.send(alert, l.allowed, self.user,  t)
                 post_wait = l.post_wait
             else :
@@ -165,9 +172,9 @@ class Process_alert(object):
                 message.attach_file(settings.MEDIA_ROOT+'/'+alert.img_name)
                 message.send(fail_silently=False,)
             except (gaierror, FileNotFoundError) :
-                logger.warning('Error in send_mail !!!! :')
+                self.logger.warning('Error in send_mail !!!! :')
                 pass
-            logger.warning('mail send to : {}'.format(list_mail))
+            self.logger.warning('mail send to : {}'.format(list_mail))
             Alert_when(what='mail', who=list_mail, stuffs=alert.stuffs, action=alert.actions).save()
             activate('en')
 
@@ -184,7 +191,7 @@ class Process_alert(object):
                 except TwilioRestException:
                     pass
                 client_tw.messages.create(to=to, from_=sender,body=body)
-                logger.warning('sms send to : {}'.format(to))
+                self.logger.warning('sms send to : {}'.format(to))
                 Alert_when(what='sms', who='to', stuffs=alert.stuffs, action=alert.actions).save()
             activate('en')
 
@@ -193,14 +200,14 @@ class Process_alert(object):
             #get last objects
             o = Object.objects.filter(result=self.result)
             c = Counter([i.result_object for i in o])
-            logger.info('getting last object : {}'.format(c))
+            self.logger.info('getting last object : {}'.format(c))
             # Is there new result
             rn = Result.objects.filter(pk__gt=getattr(self.result,'id',0), camera__client=self.client)
             for r in rn:
-                logger.info('new result in databases : {}'.format(r))
+                self.logger.info('new result in databases : {}'.format(r))
                 on = Object.objects.filter(result=r)
                 cn = Counter([i.result_object for i in on])
-                logger.debug('getting objects in databases : {}'.format(cn))
+                self.logger.debug('getting objects in databases : {}'.format(cn))
                 # case "is present"
                 self.check_alert(r, 'present',cn)
                 # case : "appear"
@@ -216,20 +223,8 @@ class Process_alert(object):
             time.sleep(_time)
 
 def main():
-    key = sys.argv[0]
+    key = sys.argv[1]
     activate('en')
-    # log
-    if settings.DEBUG :
-        level=logging.DEBUG
-    else:
-        level=logging.WARNING
-    logger = logging.getLogger()
-    logger.setLevel(level)
-    formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-    file_handler = RotatingFileHandler(os.path.join(settings.BASE_DIR,'log','alert'+key+'.log'), 'a', 10000000, 1)
-    file_handler.setLevel(level)
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
     # instanciate process alert
     process_alert=Process_alert(key)
     print("Waiting...")

@@ -14,7 +14,7 @@ from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, 
 @receiver(post_save, sender= User)
 def add_group_permission(sender, instance, created, **kwargs):
     if created:
-        g = Group.objects.get(name='utilisateurs standards')
+        g = Group.objects.get(name='normal')
         g.user_set.add(instance)
 
 class CameraAdmin(admin.ModelAdmin):

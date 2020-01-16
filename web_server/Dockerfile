@@ -14,7 +14,7 @@ USER root
 RUN cd django && python3 manage.py collectstatic && /etc/init.d/postgresql start &&\
     python3 manage.py makemigrations && python3 manage.py migrate && \
     echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@protecia.com', 'protecia')" | python3 manage.py shell && \
-     /etc/init.d/postgresql stop
+    python3 manage.py loaddata group.json && /etc/init.d/postgresql stop
 
 RUN django/change_right.sh && a2enmod  wsgi && rm Dockerfile* && rm build.sh
  

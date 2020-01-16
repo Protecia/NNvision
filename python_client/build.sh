@@ -1,1 +1,2 @@
-docker build --rm -t nnvision_client:0.2 .
+
+docker build --rm -t roboticia/protecia:0.3 .

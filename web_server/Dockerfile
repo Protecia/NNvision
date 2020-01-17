@@ -12,9 +12,9 @@ RUN    /etc/init.d/postgresql start &&\
 USER root
 # Activate django
 RUN cd django && python3 manage.py collectstatic && /etc/init.d/postgresql start &&\
-    python3 manage.py makemigrations && python3 manage.py migrate && \
+    python3 manage.py loaddata group.json && python3 manage.py makemigrations && python3 manage.py migrate && \
     echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@protecia.com', 'protecia')" | python3 manage.py shell && \
-    python3 manage.py loaddata group.json && /etc/init.d/postgresql stop
+    /etc/init.d/postgresql stop
 
 RUN django/change_right.sh && a2enmod  wsgi && rm Dockerfile* && rm build.sh
  

@@ -11,13 +11,13 @@ from django.utils.translation import ugettext_lazy as _
 
 from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_type
 
-'''
+
 @receiver(post_save, sender= User)
 def add_group_permission(sender, instance, created, **kwargs):
     if created:
         g = Group.objects.get(name='normal')
         g.user_set.add(instance)
-'''
+
 class CameraAdmin(admin.ModelAdmin):
     exclude = ('wait_for_set','update','from_client')
     '''

@@ -257,14 +257,15 @@ def alert(request, id=0, id2=-1):
 @login_required
 @permission_required('app1.camera')
 def last(request, cam):
-    img = '/media/tempimg_cam'+str(cam)+'_box.jpg'
-    return render(request, 'app1/last_img.html', {'img':img})
+    client = Client.objects.get(pk=request.session['client'])
+    path_img_box = os.path.join(settings.MEDIA_URL,client.folder,'temp_img_cam_'+str(cam)+'.jpg')
+    return render(request, 'app1/last_img.html', {'img':path_img_box})
 
 @login_required
 @permission_required('app1.camera')
 def get_last_analyse_img(request,cam_id):
     client = Client.objects.get(pk=request.session['client'])
-    path_img_box = os.path.join(settings.MEDIA_ROOT,str(client.id),'temp_img_cam_'+str(cam_id)+'.jpg')
+    path_img_box = os.path.join(settings.MEDIA_ROOT,client.folder,'temp_img_cam_'+str(cam_id)+'.jpg')
     try :
         age = time.time()-os.path.getmtime(path_img_box)
     except FileNotFoundError :

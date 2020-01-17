@@ -49,26 +49,23 @@ def SendChatMessage(tochatid_in, tousername_in,tofirstname_in,tolastname_in, mes
     except Exception as repex:
         logger.warning(('Error while send Message: {}'.format(repex)))
 
-# ICI Controler que le userid plus bas existe dans la DB NNVISION et stocker les usersinfos dans la 
-# BDD d'NNVISION (l'object JSON de newuser par exemple)
-# 1 - il peut y avoir N   telegram user -> 1  NNVision User
-# 2 - un user Telegram peut etre present pour plusieurs NNVision User
+# ICI Controler que le userid plus bas existe dans la DB Protecia et stocker les usersinfos dans la
+# BDD d'Protecia (l'object JSON de newuser par exemple)
+# 1 - il peut y avoir N   telegram user -> 1  Protecia User
+# 2 - un user Telegram peut etre present pour plusieurs Protecia User
 # pour notifier potentiellement plusieurs personnes
 
 def CommandRegister(fromuserid_in,fromusername_in, fromchatid_in, fromfirstname_in,fromlastname_in,token):
     try:
-        userid=int(token)
-        if (userid > 0):
-            logger.warning(("REGISTERING user  %s %s as user ID=%d" % ( fromfirstname_in , fromlastname_in, userid)))
-            profiles = Profile.objects.get(telegram_token=token) # exception if invalid token
-            if Telegram.objects.filter(profile=profiles[0], chat_id = fromchatid_in ).exists():
-                SendChatMessage(fromchatid_in, fromusername_in, fromfirstname_in,fromlastname_in, _('Already registered'))
-            else :           
-                new_link = Telegram(profile = profiles[0])
-                new_link.save()
-                SendChatMessage(fromchatid_in, fromusername_in, fromfirstname_in,fromlastname_in, _('Ok you are registered') + '{}'.format(fromusername_in) + _('as Protecia Telegram token :') +  '{}'.format(userid))
-    except Exception as ex:
-        SendChatMessage(fromchatid_in,fromusername_in, fromfirstname_in, fromlastname_in, "%s  , this is not a correct NNVision UserID" % (fromusername_in))
+        logger.warning(("REGISTERING user  %s %s as user ID=%d" % ( fromfirstname_in , fromlastname_in, fromchatid_in)))
+        profile = Profile.objects.get(telegram_token=token) # exception if invalid token
+        if Telegram.objects.filter(profile=profile, chat_id = fromchatid_in ).exists():
+            SendChatMessage(fromchatid_in, fromusername_in, fromfirstname_in,fromlastname_in, _('Already registered'))
+        else :
+            Telegram(profile=profile, chat_id=fromchatid_in).save()
+            SendChatMessage(fromchatid_in, fromusername_in, fromfirstname_in,fromlastname_in, _('Ok you are registered ') + '{}'.format(fromfirstname_in) + _(' as Protecia Telegram token : ') +  '{}'.format(token))
+    except Profile.DoesNotExist as ex:
+        SendChatMessage(fromchatid_in,fromusername_in, fromfirstname_in, fromlastname_in, "%s  , this is not a correct Protecia UserID" % (fromfirstname_in))
         logger.warning("Error in CommandRegister: %s" % (format(ex)))
 
 def ConsummeMessage(obj):
@@ -87,22 +84,27 @@ def ConsummeMessage(obj):
         return True
     helpcmd=text[0:5]
     if (helpcmd == "/help"):
-        SendChatMessage(chatid,fromusername, fromfirstname,fromlastname, "%s , Commands are: \n /register [NNVision UserID] => Register your NNVision Account\n" % (fromusername))
+        SendChatMessage(chatid,fromusername, fromfirstname,fromlastname, "%s , Commands are: \n /register [Protecia UserID] => Register your Protecia Account\n" % (fromfirstname))
         return True
     startcmd=text[0:6]
     if (startcmd == "/start"):
-        SendChatMessage(chatid, fromusername, fromfirstname,fromlastname, "Hi %s , \nI am NNVision Bot. You shall first \n register your NNVision user ID in order\n to receive  NNVision notifications.\n\nType /help to start.\n\n" % (fromusername))
+        SendChatMessage(chatid, fromusername, fromfirstname,fromlastname, "Hi %s , \nI am Protecia Bot. You shall first \n register your Protecia user ID in order\n to receive  Protecia notifications.\n\nType /help to start.\n\n" % (fromfirstname))
         SendChatMessage(chatid, fromusername, fromfirstname,fromlastname, "(For your information, your Telegram user id is: %d )" % (fromuserid) )
         return True
     # Unknown Command
-    SendChatMessage(chatid, fromusername, fromfirstname,fromlastname, "%s  , I don't understand this command , type /help" % (fromusername))
+    SendChatMessage(chatid, fromusername, fromfirstname,fromlastname, "%s  , I don't understand this command , type /help" % (fromfirstname))
     return False
 
 def main(freq):
-    update_id=Update_id.objects.last()
+    try :
+        update_id=Update_id.objects.get()
+    except Update_id.DoesNotExist :
+        Update_id(id_number = 0).save()
+        update_id=Update_id.objects.get()
+        pass
     while ( True ) :
         try:
-            url = ('{}?offset={}'.format(getupdateurl, update_id.id_number))
+            url = '{}?offset={}'.format(getupdateurl, update_id.id_number)
             r = requests.get(url)
         except requests.exceptions.ConnectionError:
             logger.warning('Exception calling URL {}'.format(url))
@@ -114,11 +116,13 @@ def main(freq):
                     for o in obj['result'] :
                         if ('update_id' in o):
                             logger.info(str(o['update_id']))
-                            update_id.id_number += 1
+                            update_id.id_number =  o['update_id']
                             update_id.save()
                         try:
                             if ('message' in o):
                                 ConsummeMessage(o['message'])
+                                update_id.id_number +=1
+                                logger.info('consumme message in : {}'.format(url))
                         except Exception as e:
                             logger.warning('Error while parsing result {}'.format(e))
                             pass

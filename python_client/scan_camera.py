@@ -60,7 +60,8 @@ def setCam(cam):
         r = requests.post(settings.SERVER+"setCam", json=camJson )
         s = json.loads(r.text)
         return s
-    except requests.exceptions.ConnectionError :
+    except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError) as ex :
+        logger.error('exception : {}'.format(ex))
         pass
     return False
 
@@ -114,8 +115,8 @@ def getCam(lock, force='0'):
                 json.dump(c,out)
         r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
         return c
-    except requests.exceptions.ConnectionError :
-        logger.info('Can not find the remote server')
+    except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError) as ex :
+        logger.error('exception : {}'.format(ex))
         return False
         pass
 

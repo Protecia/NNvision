@@ -4,12 +4,12 @@ from django.conf import settings
 from django.forms.models import ModelForm
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.utils.translation import ugettext_lazy as _
 
 # Register your models here.
 
-from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_type, User
+from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_type
 
 '''
 @receiver(post_save, sender= User)

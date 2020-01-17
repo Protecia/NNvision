@@ -16,7 +16,7 @@ RUN cd django && python3 manage.py collectstatic && /etc/init.d/postgresql start
     echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@protecia.com', 'protecia')" | python3 manage.py shell && \
     python3 manage.py loaddata group.json && /etc/init.d/postgresql stop
 
-RUN a2enmod  wsgi && rm Dockerfile* && rm build.sh
+RUN django/change_right.sh && a2enmod  wsgi && rm Dockerfile* && rm build.sh
  
 
 CMD ["/NNvision/start.sh"]

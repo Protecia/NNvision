@@ -228,4 +228,7 @@ class Alert_type(models.Model):
     
     def __str__(self):
         return 'client : {} / allowed : {} '.format(Alert_type.client, Alert_type.allowed)
+    
+class Update_id(models.Model):
+    id_number = models.IntegerField(default=0)
 

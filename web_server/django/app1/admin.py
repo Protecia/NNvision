@@ -9,7 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 
 # Register your models here.
 
-from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_type
+from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_type, Telegram
 
 
 @receiver(post_save, sender= User)
@@ -75,6 +75,7 @@ if settings.DEBUG:
     admin.site.register(Alert_when)
     admin.site.register(Alert_type)
     admin.site.register(Client, ClientAdmin)
+    admin.site.register(Telegram)
     
 
 

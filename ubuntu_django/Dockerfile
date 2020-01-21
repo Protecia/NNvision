@@ -30,3 +30,5 @@ RUN tar  xvfz mod_wsgi-4.6.5.tar.gz && rm mod_wsgi-4.6.5.tar.gz && cd mod_wsgi-4
 
 RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y software-properties-common && add-apt-repository ppa:certbot/certbot &&\
                                    apt update && apt install certbot
+
+RUN mv protecia.com /etc/apache2/sites-available/protecia.com

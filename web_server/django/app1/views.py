@@ -100,7 +100,7 @@ def camera(request):
     thread = Thread(target = stop_camera)
     thread.start()
     camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]
-    context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, 'darknet_path' : settings.DARKNET_PATH}, 'url_for_index' : '/','logo_client':client[0].logo_perso}
+    context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, }, 'url_for_index' : '/','logo_client':client[0].logo_perso}
     return render(request, 'app1/camera.html',context)
 
 

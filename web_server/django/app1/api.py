@@ -20,7 +20,7 @@ import glob
 
 def delete_space(client):
     ##### check the space on disk to respect the quota #######
-    path = os.path.join(settings.MEDIA_ROOT,str(client.id))
+    path = os.path.join(settings.MEDIA_ROOT,client.folder)
     size = int(subprocess.check_output(['du','-sh', path]).split()[0].decode('utf-8').split('M')[0])
     if size>client.space_allowed:
         r_to_delete = Result.objects.all()[:300]
@@ -99,7 +99,7 @@ def uploadImage(request):
             draw.text(box[1], r[0], fill="green", font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",30))
         img_pil.save(img_path+'.jpg', "JPEG")
         return JsonResponse([{'size':size, 'name':img_path},],safe=False)
-    return "not post"
+    return JsonResponse([{'statut':'ko', },],safe=False)
 
 @csrf_exempt
 def uploadResult(request):
@@ -129,7 +129,7 @@ def uploadResult(request):
 def getCam(request):
     key = request.POST.get('key', 'default')
     force = request.POST.get('force', '0')
-    cam = Camera.objects.filter(client__key=key)
+    cam = Camera.objects.filter(client__key=key).order_by('pk')
     if force=='1' or any([c.update for c in cam]):
         return JsonResponse(list(cam.values()), safe=False)
     time.sleep(20)

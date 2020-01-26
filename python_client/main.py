@@ -58,7 +58,7 @@ def main():
                 p.start()
             print('darknet is running...')
             # Just run4ever (until Ctrl-c...)
-            list_event[0].set()
+            if cameras : list_event[0].set()
             E_cam_stop.wait()
             E_cam_start.clear()
             for t in list_thread:

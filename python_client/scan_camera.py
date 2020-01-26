@@ -121,14 +121,14 @@ def getCam(lock, force='0'):
         pass
 
 def run(period, lock, E_cam_start, E_cam_stop):
-    old_cam = []
+    old_cam = 'start'
     while True :
         # scan the cam on the network
         ws = wsDiscovery()
         # pull the cam from the server
         cam = getCam(lock)
         # check if changes
-        if cam :
+        if type(cam) is list :
             if cam == old_cam :
                 E_cam_start.set()
                 logger.info('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))

@@ -161,7 +161,7 @@ PUBLIC_SITE='http://'
 WAIT_BEFORE_DETECTION = 20
 DATASET_TEST = False
 
-
+PYTHON = 'python3'
 USER_LANGUAGE = 'fr'
 TIME_ON_CAMERA = 60 # the duration to display on live camera before stop
 TELEGRAM_TOKEN = '988625521:AAHf4DF2kwocwEL89TVJoOvNxTRPZxF0g94'

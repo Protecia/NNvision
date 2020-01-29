@@ -231,7 +231,7 @@ class ProcessCamera(Thread):
                         arr = cv2.resize(arr,(self.cam.width, self.cam.height), interpolation = cv2.INTER_CUBIC)
                 img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
                 # if on page camera
-                if EtoB(self.E_state_real):
+                if EtoB(self.E_state_real) and self.Q_img_real.qsize()<2:
                     self.Q_img_real.put((self.cam.id, result_filtered, img_bytes))
                     self.logger.warning('Q_img_real size : {}'.format(self.Q_img_real.qsize()))
                 # compare with last result to check if different

@@ -18,7 +18,6 @@ class Client(models.Model):
     folder = models.CharField(max_length=200, default=secrets.token_urlsafe)
     serial_box = models.CharField(max_length=20, blank = True)
     rec = models.BooleanField(default=False)
-    on_camera = models.BooleanField(default=False)
     change = models.BooleanField(default=False)
     wait_before_detection = models.IntegerField(default = 20)
     dataset_test = models.BooleanField(default=False)
@@ -102,6 +101,8 @@ class Camera(models.Model):
     update = models.BooleanField(default=False)
     wait_for_set = models.BooleanField(default=False)
     from_client = models.BooleanField(default=False)
+    on_camera_LD = models.BooleanField(default=False)
+    on_camera_HD = models.BooleanField(default=False)
 
     def secure_rtsp(self):
         return "rtsp://"+self.rtsp.split('@')[1]

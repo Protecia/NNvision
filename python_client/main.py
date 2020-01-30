@@ -22,7 +22,7 @@ Q_result = Queue()
 E_cam_start = pEvent()
 E_cam_stop = pEvent()
 E_state = pEvent()
-E_state_real = pEvent()
+#E_state_real = pEvent()
 lock = Lock()
 onLine = True
 
@@ -33,10 +33,10 @@ def main():
         pImageUpload = Process(target=up.uploadImage, args=(Q_img,))
         pImageUploadRealTime = Process(target=up.uploadImageRealTime, args=(Q_img_real,))
         pResultUpload = Process(target=up.uploadResult, args=(Q_result,))
-        pState = Process(target=up.getState, args=(E_state,E_state_real))
+        #pState = Process(target=up.getState, args=(E_state,E_state_real))
         pImageUpload.start()
         pResultUpload.start()
-        pState.start()
+        #pState.start()
         pImageUploadRealTime.start()
         while(True):
             # start the process to synchronize cameras
@@ -50,12 +50,16 @@ def main():
             cameras = [c for c in cameras if c.active==True]
             list_thread=[]
             list_event=[Event() for i in range(len(cameras))]
+            cameras_state={}
             for n, c in enumerate(cameras):
+                cameras_state[c.id]=[pEvent(),pEvent()]
                 p = pc.ProcessCamera(c, n, Q_result,
                                    list_event,
-                                   len(cameras), Q_img, E_state, Q_img_real, E_state_real )
+                                   len(cameras), Q_img, E_state, Q_img_real, cameras_state[c.id] )
                 list_thread.append(p)
                 p.start()
+            pState = Process(target=up.getState, args=(E_state,cameras_state))
+            pState.start()
             print('darknet is running...')
             # Just run4ever (until Ctrl-c...)
             if cameras : list_event[0].set()
@@ -69,6 +73,7 @@ def main():
                 except AttributeError:
                     pass
                 t.join()
+            pState.terminate()
             logger.warning('Camera change restart !')
     except KeyboardInterrupt:
         for t in list_thread:

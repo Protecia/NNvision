@@ -93,10 +93,12 @@ def warning(request, first_alert):
 def camera(request):
     def stop_camera():
         time.sleep(settings.TIME_ON_CAMERA)
-        client.update(change=True, on_camera=False)
+        client.update(change=True)
+        camera.update(on_camera_LD=False)
     camera = Camera.objects.filter(active=True, client=request.session['client'])
     client = Client.objects.filter(pk=request.session['client'])
-    client.update(change=True, on_camera=True)
+    client.update(change=True)
+    camera.update(on_camera_LD=True)
     thread = Thread(target = stop_camera)
     thread.start()
     camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]

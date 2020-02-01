@@ -72,14 +72,14 @@ def getState(E, camera_state):
     while True:
         try :
             r = requests.post(settings.SERVER+"getState", data = {'key': settings.KEY, } )
-            data = json.loads(r.text)[0]
+            data = json.loads(r.text)
             if data['rec'] :
                 E.set()
             else :
                 E.clear()
             on_camera = data['cam']
-            for pk, state in enumerate(on_camera):
-                [camera_state[pk][i.index()].set() if i else camera_state[pk][i.index()].clear() for i in state]
+            for pk, state in on_camera.items():
+                [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for index, i in enumerate(state)]
         except requests.exceptions.ConnectionError :
             logger.info('getState Can not find the remote server')
             time.sleep(5)

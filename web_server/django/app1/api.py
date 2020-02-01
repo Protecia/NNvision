@@ -155,9 +155,9 @@ def getState(request):
             _c.save()
             break
         i+=1
-        response = {'rec' :_c.rec,}
-        cam_dict = {}
-        for cam in c:
-            cam_dict[cam.id]=[cam.on_camera_LD,cam.on_camera_HD]
-        response['cam']=cam_dict
+    response = {'rec' :_c.rec,}
+    cam_dict = {}
+    for cam in c:
+        cam_dict[cam.id]=[cam.on_camera_LD,cam.on_camera_HD]
+    response['cam']=cam_dict
     return JsonResponse(response, safe=False)

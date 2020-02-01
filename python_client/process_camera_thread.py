@@ -86,7 +86,7 @@ def read_write(rw,*args):
 class ProcessCamera(Thread):
     """Thread used to grab camera images and process the image with darknet"""
 
-    def __init__(self, cam, num, Q_result, list_event, nb_cam, Q_img, E_state, Q_img_real, E_state_real):
+    def __init__(self, cam, num, Q_result, list_event, nb_cam, Q_img, E_state, Q_img_real, camera_state):
         Thread.__init__(self)
         self.event = list_event
         self.cam = cam
@@ -108,7 +108,7 @@ class ProcessCamera(Thread):
         self.Q_result = Q_result
         self.result_DB = []
         self.E_state = E_state
-        self.E_state_real = E_state_real
+        self.camera_state = camera_state
         self.Q_img_real = Q_img_real
 
         if cam.auth_type == 'B':
@@ -231,8 +231,9 @@ class ProcessCamera(Thread):
                         arr = cv2.resize(arr,(self.cam.width, self.cam.height), interpolation = cv2.INTER_CUBIC)
                 img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
                 # if on page camera
-                if EtoB(self.E_state_real) and self.Q_img_real.qsize()<2:
-                    self.Q_img_real.put((self.cam.id, result_filtered, img_bytes))
+                if EtoB(self.camera_state[0]) and self.Q_img_real.qsize()<2:
+                    arr = cv2.resize(arr,(self.cam.max_width_rtime, arr.shape[0]/arr.shape[1]*self.cam.max_width_rtime), interpolation = cv2.INTER_CUBIC)
+                    self.Q_img_real.put((self.cam.id, result_filtered, cv2.imencode('.jpg', arr)[1].tobytes()))
                     self.logger.warning('Q_img_real size : {}'.format(self.Q_img_real.qsize()))
                 # compare with last result to check if different
                 self.logger.debug('E_rec :{}'.format(EtoB(self.E_state)))

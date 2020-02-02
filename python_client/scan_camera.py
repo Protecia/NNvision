@@ -65,8 +65,20 @@ def setCam(cam):
         pass
     return False
 
+def removeCam(cam):
+    camJson = {'key':settings.KEY,'cam':cam}
+    try :
+        r = requests.post(settings.SERVER+"removeCam", json=camJson )
+        s = json.loads(r.text)
+        return s
+    except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError) as ex :
+        logger.error('exception : {}'.format(ex))
+        pass
+    return False
+    
+
 def compareCam(ws, cameras):
-    cameras_ip =  [ c['ip'] for c in cameras if c['wait_for_set'] is False]
+    cameras_ip =  [ c['ip'] for c in cameras if c['wait_for_set'] is False and c['from_client'] is True]
     ws_copy = ws.copy()
     for c in ws_copy :
         if c in cameras_ip:
@@ -104,7 +116,8 @@ def compareCam(ws, cameras):
                     except requests.exceptions.ConnectionError :
                         pass
         list_cam.append(new_cam)
-    return list_cam
+    # cameras_ip contains cam now unreachable
+    return list_cam, cameras_ip
 
 def getCam(lock, force='0'):
     try :
@@ -135,9 +148,11 @@ def run(period, lock, E_cam_start, E_cam_stop):
             E_cam_stop.set()
             logger.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
         # compare the cam with the camera file
-        list_cam = compareCam(ws, cam)
+        list_cam, remove_cam = compareCam(ws, cam)
         # push the cam to the server
         if list_cam : setCam(list_cam)
+        # inactive the cam
+        if remove_cam : removeCam(remove_cam)
         # wait for the loop
         time.sleep(period)
 

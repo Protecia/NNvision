@@ -70,6 +70,22 @@ def setCam(request):
     return JsonResponse({'statut':True},safe=False)
 
 @csrf_exempt
+def removeCam(request):
+    data = json.loads(request.body.decode())
+    try :
+        client = Client.objects.get(key=data['key'])
+    except :
+        time.sleep(10)
+        pass
+        return JsonResponse({'statut':False},safe=False)
+    cam = data['cam']
+    for ip in cam:
+        Camera.objects.filter(client = client, ip = ip).update(active=False)
+    client.update_camera = True
+    client.save()
+    return JsonResponse({'statut':True},safe=False)
+
+@csrf_exempt
 def uploadImage(request):
     if request.method == 'POST':
         key = request.POST.get('key', 'default')

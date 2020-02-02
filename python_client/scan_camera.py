@@ -110,10 +110,11 @@ def getCam(lock, force='0'):
     try :
         r = requests.post(settings.SERVER+"getCam", data = {'key': settings.KEY, 'force':force} )
         c = json.loads(r.text)
-        with lock:
-            with open('camera/camera.json', 'w') as out:
-                json.dump(c,out)
-        r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
+        if not c==False :
+            with lock:
+                with open('camera/camera.json', 'w') as out:
+                    json.dump(c,out)
+            r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
         return c
     except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError) as ex :
         logger.error('exception : {}'.format(ex))
@@ -121,25 +122,22 @@ def getCam(lock, force='0'):
         pass
 
 def run(period, lock, E_cam_start, E_cam_stop):
-    old_cam = 'start'
     while True :
         # scan the cam on the network
         ws = wsDiscovery()
         # pull the cam from the server
         cam = getCam(lock)
         # check if changes
-        if type(cam) is list :
-            if cam == old_cam :
-                E_cam_start.set()
-                logger.info('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
-            else :
-                E_cam_stop.set()
-                logger.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
-            old_cam = cam
-            # compare the cam with the camera file
-            list_cam = compareCam(ws, cam)
-            # push the cam to the server
-            setCam(list_cam)
+        if cam==False :
+            E_cam_start.set()
+            logger.info('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
+        else :
+            E_cam_stop.set()
+            logger.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
+        # compare the cam with the camera file
+        list_cam = compareCam(ws, cam)
+        # push the cam to the server
+        if list_cam : setCam(list_cam)
         # wait for the loop
         time.sleep(period)
 

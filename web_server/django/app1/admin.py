@@ -20,13 +20,12 @@ def add_group_permission(sender, instance, created, **kwargs):
 
 class CameraAdmin(admin.ModelAdmin):
     exclude = ('wait_for_set','update','from_client')
-    '''
+    
     def delete_model(self, request, obj):
-        client = Profile.objects.get(user=request.user).client
-        client.camera = 1
-        client.save()
-    '''
-
+        obj.client.update_camera = 1 
+        obj.client.save()
+        obj.delete()
+    
     def get_readonly_fields(self, request, obj=None):
         fields=self.readonly_fields
         if obj and obj.from_client == True :
@@ -38,7 +37,9 @@ class CameraAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if getattr(obj, 'client', None) is None:
             obj.client = Profile.objects.get(user=request.user).client
-            obj.update=1
+        if 'on_camera_LD' not in form.changed_data and 'on_camera_HD' not in form.changed_data:    
+            obj.client.update_camera=1
+            obj.client.save()
         obj.save()
 
     def get_queryset(self, request):

@@ -19,6 +19,7 @@ class Client(models.Model):
     serial_box = models.CharField(max_length=20, blank = True)
     rec = models.BooleanField(default=False)
     change = models.BooleanField(default=False)
+    update_camera = models.BooleanField(default=False)
     wait_before_detection = models.IntegerField(default = 20)
     dataset_test = models.BooleanField(default=False)
     space_allowed =  models.IntegerField(default = 1000) # en Mo
@@ -99,7 +100,6 @@ class Camera(models.Model):
     width = models.IntegerField(default = 1280)
     height = models.IntegerField(default = 720)
     pos_sensivity = models.IntegerField(default = 150)
-    update = models.BooleanField(default=False)
     wait_for_set = models.BooleanField(default=False)
     from_client = models.BooleanField(default=False)
     on_camera_LD = models.BooleanField(default=False)

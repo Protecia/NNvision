@@ -63,6 +63,8 @@ def setCam(request):
         cam, created = Camera.objects.update_or_create(client = client, ip = c['ip'], defaults=c)
         try :
             cam.save()
+            client.update_camera = True
+            client.save()
         except IntegrityError:
             pass
     return JsonResponse({'statut':True},safe=False)
@@ -74,6 +76,7 @@ def uploadImage(request):
         img_name = request.POST.get('img_name', 'default')
         result = request.POST.get('result', False)
         real_time = request.POST.get('real_time', True)
+        resize_factor = request.POST.get('resize_factor', 1)
         try :
             client = Client.objects.get(key=key)
         except :
@@ -92,9 +95,10 @@ def uploadImage(request):
         draw = ImageDraw.Draw(img_pil)
         result_filtered = json.loads(result)
         for r in result_filtered :
-            box = ((int(r[2][0]-(r[2][2]/2)),int(r[2][1]-(r[2][3]/2
-                ))),(int(r[2][0]+(r[2][2]/2)),int(r[2][1]+(r[2][3]/2
-                ))))
+            box = ((int((r[2][0]-(r[2][2]/2))*resize_factor),
+                    int((r[2][1]-(r[2][3]/2))*resize_factor)),
+                   (int((r[2][0]+(r[2][2]/2))*resize_factor),
+                    int((r[2][1]+(r[2][3]/2))*resize_factor)))
             draw.rectangle(box, outline="green", width = 3)
             draw.text(box[1], r[0], fill="green", font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",30))
         img_pil.save(img_path+'.jpg', "JPEG")
@@ -130,22 +134,28 @@ def getCam(request):
     key = request.POST.get('key', 'default')
     force = request.POST.get('force', '0')
     cam = Camera.objects.filter(client__key=key).order_by('pk')
-    if force=='1' or any([c.update for c in cam]):
-        return JsonResponse(list(cam.values()), safe=False)
-    time.sleep(20)
-    return JsonResponse(list(cam.values()), safe=False)
+    if force=='1':
+        return JsonResponse(list(cam.values()), safe=False)      
+    i=0
+    while i<20 :
+        cam = Camera.objects.filter(client__key=key).order_by('pk')
+        if cam.last().client.update_camera:
+            return JsonResponse(list(cam.values()), safe=False)
+        time.sleep(1)
+        i+=1
+    return JsonResponse(False, safe=False)
 
 @csrf_exempt
 def upCam(request):
     key = request.POST.get('key', 'default')
-    Camera.objects.filter(active=True, client__key=key).update(update=False)
+    Client.objects.filter(key=key).update(update_camera=False)
     return HttpResponse('0')
 
 @csrf_exempt
 def getState(request):
     key = request.POST.get('key', 'default')
     i=0
-    while i<10 :
+    while i<20 :
         c = Camera.objects.filter(client__key=key)
         _c = c[0].client
         if not _c.change:

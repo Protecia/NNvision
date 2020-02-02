@@ -23,7 +23,7 @@ def uploadImageRealTime(Q):
                    'resize_factor':resize_factor}
         try :
             r = requests.post(settings.SERVER+"uploadimage", files=files, data = imgJson)
-            logger.warning('send json image real : {}'.format(r.text))
+            logger.warning('send json image real : {}'.format(r.status_code))
         except requests.exceptions.ConnectionError :
             logger.warning('uploadImageRealTime Can not find the remote server')
             time.sleep(5)

@@ -77,7 +77,10 @@ def removeCam(cam):
     return False
     
 
-def compareCam(ws, cameras):
+def compareCam(ws, lock):
+    with lock:
+        with open('camera/camera.json', 'r') as out:
+            cameras = json.loads(out.read())
     cameras_ip =  [ c['ip'] for c in cameras if c['wait_for_set'] is False and c['from_client'] is True]
     ws_copy = ws.copy()
     for c in ws_copy :
@@ -148,7 +151,7 @@ def run(period, lock, E_cam_start, E_cam_stop):
             E_cam_stop.set()
             logger.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
         # compare the cam with the camera file
-        list_cam, remove_cam = compareCam(ws, cam)
+        list_cam, remove_cam = compareCam(ws, lock)
         # push the cam to the server
         if list_cam : setCam(list_cam)
         # inactive the cam

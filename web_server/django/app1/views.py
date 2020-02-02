@@ -95,10 +95,12 @@ def camera(request):
         time.sleep(settings.TIME_ON_CAMERA)
         client.update(change=True)
         camera.update(on_camera_LD=False)
+        camera.update(on_camera_HD=False)
     camera = Camera.objects.filter(active=True, client=request.session['client'])
     client = Client.objects.filter(pk=request.session['client'])
     client.update(change=True)
     camera.update(on_camera_LD=True)
+    camera.update(on_camera_HD=False)
     thread = Thread(target = stop_camera)
     thread.start()
     camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]
@@ -259,8 +261,18 @@ def alert(request, id=0, id2=-1):
 @login_required
 @permission_required('app1.camera')
 def last(request, cam):
-    client = Client.objects.get(pk=request.session['client'])
-    path_img_box = os.path.join(settings.MEDIA_URL,client.folder,'temp_img_cam_'+str(cam)+'.jpg')
+    def stop_camera():
+        time.sleep(settings.TIME_ON_CAMERA)
+        camera.client.update(change=True)
+        camera.update(on_camera_LD=False)
+        camera.update(on_camera_HD=False)   
+    camera = Camera.objects.get(pk=cam, client=request.session['client'])
+    camera.client.update(change=True)
+    camera.update(on_camera_LD=False)
+    camera.update(on_camera_HD=True)
+    thread = Thread(target = stop_camera)
+    thread.start()
+    path_img_box = os.path.join(settings.MEDIA_URL,camera.client.folder,'temp_img_cam_'+str(cam)+'.jpg')
     return render(request, 'app1/last_img.html', {'img':path_img_box})
 
 @login_required

@@ -230,12 +230,18 @@ class ProcessCamera(Thread):
                     if arr.shape[0]!=self.cam.height or arr.shape[1]!=self.cam.width:
                         arr = cv2.resize(arr,(self.cam.width, self.cam.height), interpolation = cv2.INTER_CUBIC)
                 img_bytes = cv2.imencode('.jpg', arr)[1].tobytes()
-                # if on page camera
-                if EtoB(self.camera_state[0]) and self.Q_img_real.qsize()<1:
-                    resize_factor = self.cam.max_width_rtime/arr.shape[1]
-                    arr = cv2.resize(arr,(self.cam.max_width_rtime, int(arr.shape[0]*resize_factor)), interpolation = cv2.INTER_CUBIC)
-                    self.Q_img_real.put((self.cam.id, result_filtered, cv2.imencode('.jpg', arr)[1].tobytes()),resize_factor)
-                    self.logger.warning('Q_img_real size : {}'.format(self.Q_img_real.qsize()))
+                # if gueue free
+                if self.Q_img_real.qsize()<1:
+                    # if on page camera HD
+                    if EtoB(self.camera_state[1]):
+                        self.Q_img_real.put((self.cam.id, result_filtered, cv2.imencode('.jpg', arr)[1].tobytes()))
+                        self.logger.warning('Q_img_real HD size on {} : {}'.format(self.cam, self.Q_img_real.qsize()))         
+                    # if on page camera LD    
+                    elif EtoB(self.camera_state[0]):
+                        resize_factor = self.cam.max_width_rtime/arr.shape[1]
+                        arr = cv2.resize(arr,(self.cam.max_width_rtime, int(arr.shape[0]*resize_factor)), interpolation = cv2.INTER_CUBIC)
+                        self.Q_img_real.put((self.cam.id, result_filtered, cv2.imencode('.jpg', arr)[1].tobytes(),resize_factor))
+                        self.logger.warning('Q_img_real LD size on {} : {}'.format(self.cam, self.Q_img_real.qsize()))
                 # compare with last result to check if different
                 self.logger.debug('E_rec :{}'.format(EtoB(self.E_state)))
                 if self.base_condition(result_filtered) and EtoB(self.E_state):

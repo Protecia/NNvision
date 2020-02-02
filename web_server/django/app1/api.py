@@ -115,8 +115,8 @@ def uploadImage(request):
                     int((r[2][1]-(r[2][3]/2))*resize_factor)),
                    (int((r[2][0]+(r[2][2]/2))*resize_factor),
                     int((r[2][1]+(r[2][3]/2))*resize_factor)))
-            draw.rectangle(box, outline="green", width = 3)
-            draw.text(box[1], r[0], fill="green", font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",30))
+            draw.rectangle(box, outline="green", width = int(3*resize_factor)+1)
+            draw.text(box[1], r[0], fill="green", font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",int(30*resize_factor)))
         img_pil.save(img_path+'.jpg', "JPEG")
         return JsonResponse([{'size':size, 'name':img_path},],safe=False)
     return JsonResponse([{'statut':'ko', },],safe=False)

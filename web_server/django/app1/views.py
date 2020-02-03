@@ -95,13 +95,13 @@ def camera(request):
         time.sleep(settings.TIME_ON_CAMERA)
         client.update(change=True)
         camera.update(on_camera_LD=False)
+    thread = Thread(target = stop_camera)
+    thread.start()
     camera = Camera.objects.filter(active=True, client=request.session['client'])
     client = Client.objects.filter(pk=request.session['client'])
     client.update(change=True)
     camera.update(on_camera_LD=True)
     camera.update(on_camera_HD=False)
-    thread = Thread(target = stop_camera)
-    thread.start()
     camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]
     context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, }, 'url_for_index' : '/','logo_client':client[0].logo_perso}
     return render(request, 'app1/camera.html',context)
@@ -111,17 +111,20 @@ def camera(request):
 def last(request, cam):
     def stop_camera():
         time.sleep(settings.TIME_ON_CAMERA)
-        camera.last().client.update(change=True)
-        camera.update(on_camera_HD=False)   
-    camera = Camera.objects.filter(active=True, client=request.session['client'])
-    camera.update(on_camera_LD=False)
-    camera.filter(pk=cam).update(on_camera_HD=True)
-    camera.last().client.change=True
-    camera.last().client.save()
+        client.update(change=True)
+        camera.update(on_camera_HD=False)
     thread = Thread(target = stop_camera)
     thread.start()
-    path_img_box = os.path.join(settings.MEDIA_URL,camera.last().client.folder,'temp_img_cam_'+str(cam)+'.jpg')
+    camera = Camera.objects.filter(active=True, client=request.session['client'])
+    camera.update(on_camera_LD=False)
+    camera.update(on_camera_HD=False)
+    camera.filter(pk=cam).update(on_camera_HD=True)
+    client = Client.objects.filter(pk=request.session['client'])
+    client.update(change=True)
+    time.sleep(2)
+    path_img_box = os.path.join(settings.MEDIA_URL,client.last().folder,'temp_img_cam_'+str(cam)+'.jpg')
     return render(request, 'app1/last_img.html', {'img':path_img_box})
+
 
 @login_required
 @permission_required('app1.camera')

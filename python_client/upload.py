@@ -75,6 +75,7 @@ def getState(E, camera_state):
         try :
             r = requests.post(settings.SERVER+"getState", data = {'key': settings.KEY, } )
             data = json.loads(r.text)
+            logger.warning('getState answer : {}'.format(data))
             if data['rec'] :
                 E.set()
             else :

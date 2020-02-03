@@ -28,6 +28,7 @@ class Client(models.Model):
     image_real_time_max_width = models.IntegerField(default = 500)
     image_real_time_max_hight = models.IntegerField(default = 500)
     logo_perso = models.CharField(max_length=20, null=True, blank=True)
+    stop_thread = models.CharField(max_length=200, default=secrets.token_hex )
 
     def __str__(self):
         return '{} -  {} -  {}'.format(self.adress, self.cp, self.city)

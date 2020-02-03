@@ -92,7 +92,7 @@ def uploadImage(request):
         img_name = request.POST.get('img_name', 'default')
         result = request.POST.get('result', False)
         real_time = request.POST.get('real_time', True)
-        resize_factor = request.POST.get('resize_factor', 1)
+        resize_factor = float(request.POST.get('resize_factor', 1))
         try :
             client = Client.objects.get(key=key)
         except :

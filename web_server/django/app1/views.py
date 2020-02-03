@@ -95,7 +95,6 @@ def camera(request):
         time.sleep(settings.TIME_ON_CAMERA)
         client.update(change=True)
         camera.update(on_camera_LD=False)
-        camera.update(on_camera_HD=False)
     camera = Camera.objects.filter(active=True, client=request.session['client'])
     client = Client.objects.filter(pk=request.session['client'])
     client.update(change=True)
@@ -107,7 +106,22 @@ def camera(request):
     context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, }, 'url_for_index' : '/','logo_client':client[0].logo_perso}
     return render(request, 'app1/camera.html',context)
 
-
+@login_required
+@permission_required('app1.camera')
+def last(request, cam):
+    def stop_camera():
+        time.sleep(settings.TIME_ON_CAMERA)
+        camera.last().client.update(change=True)
+        camera.update(on_camera_HD=False)   
+    camera = Camera.objects.filter(active=True, client=request.session['client'])
+    camera.update(on_camera_LD=False)
+    camera.filter(pk=cam).update(on_camera_HD=True)
+    camera.last().client.change=True
+    camera.last().client.save()
+    thread = Thread(target = stop_camera)
+    thread.start()
+    path_img_box = os.path.join(settings.MEDIA_URL,camera.last().client.folder,'temp_img_cam_'+str(cam)+'.jpg')
+    return render(request, 'app1/last_img.html', {'img':path_img_box})
 
 @login_required
 @permission_required('app1.camera')
@@ -257,23 +271,6 @@ def alert(request, id=0, id2=-1):
     return render(request, 'app1/alert.html', {'message' : form.non_field_errors,
            'category' : 'warning','form': form, 'alert':alert, 'aform':aform,
            'auto':auto, 'autorization' : autorization , 'client':client, 'telegram_token' : telegram_token, 'chat_id' : chat_id  })
-
-@login_required
-@permission_required('app1.camera')
-def last(request, cam):
-    def stop_camera():
-        time.sleep(settings.TIME_ON_CAMERA)
-        camera.client.update(change=True)
-        camera.update(on_camera_LD=False)
-        camera.update(on_camera_HD=False)   
-    camera = Camera.objects.get(pk=cam, client=request.session['client'])
-    camera.client.update(change=True)
-    camera.update(on_camera_LD=False)
-    camera.update(on_camera_HD=True)
-    thread = Thread(target = stop_camera)
-    thread.start()
-    path_img_box = os.path.join(settings.MEDIA_URL,camera.client.folder,'temp_img_cam_'+str(cam)+'.jpg')
-    return render(request, 'app1/last_img.html', {'img':path_img_box})
 
 @login_required
 @permission_required('app1.camera')

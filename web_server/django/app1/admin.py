@@ -31,7 +31,7 @@ class CameraAdmin(admin.ModelAdmin):
         if obj and obj.from_client == True :
             fields += ('ip','port_onvif','url','auth_type','rtsp','brand','client','model')
         if not request.user.is_superuser :
-            fields += ('threshold','gap','pos_sensivity','reso','width','height', 'max_width_rtime')
+            fields += ('threshold','gap','pos_sensivity','reso','width','height', 'max_width_rtime', 'max_width_rtime_HD')
         return fields
 
     def save_model(self, request, obj, form, change):

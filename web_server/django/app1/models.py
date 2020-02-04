@@ -104,6 +104,7 @@ class Camera(models.Model):
     from_client = models.BooleanField(default=False)
     on_camera_LD = models.BooleanField(default=False)
     on_camera_HD = models.BooleanField(default=False)
+    max_object_area_detection = models.IntegerField(default = 100)
 
     def secure_rtsp(self):
         return "rtsp://"+self.rtsp.split('@')[1]

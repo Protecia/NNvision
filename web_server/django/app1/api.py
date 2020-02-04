@@ -90,11 +90,13 @@ def uploadImage(request):
     if request.method == 'POST':
         key = request.POST.get('key', 'default')
         img_name = request.POST.get('img_name', 'default')
+        cam = request.POST.get('cam', 'default')
         result = request.POST.get('result', False)
         real_time = request.POST.get('real_time', True)
         resize_factor = float(request.POST.get('resize_factor', 1))
         try :
             client = Client.objects.get(key=key)
+            camera = Camera.objects.get(pk=cam)
         except :
             time.sleep(10)
             pass
@@ -111,12 +113,14 @@ def uploadImage(request):
         draw = ImageDraw.Draw(img_pil)
         result_filtered = json.loads(result)
         for r in result_filtered :
+            outline = "green"
+            if r[2][2]*r[2][3] < camera.max_object_area_detection : outline = "red"
             box = ((int((r[2][0]-(r[2][2]/2))*resize_factor),
                     int((r[2][1]-(r[2][3]/2))*resize_factor)),
                    (int((r[2][0]+(r[2][2]/2))*resize_factor),
                     int((r[2][1]+(r[2][3]/2))*resize_factor)))
-            draw.rectangle(box, outline="green", width = int(3*resize_factor)+1)
-            draw.text(box[1], r[0], fill="green", font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",int(30*resize_factor)))
+            draw.rectangle(box, outline=outline, width = int(3*resize_factor)+1)
+            draw.text(box[1], r[0], fill=outline, font=ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",int(30*resize_factor)))
         img_pil.save(img_path+'.jpg', "JPEG")
         return JsonResponse([{'size':size, 'name':img_path},],safe=False)
     return JsonResponse([{'statut':'ko', },],safe=False)

@@ -18,7 +18,7 @@ def uploadImageRealTime(Q):
         cam, result , img, resize_factor = Q.get()
         logger.info('get image from queue real on cam  : {}'.format(cam))
         files = {'myFile': img}
-        imgJson = {'key': settings.KEY, 'img_name': 'temp_img_cam_'+str(cam),
+        imgJson = {'key': settings.KEY, 'img_name': 'temp_img_cam_'+str(cam), 'cam' : cam,
                    'result' : json.dumps([(r[0].decode(),r[1],r[2]) for r in result]), 'real_time' : True,
                    'resize_factor':resize_factor}
         try :
@@ -34,10 +34,10 @@ def uploadImage(Q):
     logger.warning('starting upload image')
     while True:
         if server :
-            img_name, result, img = Q.get()
+            cam, img_name, result, img = Q.get()
             logger.info('get image from queue : {}'.format(img_name))
             files = {'myFile': img}
-            imgJson = {'key': settings.KEY, 'img_name': img_name,
+            imgJson = {'key': settings.KEY, 'img_name': img_name, 'cam' : cam,
                        'result' : json.dumps([(r[0].decode(),r[1],r[2]) for r in result]), 'real_time' : False}
         try :
             r = requests.post(settings.SERVER+"uploadimage", files=files, data = imgJson)

@@ -17,7 +17,7 @@
 
 		
 		
-			<img src="{{ img }}" id="img" alt=""  >
+			<img src="/img/last/{{ cam }}" id="img" alt="real time"  >
 		
 
 	</div><br>
@@ -31,10 +31,10 @@
 
 {% block endscript %}
 <script>
-document.getElementById('img').src = "{{ img }}?random="+new Date().getTime();
+document.getElementById('img').src = "/img/last/{{ cam }}?random="+new Date().getTime();
 window.setInterval(function()
 {
-    document.getElementById('img').src = "{{ img }}?random="+new Date().getTime();
+    document.getElementById('img').src = "/img/last/{{ cam }}?random="+new Date().getTime();
 }, 5000);
 
 </script>

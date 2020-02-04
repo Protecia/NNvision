@@ -207,7 +207,7 @@ class ProcessCamera(Thread):
                 self.event[self.num].wait()
                 self.logger.debug('cam {} alive'.format(self.cam.id))
             #---------------------------------------------------------------
-            if self.request_OK:
+            if self.request_OK and self.Q_img.qsize() < settings.QUEUE_SIZE:
                 with self.lock:
                     arr = self.frame.copy()
                 th = self.cam.threshold*(1-(float(self.cam.gap)/100))
@@ -234,14 +234,15 @@ class ProcessCamera(Thread):
                 if self.Q_img_real.qsize()<1:
                     # if on page camera HD
                     if EtoB(self.camera_state[1]):
-                        self.Q_img_real.put((self.cam.id, result_filtered, cv2.imencode('.jpg', arr)[1].tobytes(),1))
-                        self.logger.warning('Q_img_real HD size on {} : {}'.format(self.cam.name, self.Q_img_real.qsize()))         
+                        resize_factor = self.cam.max_width_rtime_HD/arr.shape[1]
+                        self.Q_img_real.put((self.cam.id, result_filtered, cv2.imencode('.jpg', arr)[1].tobytes(),resize_factor))
+                        self.logger.warning('Q_img_real HD   on {} : size {}'.format(self.cam.name, self.Q_img_real.qsize()))         
                     # if on page camera LD    
                     elif EtoB(self.camera_state[0]):
                         resize_factor = self.cam.max_width_rtime/arr.shape[1]
                         arr = cv2.resize(arr,(self.cam.max_width_rtime, int(arr.shape[0]*resize_factor)), interpolation = cv2.INTER_CUBIC)
                         self.Q_img_real.put((self.cam.id, result_filtered, cv2.imencode('.jpg', arr)[1].tobytes(),resize_factor))
-                        self.logger.warning('Q_img_real LD size on {} : {}'.format(self.cam.name, self.Q_img_real.qsize()))
+                        self.logger.warning('Q_img_real LD size on {} : size {}'.format(self.cam.name, self.Q_img_real.qsize()))
                 # compare with last result to check if different
                 self.logger.debug('E_rec :{}'.format(EtoB(self.E_state)))
                 if self.base_condition(result_filtered) and EtoB(self.E_state):

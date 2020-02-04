@@ -15,6 +15,7 @@ from PIL import Image
 from django.utils import translation
 from crontab import CronTab
 from threading import Thread
+import secrets
 
 # Create your views here.
 
@@ -93,15 +94,18 @@ def warning(request, first_alert):
 def camera(request):
     def stop_camera():
         time.sleep(settings.TIME_ON_CAMERA)
-        client.update(change=True)
-        camera.update(on_camera_LD=False)
-    thread = Thread(target = stop_camera)
-    thread.start()
+        if Client.objects.get(pk=request.session['client']).stop_thread == token_stop:
+            client.update(change=True)
+            camera.update(on_camera_LD=False)
+    token_stop = secrets.token_hex()
     camera = Camera.objects.filter(active=True, client=request.session['client'])
     client = Client.objects.filter(pk=request.session['client'])
     client.update(change=True)
+    client.update(stop_thread=token_stop)
     camera.update(on_camera_LD=True)
     camera.update(on_camera_HD=False)
+    thread = Thread(target = stop_camera)
+    thread.start()
     camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]
     context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, }, 'url_for_index' : '/','logo_client':client[0].logo_perso}
     return render(request, 'app1/camera.html',context)
@@ -111,19 +115,22 @@ def camera(request):
 def last(request, cam):
     def stop_camera():
         time.sleep(settings.TIME_ON_CAMERA)
-        client.update(change=True)
-        camera.update(on_camera_HD=False)
-    thread = Thread(target = stop_camera)
-    thread.start()
+        if Client.objects.get(pk=request.session['client']).stop_thread == token_stop:
+            client.update(change=True)
+            camera.update(on_camera_HD=False)
+    token_stop = secrets.token_hex()
     camera = Camera.objects.filter(active=True, client=request.session['client'])
     camera.update(on_camera_LD=False)
     camera.update(on_camera_HD=False)
     camera.filter(pk=cam).update(on_camera_HD=True)
     client = Client.objects.filter(pk=request.session['client'])
     client.update(change=True)
+    client.update(stop_thread=token_stop)
+    thread = Thread(target = stop_camera)
+    thread.start()
     time.sleep(2)
-    path_img_box = os.path.join(settings.MEDIA_URL,client.last().folder,'temp_img_cam_'+str(cam)+'.jpg')
-    return render(request, 'app1/last_img.html', {'img':path_img_box})
+    #path_img_box = os.path.join(settings.MEDIA_URL,client.last().folder,'temp_img_cam_'+str(cam)+'.jpg')
+    return render(request, 'app1/last_img.html', {'cam':cam})
 
 
 @login_required
@@ -298,7 +305,6 @@ def get_last_analyse_img(request,cam_id):
             continue
         response = HttpResponse(content_type='image/jpg')
         try:
-            im.thumbnail((client.image_real_time_max_width,client.image_real_time_max_hight), Image.ANTIALIAS)
             im.save(response, 'JPEG')
             break
         except OSError:

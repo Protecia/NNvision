@@ -25,8 +25,6 @@ class Client(models.Model):
     space_allowed =  models.IntegerField(default = 1000) # en Mo
     image_panel_max_width = models.IntegerField(default = 400)
     image_panel_max_hight = models.IntegerField(default = 400)
-    image_real_time_max_width = models.IntegerField(default = 500)
-    image_real_time_max_hight = models.IntegerField(default = 500)
     logo_perso = models.CharField(max_length=20, null=True, blank=True)
     stop_thread = models.CharField(max_length=200, default=secrets.token_hex )
 
@@ -97,6 +95,7 @@ class Camera(models.Model):
     threshold = models.FloatField(validators=[MinValueValidator(0.20), MaxValueValidator(0.99)],default=0.9)
     gap = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(90)], default=70)
     max_width_rtime = models.IntegerField(default = 320)
+    max_width_rtime_HD = models.IntegerField(default = 1280)
     reso = models.BooleanField(default=False)
     width = models.IntegerField(default = 1280)
     height = models.IntegerField(default = 720)

@@ -55,16 +55,15 @@ def index(request):
         client.save()
         time.sleep(2)
     if d_action == 'stop' :
-        process(client.key).kill()
+        try : 
+            process(client.key).kill()
+        except AttributeError:
+            pass
         client.change = True
         client.rec =  False
         client.save()
         time.sleep(2)
-    p = process(client.key)
-    if p:
-        running = True
-    else :
-        running = False
+    running = client.rec
     context = {'info' : {'version' : settings.VERSION, 'client' : client},
                'url_for_index' : '/','running':running, 'client':client}
     return render(request, 'app1/index.html',context)
@@ -164,14 +163,21 @@ def panel(request, nav, first):
             imgs_alert = Result.objects.filter(alert=True,camera__client=request.session['client'], time__lte=time_result).order_by('-id')[:3]
             first_alert = len(Result.objects.filter(alert=True, camera__client=request.session['client'], time__gt=time_result))
         if nav == 'a':
-            imgs_alert = Result.objects.filter(alert=True, camera__client=request.session['client']).order_by('-id')[first:first+3]
-            if imgs_alert :
-                time_result = imgs_alert[0].time
-            else :
-                time_result = Result.objects.filter(alert=True, camera__client=request.session['client']).earliest('time').time
-            imgs = Result.objects.filter(camera__client=request.session['client'], time__lte=time_result).order_by('-id')[:12]
-            first_alert = first
-            first = len(Result.objects.filter(camera__client=request.session['client'],time__gt=time_result))
+            try : 
+                imgs_alert = Result.objects.filter(alert=True, camera__client=request.session['client']).order_by('-id')[first:first+3]
+                if imgs_alert :
+                    time_result = imgs_alert[0].time
+                else :
+                    time_result = Result.objects.filter(alert=True, camera__client=request.session['client']).earliest('time').time
+                imgs = Result.objects.filter(camera__client=request.session['client'], time__lte=time_result).order_by('-id')[:12]
+                first_alert = first
+                first = len(Result.objects.filter(camera__client=request.session['client'],time__gt=time_result))
+            except Result.DoesNotExist:
+                first = 0
+                imgs = Result.objects.filter(camera__client=request.session['client']).order_by('-id')[first:first+12]
+                first_alert = 0
+                pass
+                
     else :
         if nav == 'd':
             imgs = Result.objects.filter(camera__client=request.session['client'],object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[first:first+12]
@@ -182,14 +188,20 @@ def panel(request, nav, first):
             imgs_alert = Result.objects.filter(alert=True, camera__client=request.session['client'], time__lte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[:3]
             first_alert = len(Result.objects.filter(alert=True, camera__client=request.session['client'], time__gte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object')))
         if nav == 'a':
-            imgs_alert = Result.objects.filter(alert=True, camera__client=request.session['client'], object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[first:first+3]
-            if imgs_alert :
-                time_result = imgs_alert[0].time
-            else :
-                time_result = Result.objects.filter(alert=True, camera__client=request.session['client']).earliest('time').time
-            imgs = Result.objects.filter(camera__client=request.session['client'], time__lte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[:12]
-            first_alert = first
-            first = len(Result.objects.filter(camera__client=request.session['client'], time__gte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object')))
+            try : 
+                imgs_alert = Result.objects.filter(alert=True, camera__client=request.session['client'], object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[first:first+3]
+                if imgs_alert :
+                    time_result = imgs_alert[0].time
+                else :
+                    time_result = Result.objects.filter(alert=True, camera__client=request.session['client']).earliest('time').time
+                imgs = Result.objects.filter(camera__client=request.session['client'], time__lte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[:12]
+                first_alert = first
+                first = len(Result.objects.filter(camera__client=request.session['client'], time__gte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object')))
+            except Result.DoesNotExist:
+                first = 0
+                imgs = Result.objects.filter(camera__client=request.session['client']).order_by('-id')[first:first+12]
+                first_alert = 0
+                pass    
     img_array = [imgs[i:i + 3] for i in range(0, len(imgs), 3)]
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
     form = AlertForm(client=request.session['client'])

@@ -155,7 +155,10 @@ def getCam(request):
     force = request.POST.get('force', '0')
     cam = Camera.objects.filter(client__key=key).order_by('pk')
     if force=='1':
-        return JsonResponse(list(cam.values()), safe=False)      
+        if cam.last().client.update_camera:
+            return JsonResponse(list(cam.values()), safe=False)
+        else :
+            return JsonResponse(False, safe=False)
     i=0
     while i<20 :
         cam = Camera.objects.filter(client__key=key).order_by('pk')

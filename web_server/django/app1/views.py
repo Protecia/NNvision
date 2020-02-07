@@ -242,7 +242,10 @@ def alert(request, id=0, id2=-1):
             form = AlertForm(request.POST, client=request.session['client'])
             # check whether it's valid:
             if form.is_valid()  :
-                form.save()
+                alert_form = form.save(commit=False)
+                alert_form.client = Client.objects.get(pk=request.session['client'])
+                alert_form.save()
+                form.save_m2m()
                 return HttpResponseRedirect('/alert')
             else :
                 aform = AutomatForm()
@@ -279,7 +282,7 @@ def alert(request, id=0, id2=-1):
         cron.write()
 
     # get all the alert and all the automatism
-    alert = Alert.objects.filter(camera__client=request.session['client']).annotate(c=Count('camera'))
+    alert = Alert.objects.filter(client=request.session['client'])
     cron = CronTab(user=True)
     auto = [(c.minute.render(), c.hour.render(), DAY_CODE_STR[c.dow.render()], c.command.split()[2]) for c in cron]
     # test the telegram token

@@ -29,7 +29,7 @@ class Client(models.Model):
     stop_thread = models.CharField(max_length=200, default=secrets.token_hex )
 
     def __str__(self):
-        return '{} -  {} -  {}'.format(self.adress, self.cp, self.city)
+        return '{} - {} -  {} -  {}'.format(self.name, self.adress, self.cp, self.city)
 
 class Profile(models.Model):
     def get_token():
@@ -171,6 +171,7 @@ ADAM_CHANNEL = ((1,1),
                    )
 
 class Alert(models.Model):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE)
     actions_reverse = dict((v, k) for k, v in ACTIONS_CHOICES)
     stuffs_reverse = dict((v, k) for k, v in STUFFS_CHOICES)
     stuffs_d = dict((k, v) for k, v in STUFFS_CHOICES)
@@ -192,7 +193,7 @@ class Alert(models.Model):
     img_name = models.CharField(max_length=100, default='', blank=True)
     camera = models.ManyToManyField(Camera,   blank=True)
     class Meta:
-        unique_together = ('stuffs', 'actions')
+        unique_together = ('client', 'stuffs', 'actions')
 
     def __str__(self):
         return 'action : {} / object : {} '.format(Alert.actions_d[self.actions],
@@ -230,7 +231,7 @@ class Alert_type(models.Model):
         unique_together = ('client', 'allowed')
     
     def __str__(self):
-        return 'client : {} / allowed : {} '.format(Alert_type.client, Alert_type.allowed)
+        return 'client : {} / allowed : {} '.format(self.client, self.allowed)
     
 class Update_id(models.Model):
     id_number = models.IntegerField(default=0)

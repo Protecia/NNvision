@@ -101,7 +101,7 @@ class Process_alert(object):
                         self.logger.info(alert_type+' alert : {}'.format(a))
                         result.alert= True
                         result.save()
-                        a.img_name = result.file2.name
+                        a.img_name = result.file
                         a.last = result.time
                         a.save()
                         if not a.active:

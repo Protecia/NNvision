@@ -287,7 +287,7 @@ def alert(request, id=0, id2=-1):
     auto = [(c.minute.render(), c.hour.render(), DAY_CODE_STR[c.dow.render()], c.command.split()[2]) for c in cron]
     # test the telegram token
     telegram_token = Profile.objects.get(user=request.user).telegram_token
-    chat_id = Telegram.objects.filter(profile=request.user.id)
+    chat_id = Telegram.objects.filter(profile=request.user.profile.id)
     if len(chat_id)==0:
         chat_id=None
 

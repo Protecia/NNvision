@@ -27,7 +27,7 @@
 	</div>
 	
 	</div>
-	<br><br><br>
+	<br>
     
 
 <div class="row" style="border: 1px solid #466d98;"><div class="large-15 columns">
@@ -105,11 +105,27 @@ function toggle(source) {
   </div>
 </div>
 <br>
-{% if not chat_id %}
-<div class="row" style="border: 1px solid #466d98;"><div class="large-12 columns">
-    {% trans 'You don\'t have any Telegram id set.' %}{% trans ' Please send '  %}/register {{telegram_token}}{% trans ' to ProteciaBot on your Telegram app.'  %}
-</div></div>
-{% endif %}
+
+<div class="row">
+	<div class="large-10 columns">
+	<code id="robot-state" class="accesslog hljs"> 
+     {% if not chat_id %}{% trans 'You don\'t have any Telegram id set.' %}{% trans ' Please send '  %}<span style="color:#FF0000";>/register {{telegram_token}}</span>{% trans ' to ProteciaBot on your Telegram app.'  %}
+     {% else %}
+     {% trans 'List of Telegram id set :  '  %}
+     {% for id in chat_id %}
+     {{id.chat_id}} /
+     {% endfor %}<br>{% trans ' Please send '  %}<span style="color:#FF0000";>/register {{telegram_token}}</span>{% trans ' to ProteciaBot on your Telegram app'  %}{% trans ' to add a new contact.'  %}
+     
+     {% endif %}
+     
+     
+     
+     
+        </code>
+	</div>
+	
+	</div>
+	<br><br><br>
 
 <br><br>
 

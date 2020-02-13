@@ -23,6 +23,7 @@ from django.utils.translation import activate
 from socket import gaierror
 from twilio.base.exceptions import TwilioRestException
 from django.db.models import Count
+import secrets
 
 #------------------------------------------------------------------------------
 # Because this script have to be run in a separate process from manage.py
@@ -103,6 +104,7 @@ class Process_alert(object):
                         result.save()
                         a.img_name = result.file
                         a.last = result.time
+                        a.key = secrets.token_urlsafe(6)
                         a.save()
                         if not a.active:
                             a.active = True
@@ -162,7 +164,7 @@ class Process_alert(object):
             sender ="contact@protecia.com"
             body = _("Origin of detection") +"  : {}".format(Alert.stuffs_d[alert.stuffs])+"   ---  "+_("Type of detection")+" :  {}".format(Alert.actions_d[alert.actions])
             body += "<br>"+_("Time of detection")+" : {:%d-%m-%Y - %H:%M:%S}".format(alert.last.astimezone(pytz.timezone(settings.TIME_ZONE)))
-            body += "<br>"+_("Please check the images")+" : {} ".format(self.public_site+'/warning/0')
+            body += "<br>"+_("Please check the images")+" : {} ".format(self.public_site+'/warning/0/'+alert.key)
             try:
                 message = EmailMessage( 'Protecia Alert !!!',
                                         body,
@@ -175,7 +177,7 @@ class Process_alert(object):
                 self.logger.warning('Error in send_mail !!!! :')
                 pass
             self.logger.warning('mail send to : {}'.format(list_mail))
-            Alert_when(what='mail', who=list_mail, stuffs=alert.stuffs, action=alert.actions).save()
+            Alert_when(client = self.client, what='mail', who=list_mail, stuffs=alert.stuffs, action=alert.actions).save()
             activate('en')
 
         if canal == 'sms':
@@ -192,7 +194,7 @@ class Process_alert(object):
                     pass
                 client_tw.messages.create(to=to, from_=sender,body=body)
                 self.logger.warning('sms send to : {}'.format(to))
-                Alert_when(what='sms', who='to', stuffs=alert.stuffs, action=alert.actions).save()
+                Alert_when(client = self.client, what='sms', who='to', stuffs=alert.stuffs, action=alert.actions).save()
             activate('en')
 
     def run(self,_time):

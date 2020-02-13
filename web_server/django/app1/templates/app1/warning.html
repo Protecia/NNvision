@@ -24,7 +24,7 @@
 		{% for img_alert in row_alert %}
 		<div class="large-4 columns">
 		<a class="th" href="/warning_detail/{{img_alert.id}}">
-			<img  style="border:5px solid red" src="{{img_alert.file2.url}}" alt="" height="100" >{{img_alert.time|date:'Y-m-d H:i:s'}}
+			<img  style="border:5px solid red" src="/thumbnail/{{img_alert.file}}" alt="" height="100" >{{img_alert.time|date:'Y-m-d H:i:s'}}
 		</a>
 		</div>
 		{% endfor %}
@@ -47,7 +47,7 @@
   
   <div class="row">
     <div class="small-3 small-centered columns menu-tile">
-	<form action="/warning/0" method="post"><input type='hidden' name='alert' value='cancel' />{% csrf_token %}
+	<form action="/warning/0/{{key}}" method="post"><input type='hidden' name='alert' value='cancel' />{% csrf_token %}
 	<a href="#" onclick="$(this).closest('form').submit()" data-equalizer-watch>
 	<div class="row">
     

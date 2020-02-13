@@ -33,13 +33,13 @@ def index(request):
     user_language = 'fr'
     translation.activate(user_language)
     request.session[translation.LANGUAGE_SESSION_KEY] = user_language
-    alert = Alert.objects.filter(active=True)
-    if len(alert) != 0:
-        return redirect('/warning/0')
     if not request.user.is_authenticated or not request.user.has_perm('app1.camera'):
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
     if request.user.is_superuser :
         return redirect('/admin')
+    alert = Alert.objects.filter(active=True, client=request.session['client'])
+    if len(alert) != 0:
+        return redirect('/warning/0/'+alert.last().key)
     client = Client.objects.get(profile__user=request.user)
     request.session['client']=client.id
     d_action = request.POST.get('d_action')
@@ -55,7 +55,7 @@ def index(request):
         client.save()
         time.sleep(2)
     if d_action == 'stop' :
-        try : 
+        try :
             process(client.key).kill()
         except AttributeError:
             pass
@@ -68,23 +68,24 @@ def index(request):
                'url_for_index' : '/','running':running, 'client':client}
     return render(request, 'app1/index.html',context)
 
-def warning(request, first_alert):
-    alert = Alert.objects.filter(active=True).order_by('when')
+def warning(request, first_alert, key):
+    alert = Alert.objects.filter(active=True, key=key)
+    if not alert :
+        return redirect('/')
+    else :
+        client = alert.last().client.id
+    alert = Alert.objects.filter(active=True, client=client).order_by('when')
+    user_language = 'fr'
+    translation.activate(user_language)
     action = request.POST.get('alert')
     if action == 'cancel':
         for a in alert :
             a.active = False
             a.save()
         return redirect('/')
-
-    alert = alert.first()
-    if not alert :
-        return redirect('/')
-
-    first_alert=int(first_alert)
-    imgs_alert = Result.objects.filter(alert=True).filter(time__gte=alert.when).order_by('-id')[first_alert:first_alert+9]
+    imgs_alert = Result.objects.filter(alert=True, camera__client=client).filter(time__gte=alert.first().when).order_by('-id')[first_alert:first_alert+9]
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
-    context = { 'first_alert' : first_alert, 'img_alert_array' : img_alert_array}
+    context = { 'first_alert' : first_alert, 'img_alert_array' : img_alert_array, key : key}
     return render(request, 'app1/warning.html', context)
 
 
@@ -163,7 +164,7 @@ def panel(request, nav, first):
             imgs_alert = Result.objects.filter(alert=True,camera__client=request.session['client'], time__lte=time_result).order_by('-id')[:3]
             first_alert = len(Result.objects.filter(alert=True, camera__client=request.session['client'], time__gt=time_result))
         if nav == 'a':
-            try : 
+            try :
                 imgs_alert = Result.objects.filter(alert=True, camera__client=request.session['client']).order_by('-id')[first:first+3]
                 if imgs_alert :
                     time_result = imgs_alert[0].time
@@ -177,7 +178,7 @@ def panel(request, nav, first):
                 imgs = Result.objects.filter(camera__client=request.session['client']).order_by('-id')[first:first+12]
                 first_alert = 0
                 pass
-                
+
     else :
         if nav == 'd':
             imgs = Result.objects.filter(camera__client=request.session['client'],object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[first:first+12]
@@ -188,7 +189,7 @@ def panel(request, nav, first):
             imgs_alert = Result.objects.filter(alert=True, camera__client=request.session['client'], time__lte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[:3]
             first_alert = len(Result.objects.filter(alert=True, camera__client=request.session['client'], time__gte=time_result, object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object')))
         if nav == 'a':
-            try : 
+            try :
                 imgs_alert = Result.objects.filter(alert=True, camera__client=request.session['client'], object__result_object__contains=filter_class).order_by('-id').annotate(c=Count('object__result_object'))[first:first+3]
                 if imgs_alert :
                     time_result = imgs_alert[0].time
@@ -201,7 +202,7 @@ def panel(request, nav, first):
                 first = 0
                 imgs = Result.objects.filter(camera__client=request.session['client']).order_by('-id')[first:first+12]
                 first_alert = 0
-                pass    
+                pass
     img_array = [imgs[i:i + 3] for i in range(0, len(imgs), 3)]
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
     form = AlertForm(client=request.session['client'])
@@ -327,7 +328,7 @@ def get_last_analyse_img(request,cam_id):
     return response
 
 def thumbnail(request,path_im):
-    client = Client.objects.get(pk=request.session['client'])
+    client = Client.objects.get(pk=request.session['client']) #requete à eliminer
     try :
         path_im = os.path.join(settings.MEDIA_ROOT,path_im)
         im = Image.open(path_im)

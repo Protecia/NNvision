@@ -47,7 +47,7 @@
 		{% for img_alert in row_alert %}
 		<div class="large-4 columns">
 		<a class="th" href="/panel_detail/{{img_alert.id}}">
-			<img  style="border:5px solid red" src="/thumbnail/{{img_alert.file}}" alt=""  ><br>{{img_alert.time|date:'Y-m-d H:i:s'}}
+			<img  style="border:5px solid red" src="/thumbnail/{{img_alert.id}}/0/{{client.image_panel_max_width}}/{{client.image_panel_max_hight}}" alt=""  ><br>{{img_alert.time|date:'Y-m-d H:i:s'}}
 		</a>
 		</div>
 		{% endfor %}
@@ -78,7 +78,7 @@
 		{% for img in row %}
 		<div class="large-4 columns">
 		<a href="/panel_detail/{{img.id}}">
-			<img {% if img.alert == True %} style="border:5px solid red" {% endif %} src="/thumbnail/{{img.file}}" alt=""  ><br>{{img.time|date:'Y-m-d H:i:s'}}
+			<img {% if img.alert == True %} style="border:5px solid red" {% endif %} src="/thumbnail/{{img.id}}/0/{{client.image_panel_max_width}}/{{client.image_panel_max_hight}}" alt=""  ><br>{{img.time|date:'Y-m-d H:i:s'}}
 		</a>
 		</div>
 		{% endfor %}

@@ -37,11 +37,11 @@ def index(request):
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
     if request.user.is_superuser :
         return redirect('/admin')
+    client = Client.objects.get(profile__user=request.user)
+    request.session['client']=client.id
     alert = Alert.objects.filter(active=True, client=request.session['client'])
     if len(alert) != 0:
         return redirect('/warning/0/'+alert.last().key)
-    client = Client.objects.get(profile__user=request.user)
-    request.session['client']=client.id
     d_action = request.POST.get('d_action')
     if d_action == 'start' and not process(client.key):
         if settings.DEBUG:
@@ -73,8 +73,8 @@ def warning(request, first_alert, key):
     if not alert :
         return redirect('/')
     else :
-        client = alert.last().client.id
-    alert = Alert.objects.filter(active=True, client=client).order_by('when')
+        client = alert.last().client
+    alert = Alert.objects.filter(active=True, client=client.id).order_by('when')
     user_language = 'fr'
     translation.activate(user_language)
     action = request.POST.get('alert')
@@ -83,9 +83,9 @@ def warning(request, first_alert, key):
             a.active = False
             a.save()
         return redirect('/')
-    imgs_alert = Result.objects.filter(alert=True, camera__client=client).filter(time__gte=alert.first().when).order_by('-id')[first_alert:first_alert+9]
+    imgs_alert = Result.objects.filter(alert=True, camera__client=client.id).filter(time__gte=alert.first().when).order_by('-id')[first_alert:first_alert+9]
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
-    context = { 'first_alert' : first_alert, 'img_alert_array' : img_alert_array, key : key}
+    context = { 'first_alert' : first_alert, 'img_alert_array' : img_alert_array, 'key' : key, 'client' : client}
     return render(request, 'app1/warning.html', context)
 
 
@@ -216,11 +216,16 @@ def panel_detail(request, id):
     img = Result.objects.get(id=id, camera__client=request.session['client'])
     return render(request, 'app1/panel_detail.html', {'img':img, 'id':id})
 
-def warning_detail(request, id):
-    img = Result.objects.get(id=id)
-    alert = Alert.objects.filter(active=True).order_by('when')
+def warning_detail(request, id, key):
+    alert = Alert.objects.filter(active=True, key=key).order_by('when')
     alert = alert.first()
     if not alert :
+        return redirect('/')
+    else :
+        client = alert.client
+    try :
+        img = Result.objects.get(id=id, camera__client=client)
+    except Result.DoesNotExist :
         return redirect('/')
     imgs_alert = Result.objects.filter(alert=True).filter(time__gte=alert.when)
     ids = [i.id for i in imgs_alert]
@@ -231,7 +236,7 @@ def warning_detail(request, id):
 
 @login_required
 @permission_required('app1.camera')
-def alert(request, id=0, id2=-1):
+def alert(request, suppr=False, pk=-1):
     client = Client.objects.get(pk=request.session['client'])
     alert_type = Alert_type.objects.filter(client=request.session['client'])
     autorization = dict([(a[0],True) if  a[0] in [a.allowed for a in alert_type] else (a[0],False) for a in ALERT_CHOICES ])
@@ -275,12 +280,15 @@ def alert(request, id=0, id2=-1):
     else:
         form = AlertForm(client=request.session['client'])
         aform = AutomatForm()
-    if id !=0 :
-        Alert.objects.get(pk=id).delete()
-    if id2 != -1:
+    #suppr things
+    if suppr == 'alert' :
+        Alert.objects.get(pk=pk, client=request.session['client']).delete()
+    elif suppr == 'auto':
         cron = CronTab(user=True)
-        cron.remove(cron[int(id2)])
+        cron.remove(cron[int(pk)])
         cron.write()
+    elif suppr == 'telegram':
+        Telegram.objects.get(pk=pk, profile=request.user.profile.id).delete()
 
     # get all the alert and all the automatism
     alert = Alert.objects.filter(client=request.session['client'])
@@ -327,17 +335,24 @@ def get_last_analyse_img(request,cam_id):
             continue
     return response
 
-def thumbnail(request,path_im):
-    client = Client.objects.get(pk=request.session['client']) #requete à eliminer
+def thumbnail(request,im,key,w,h):
+    if not request.user.is_authenticated :
+        try :
+            client = Alert.objects.filter(active=True, key=key).last().client.id
+        except AttributeError :
+            return None
+    else :
+        client = request.session['client']
     try :
+        path_im = Result.objects.get(pk=im, camera__client=client).file 
         path_im = os.path.join(settings.MEDIA_ROOT,path_im)
         im = Image.open(path_im)
-    except OSError :
+    except (OSError, Result.DoesNotExist) :
         path_img_broken = os.path.join(settings.STATIC_ROOT,'app1','img','image-not-found.jpg')
         im = Image.open(path_img_broken)
         pass
     response = HttpResponse(content_type='image/jpg')
-    im.thumbnail((client.image_panel_max_width,client.image_panel_max_hight), Image.ANTIALIAS)
+    im.thumbnail((w,h), Image.ANTIALIAS)
     im.save(response, 'JPEG')
     return response
 

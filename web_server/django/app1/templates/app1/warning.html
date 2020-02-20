@@ -16,15 +16,15 @@
     <h2>{% trans 'The location is under Alert' %}.
 	{% trans 'Check carefully the images and call the police' %}. {% trans 'If you think it is a fake alarm, cancel it' %} !  </h2>
 	<div align="right">
-	{% if first_alert >= 9 %}<a href="/warning/{{first_alert|add:-9}}" class="button tiny">&laquo; previous</a>{% endif %}
-	<a href="/warning/{{first_alert|add:9}}" class="button tiny">next &raquo;</a></div>
+	{% if first_alert >= 9 %}<a href="/warning/{{first_alert|add:-9}}/{{key}}" class="button tiny">&laquo; previous</a>{% endif %}
+	<a href="/warning/{{first_alert|add:9}}/{{key}}" class="button tiny">next &raquo;</a></div>
 	{% for row_alert in img_alert_array %}
 	<div class="row">
 
 		{% for img_alert in row_alert %}
 		<div class="large-4 columns">
-		<a class="th" href="/warning_detail/{{img_alert.id}}">
-			<img  style="border:5px solid red" src="/thumbnail/{{img_alert.file}}" alt="" height="100" >{{img_alert.time|date:'Y-m-d H:i:s'}}
+		<a class="th" href="/warning_detail/{{img_alert.id}}/{{key}}">
+			<img  style="border:5px solid red" src="/thumbnail/{{img_alert.id}}/{{key}}/{{client.image_panel_max_width}}/{{client.image_panel_max_hight}}" alt=""  >{{img_alert.time|date:'Y-m-d H:i:s'}}
 		</a>
 		</div>
 		{% endfor %}
@@ -32,8 +32,8 @@
 	</div><br>
 	{% endfor %}
 	<div align="right">
-	{% if first_alert >= 9 %}<a href="/warning/{{first_alert|add:-9}}" class="button tiny">&laquo; previous</a>{% endif %}
-	<a href="/warning/{{first_alert|add:9}}" class="button tiny">next &raquo;</a></div>
+	{% if first_alert >= 9 %}<a href="/warning/{{first_alert|add:-9}}/{{key}}" class="button tiny">&laquo; previous</a>{% endif %}
+	<a href="/warning/{{first_alert|add:9}}/{{key}}" class="button tiny">next &raquo;</a></div>
   </div>
 
   

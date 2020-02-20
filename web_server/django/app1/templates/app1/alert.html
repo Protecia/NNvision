@@ -23,7 +23,7 @@
                                                                         {% if res.call %}call{% endif %}
                                                                         {% if res.alarm %}Alarm{% endif %}
                                                                         {% if res.hook %}External url{% endif %}
-      &nbsp &nbsp&nbsp&nbsp<a href=/alert/suppr/{{ res.id }} >{% trans 'delete alert' %}</a> <br>   </code>{% endfor %}
+      &nbsp &nbsp&nbsp&nbsp<a href=/alert/alert/{{ res.id }} >{% trans 'delete alert' %}</a> <br>   </code>{% endfor %}
 	</div>
 	
 	</div>
@@ -113,8 +113,8 @@ function toggle(source) {
      {% else %}
      {% trans 'List of Telegram id set :  '  %}
      {% for id in chat_id %}
-     {{id.chat_id}} /
-     {% endfor %}<br>{% trans ' Please send '  %}<span style="color:#FF0000";>/register {{telegram_token}}</span>{% trans ' to ProteciaBot on your Telegram app'  %}{% trans ' to add a new contact.'  %}
+     {{id.chat_id}} / {{id.name}}  <a href=/alert/telegram/{{ id.id }} >{% trans 'delete telegram' %}</a><br>
+     {% endfor %}{% trans ' Please send '  %}<span style="color:#FF0000";>/register {{telegram_token}}</span>{% trans ' to ProteciaBot on your Telegram app'  %}{% trans ' to add a new contact.'  %}
      
      {% endif %}
      

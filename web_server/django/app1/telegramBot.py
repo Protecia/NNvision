@@ -40,6 +40,15 @@ logger.addHandler(file_handler)
 botid = "bot988625521:AAHf4DF2kwocwEL89TVJoOvNxTRPZxF0g94"
 getupdateurl = ("https://api.telegram.org/%s/getUpdates" % (botid))
 sendmessageurl = ( "https://api.telegram.org/%s/sendMessage" % (botid))
+sendphotourl = "https://api.telegram.org/{}/sendPhoto".format(botid)
+
+def SendChatPhoto(tochatid_in, tousername_in,tofirstname_in,tolastname_in, photo_in):
+    try:
+        files = photo_in
+        data = {'chat_id' :tochatid_in }
+        requests.post(sendphotourl,data =data,  files=files)
+    except Exception as repex:
+        logger.warning(('Error while send Message: {}'.format(repex)))
 
 
 def SendChatMessage(tochatid_in, tousername_in,tofirstname_in,tolastname_in, message_in):
@@ -62,7 +71,7 @@ def CommandRegister(fromuserid_in,fromusername_in, fromchatid_in, fromfirstname_
         if Telegram.objects.filter(profile=profile, chat_id = fromchatid_in ).exists():
             SendChatMessage(fromchatid_in, fromusername_in, fromfirstname_in,fromlastname_in, _('Already registered'))
         else :
-            Telegram(profile=profile, chat_id=fromchatid_in).save()
+            Telegram(profile=profile, chat_id=fromchatid_in, name=fromusername_in).save()
             SendChatMessage(fromchatid_in, fromusername_in, fromfirstname_in,fromlastname_in, _('Ok you are registered ') + '{}'.format(fromfirstname_in) + _(' as Protecia Telegram token : ') +  '{}'.format(token))
     except Profile.DoesNotExist as ex:
         SendChatMessage(fromchatid_in,fromusername_in, fromfirstname_in, fromlastname_in, "%s  , this is not a correct Protecia UserID" % (fromfirstname_in))

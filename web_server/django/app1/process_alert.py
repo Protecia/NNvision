@@ -25,6 +25,9 @@ from twilio.base.exceptions import TwilioRestException
 from django.db.models import Count
 import secrets
 
+from telegramBot import SendChatMessage, SendChatPhoto
+
+
 #------------------------------------------------------------------------------
 # Because this script have to be run in a separate process from manage.py
 # you need to set up a Django environnement to use the Class defined in
@@ -40,7 +43,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projet.settings")
 import django
 django.setup()
 
-from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_type, Camera, Client
+from app1.models import Profile, Result, Object, Alert, Alert_when, Alert_type, Camera, Client, Telegram
 
 # Your Account SID from twilio.com/console
 account_sid = settings.ACCOUNT_SID
@@ -91,25 +94,25 @@ class Process_alert(object):
             self.check_alert(result, 'present',c)
 
     def check_alert(self, result, alert_type, object_counter):
-            for s in object_counter :
-                    a=False
-                    object_present = Alert.stuffs_reverse.get(s)
-                    if object_present :
-                        a = Alert.objects.filter(stuffs=object_present,
-                                                 actions=Alert.actions_reverse[alert_type],
-                                                 camera=result.camera).first()
-                    if a :
-                        self.logger.info(alert_type+' alert : {}'.format(a))
-                        result.alert= True
-                        result.save()
-                        a.img_name = result.file
-                        a.last = result.time
-                        a.key = secrets.token_urlsafe(6)
-                        a.save()
-                        if not a.active:
-                            a.active = True
-                            a.when = result.time
-                            a.save()
+        for s in object_counter :
+            a=False
+            object_present = Alert.stuffs_reverse.get(s)
+            if object_present :
+                a = Alert.objects.filter(stuffs=object_present,
+                                         actions=Alert.actions_reverse[alert_type],
+                                         camera=result.camera).first()
+            if a :
+                self.logger.info(alert_type+' alert : {}'.format(a))
+                result.alert= True
+                result.save()
+                a.img_name = result.file
+                a.last = result.time
+                a.save()
+                if not a.active:
+                    a.active = True
+                    a.key = secrets.token_urlsafe(6)
+                    a.when = result.time
+                    a.save()
 
     def wait(self):
         i=0
@@ -135,8 +138,8 @@ class Process_alert(object):
         t = datetime.now(pytz.utc)
         self.logger.debug('warn in action at {} / alert timer is {} / timedelta : {}'.format(t
                     ,alert.when,t-alert.when))
-        self.logger.debug('sms : {} / call : {} / alarm : {} / mail : {}'.format(
-                alert.sms,alert.call,alert.alarm,alert.mail))
+        self.logger.debug('sms : {} / call : {} / alarm : {} / mail : {} / telegram : {}'.format(
+                alert.sms,alert.call,alert.alarm,alert.mail,alert.telegram))
         list_alert = Alert_type.objects.filter(client=self.client).order_by('priority')
         post_wait = timedelta(seconds=0)
         for l in list_alert:
@@ -156,6 +159,7 @@ class Process_alert(object):
 #############################################################################################
 
     def send(self, alert, canal, user, t):
+
         if canal == 'mail':
             activate(settings.USER_LANGUAGE)
             list_mail = []
@@ -177,25 +181,38 @@ class Process_alert(object):
                 self.logger.warning('Error in send_mail !!!! :')
                 pass
             self.logger.warning('mail send to : {}'.format(list_mail))
-            Alert_when(client = self.client, what='mail', who=list_mail, stuffs=alert.stuffs, action=alert.actions).save()
-            activate('en')
-
+            Alert_when(client = self.client, what=canal, who=list_mail, stuffs=alert.stuffs, action=alert.actions).save()
         if canal == 'sms':
-            activate(settings.USER_LANGUAGE)
             for u in user :
+                activate(settings.USER_LANGUAGE)
                 to = u.phone_number
                 sender ="+33757916187"
                 body = _("Origin of detection") +"  : {}".format(Alert.stuffs_d[alert.stuffs])+"   ---  "+_("Type of detection")+" :  {}".format(Alert.actions_d[alert.actions])
                 body += "\n"+_("Time of detection")+" : {:%d-%m-%Y - %H:%M:%S}".format(t.astimezone(pytz.timezone(settings.TIME_ZONE)))
-                body += "n"+_("Please check the images")+" : {} ".format(self.public_site+'/warning/0')
+                body += "\n"+_("Please check the images")+" : {} ".format(self.public_site+'/warning/0/'+alert.key)
                 try:
                     client_tw.messages.create(to=to, from_=sender,body=body)
                 except TwilioRestException:
                     pass
                 client_tw.messages.create(to=to, from_=sender,body=body)
                 self.logger.warning('sms send to : {}'.format(to))
-                Alert_when(client = self.client, what='sms', who='to', stuffs=alert.stuffs, action=alert.actions).save()
-            activate('en')
+                Alert_when(client = self.client, what=canal, who='to', stuffs=alert.stuffs, action=alert.actions).save()
+        if canal == 'telegram':
+            for u in user :
+                activate(settings.USER_LANGUAGE)
+                body = _("Origin of detection") +"  : {}".format(Alert.stuffs_d[alert.stuffs])+"   ---  "+_("Type of detection")+" :  {}".format(Alert.actions_d[alert.actions])
+                body += "\n"+_("Time of detection")+" : {:%d-%m-%Y - %H:%M:%S}".format(t.astimezone(pytz.timezone(settings.TIME_ZONE)))
+                body += "\n"+_("Please check the images")+" : {} ".format(self.public_site+'/warning/0/'+alert.key)
+                for t in Telegram.objects.filter(profile=u):
+                    SendChatMessage(t.chat_id, '', '','', body)
+                    self.logger.warning('telegram send to : {} - user {}'.format(t.chat_id,u.user))
+                    img = open(settings.MEDIA_ROOT+'/'+alert.img_name, 'rb')
+                    files = {'photo' : img }
+                    SendChatPhoto(t.chat_id, '', '','', files)
+                    img.close()
+                    Alert_when(client = self.client, what=canal, who=str(t.chat_id), stuffs=alert.stuffs, action=alert.actions).save()
+        activate('en')
+
 
     def run(self,_time):
         while(self.running):

@@ -293,7 +293,7 @@ def alert(request, suppr=False, pk=-1):
     # get all the alert and all the automatism
     alert = Alert.objects.filter(client=request.session['client'])
     cron = CronTab(user=True)
-    auto = [(c.minute.render(), c.hour.render(), DAY_CODE_STR[c.dow.render()], c.command.split()[2], c.comment) for c in cron if client.key in c.command]
+    auto = [(c.minute.render(), c.hour.render(), DAY_CODE_STR[c.dow.render()], c.command.split()[2], c.comment) for c in cron if client.folder in c.command]
     # test the telegram token
     telegram_token = Profile.objects.get(user=request.user).telegram_token
     chat_id = Telegram.objects.filter(profile=request.user.profile.id)

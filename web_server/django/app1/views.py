@@ -265,8 +265,8 @@ def alert(request, suppr=False, pk=-1):
                 m = form.cleaned_data['minute']
                 a = form.cleaned_data['action']
                 cron = CronTab(user=True)
-                cmd = settings.PYTHON+' '+os.path.join(settings.BASE_DIR,'app1/_running.py '+a)
-                job  = cron.new(command=cmd)
+                cmd = settings.PYTHON+' '+os.path.join(settings.BASE_DIR,'app1/_running.py '+a+' '+client.folder)
+                job  = cron.new(command=cmd, comment=secrets.token_hex())
                 job.minute.on(m)
                 job.hour.on(h)
                 if d!='*' :
@@ -282,18 +282,18 @@ def alert(request, suppr=False, pk=-1):
         aform = AutomatForm()
     #suppr things
     if suppr == 'alert' :
-        Alert.objects.get(pk=pk, client=request.session['client']).delete()
+        Alert.objects.get(pk=int(pk), client=request.session['client']).delete()
     elif suppr == 'auto':
         cron = CronTab(user=True)
-        cron.remove(cron[int(pk)])
+        cron.remove_all(comment=pk)
         cron.write()
     elif suppr == 'telegram':
-        Telegram.objects.get(pk=pk, profile=request.user.profile.id).delete()
+        Telegram.objects.get(pk=int(pk), profile=request.user.profile.id).delete()
 
     # get all the alert and all the automatism
     alert = Alert.objects.filter(client=request.session['client'])
     cron = CronTab(user=True)
-    auto = [(c.minute.render(), c.hour.render(), DAY_CODE_STR[c.dow.render()], c.command.split()[2]) for c in cron]
+    auto = [(c.minute.render(), c.hour.render(), DAY_CODE_STR[c.dow.render()], c.command.split()[2], c.comment) for c in cron if client.key in c.command]
     # test the telegram token
     telegram_token = Profile.objects.get(user=request.user).telegram_token
     chat_id = Telegram.objects.filter(profile=request.user.profile.id)

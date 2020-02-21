@@ -106,7 +106,7 @@ def uploadImage(request):
         size = len(img)
         img_path = settings.MEDIA_ROOT+'/'+client.folder+'/'+img_name
         os.makedirs(os.path.dirname(img_path), exist_ok=True)
-        if not real_time :
+        if real_time == 'False' :
             with open(img_path+'_no_box.jpg', 'wb') as file:
                 file.write(img.read())
         img_pil = Image.open(img)

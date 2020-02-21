@@ -20,7 +20,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projet.settings")
 import django
 django.setup()
 
-from app1.models import Telegram, Update_id, Profile
+from app1.models import Telegram, Update_id, Profile, Alert
 from django.utils.translation import gettext as _
 from django.conf import settings
 ####### log #######
@@ -71,7 +71,7 @@ def CommandRegister(fromuserid_in,fromusername_in, fromchatid_in, fromfirstname_
         if Telegram.objects.filter(profile=profile, chat_id = fromchatid_in ).exists():
             SendChatMessage(fromchatid_in, fromusername_in, fromfirstname_in,fromlastname_in, _('Already registered'))
         else :
-            Telegram(profile=profile, chat_id=fromchatid_in, name=fromusername_in).save()
+            Telegram(profile=profile, chat_id=fromchatid_in, name=fromfirstname_in+' '+fromlastname_in).save()
             SendChatMessage(fromchatid_in, fromusername_in, fromfirstname_in,fromlastname_in, _('Ok you are registered ') + '{}'.format(fromfirstname_in) + _(' as Protecia Telegram token : ') +  '{}'.format(token))
     except Profile.DoesNotExist as ex:
         SendChatMessage(fromchatid_in,fromusername_in, fromfirstname_in, fromlastname_in, "%s  , this is not a correct Protecia UserID" % (fromfirstname_in))
@@ -99,6 +99,16 @@ def ConsummeMessage(obj):
     if (startcmd == "/start"):
         SendChatMessage(chatid, fromusername, fromfirstname,fromlastname, "Hi %s , \nI am Protecia Bot. You shall first \n register your Protecia user ID in order\n to receive  Protecia notifications.\n\nType /help to start.\n\n" % (fromfirstname))
         SendChatMessage(chatid, fromusername, fromfirstname,fromlastname, "(For your information, your Telegram user id is: %d )" % (fromuserid) )
+        return True
+    if text[0:5]=="/stop":
+        alert =  Alert.objects.filter(client=Telegram.objects.get(chat_id=chatid).profile.client)
+        if not alert:
+             SendChatMessage(chatid, fromusername, fromfirstname,fromlastname, "%s, There isn't any active alarm. The place is quiet." % (fromfirstname))
+        else :
+           for a in alert :
+               a.active = False
+               a.save()
+           SendChatMessage(chatid, fromusername, fromfirstname,fromlastname, "%s, Alarm is stop." % (fromfirstname))
         return True
     # Unknown Command
     SendChatMessage(chatid, fromusername, fromfirstname,fromlastname, "%s  , I don't understand this command , type /help" % (fromfirstname))

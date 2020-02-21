@@ -8,40 +8,54 @@ import os
 import psutil as ps
 import time
 import sys
-from subprocess import Popen
+from subprocess import Popen, STDOUT
 from django.conf import settings
 
 action = sys.argv[1]
+folder = sys.argv[2]
+
 try:
     sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 except NameError:
     sys.path.append(os.path.abspath('..'))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "projet.settings")
+import django
+django.setup()
+from app1.models import Client
+client = Client.objects.get(folder=folder)
 
 
-def process():
-    _process = [[],[]]
+def process(key):
     for p in ps.process_iter():
         try :
             for n in p.cmdline():
-                if 'process_camera' in n : _process[0].append(p)
-                if 'process_alert' in n : _process[1].append(p)
+                if key in n :
+                    return p
         except ps.AccessDenied :
             pass
-    return _process
+    return False
 
 if action == 'stop':
     while 1 :
-        p = process()
-        [ item.kill() for sublist in p for item in sublist]
+        try :
+            process(client.key).kill()
+        except AttributeError:
+            pass
+        client.change = True
+        client.rec =  False
+        client.save()
         time.sleep(2)
-        if len(p[0])==0 and len(p[1])==0:
+        if not process(client.key) :
             break
     
-if action == 'start':
-    #Camera.objects.all().update(rec=True)
-    if len(process()[0])==0:       
-        Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_camera.py')])
-    if len(process()[1])==0:
-        Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py')]) 
+if action == 'start' and not process(client.key):
+    if settings.DEBUG:
+        with open(os.path.join(settings.BASE_DIR,'process_alert.log'), 'w') as loga:
+            Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py'), client.key],
+                  stdout=loga, stderr=STDOUT)
+    else:
+        Popen([settings.PYTHON,os.path.join(settings.BASE_DIR,'app1/process_alert.py'),client.key])
+    client.change = True
+    client.rec =  True
+    client.save()
     time.sleep(2)

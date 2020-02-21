@@ -113,7 +113,7 @@ function toggle(source) {
      {% else %}
      {% trans 'List of Telegram id set :  '  %}
      {% for id in chat_id %}
-     {{id.chat_id}} / {{id.name}}  <a href=/alert/telegram/{{ id.id }} >{% trans 'delete telegram' %}</a><br>
+     {{id.chat_id}} / {{id.name}}  <a href=/alert/telegram/{{ id.id }} >-{% trans 'delete' %}-</a><br>
      {% endfor %}{% trans ' Please send '  %}<span style="color:#FF0000";>/register {{telegram_token}}</span>{% trans ' to ProteciaBot on your Telegram app'  %}{% trans ' to add a new contact.'  %}
      
      {% endif %}
@@ -143,7 +143,7 @@ function toggle(source) {
 
  <div class="row">
 	<div class="large-10 columns">{% trans 'List of automat settled :' %}
-	{% for res in auto %}<code id="robot-state" class="accesslog hljs"> {% trans res.2 %} &nbsp{{ res.1 }}:{{ res.0 }}&nbsp {% trans res.3 %}&nbsp&nbsp&nbsp <a href=/alert/suppr_auto/{{ forloop.counter0 }} >{% trans 'delete automat' %}</a> <br>   </code>{% endfor %}
+	{% for res in auto %}<code id="robot-state" class="accesslog hljs"> {% trans res.2 %} &nbsp{{ res.1 }}:{{ res.0 }}&nbsp {% trans res.3 %}&nbsp&nbsp&nbsp <a href=/alert/auto/{{ res.4 }} >{% trans 'delete automat' %}</a> <br>   </code>{% endfor %}
 	</div>
 	
 	</div>

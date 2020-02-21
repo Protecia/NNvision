@@ -31,6 +31,10 @@ class Client(models.Model):
     def __str__(self):
         return '{} - {} -  {} -  {}'.format(self.name, self.adress, self.cp, self.city)
 
+LANGUAGE_CHOICES = (('en',_('English')),
+                  ('fr',_('French')),
+                  )
+
 class Profile(models.Model):
     def get_token():
         return secrets.token_urlsafe(6)
@@ -40,7 +44,7 @@ class Profile(models.Model):
     phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True) # validators should be a list
     telegram_token = models.CharField(max_length=64, default=get_token)
     alert = models.BooleanField(default="False")
-    language = models.CharField(max_length=2, default='english')
+    language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES, default='fr')
     class Meta:
         ordering = ['user']
         verbose_name = 'user'

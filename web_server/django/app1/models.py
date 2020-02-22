@@ -8,6 +8,37 @@ import pytz
 from django.utils.translation import ugettext_lazy as _
 import secrets
 
+DAY_CHOICES =   (('*',_('Every days')),
+                 (1,_('Monday')),
+                 (2,_('Tuesday')),
+                 (3,_('Wednesday')),
+                 (4,_('Thursday')),
+                 (5,_('Friday')),
+                 (6,_('Saturday')),
+                 (0,_('Sunday')),
+                 )
+
+def local_to_utc(h,m,tz,d=False):
+    local = datetime.now(tz)
+    local = local.replace(hour=h, minute=m)
+    if d:
+        local = local + timedelta(days=(d-local.weekday()+7)%7)
+    utc = local.astimezone(pytz.utc)
+    return utc.hour, utc.minute, utc.weekday()
+
+def utc_to_local(h,m,tz,d):
+    utc = datetime.now(pytz.utc)
+    utc = utc.replace(hour=int(h), minute=int(m))
+    if d!='*':
+        utc = utc + timedelta(days=(int(d)-utc.weekday()+7)%7)
+        local = utc.astimezone(tz)
+        return str(local.minute), str(local.hour), dict(DAY_CHOICES)[local.weekday()]
+    else :
+        local = utc.astimezone(tz)
+        return str(local.minute),str(local.hour), dict(DAY_CHOICES)[d]
+
+
+
 class Client(models.Model):
     first_name = models.CharField(max_length=200, blank = True)
     name = models.CharField(max_length=200, blank = True)
@@ -168,13 +199,6 @@ ACTIONS_CHOICES = ((1,_('appear')),
                    (3,_('present'))
                    )
 
-ADAM_CHANNEL = ((1,1),
-                (2,2),
-                (3,3),
-                (4,4),
-                (5,5),
-                (6,6),
-                   )
 
 class Alert(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
@@ -232,13 +256,13 @@ class Alert_type(models.Model):
     delay = models.DurationField(default=timedelta(seconds=0))
     resent = models.DurationField(default=timedelta(seconds=300))
     post_wait = models.DurationField(default=timedelta(seconds=60))
-    
+
     class Meta:
         unique_together = ('client', 'allowed')
-    
+
     def __str__(self):
         return 'client : {} / allowed : {} '.format(self.client, self.allowed)
-    
+
 class Update_id(models.Model):
     id_number = models.IntegerField(default=0)
 

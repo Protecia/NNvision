@@ -6,50 +6,32 @@ Created on Tue Mar 13 12:32:32 2018
 """
 
 from django import forms
-from .models import Alert, Camera
+from .models import Alert, Camera, DAY_CHOICES
 from django.utils.translation import ugettext_lazy as _
 
 
 class AlertForm(forms.ModelForm):
-    
+
     camera = forms.ModelMultipleChoiceField(queryset=None, widget=forms.CheckboxSelectMultiple, required=False )
-    
+
     def __init__(self, *args, **kwargs):
         client = kwargs.pop('client')
         super().__init__(*args, **kwargs)
         self.fields['camera'].queryset = Camera.objects.filter(client=client)
 
-        
+
     class Meta:
         model = Alert
         fields = ['camera','stuffs', 'actions','sms', 'telegram', 'call','alarm','mail', 'mass_alarm']
         widgets = {
             'actions': forms.RadioSelect(),
             'adam': forms.RadioSelect()}
-        
-        
-DAY_CODE_STR= {'*':_('Every days'),
-               '1':_('Monday'),
-               '2':_('Tuesday'),
-               '3':_('Wednesday'),
-               '4':_('Thursday'),
-               '5':_('Friday'),
-               '6':_('Saturday'),
-               '0':_('Sunday'),
-               }
 
 
-DAY_CHOICES =   (('*',_('Every days')),
-                 (1,_('Monday')),
-                 (2,_('Tuesday')),
-                 (3,_('Wednesday')),
-                 (4,_('Thursday')),
-                 (5,_('Friday')),
-                 (6,_('Saturday')),
-                 (0,_('Sunday')),
-                 )
+
+
 HOUR_CHOICES=[(i,str(i)) for i in range(24)]
-           
+
 MIN_CHOICES=((0,'0'),
               (5,'5'),
               (10,'10'),

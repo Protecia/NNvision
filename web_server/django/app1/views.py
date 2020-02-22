@@ -9,13 +9,14 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Count
-from .models import Camera, Result, Alert, Client, Alert_type, Profile, Telegram, ALERT_CHOICES
-from .forms import AlertForm, AutomatForm, DAY_CODE_STR
+from .models import Camera, Result, Alert, Client, Alert_type, Profile, Telegram, ALERT_CHOICES, local_to_utc, utc_to_local
+from .forms import AlertForm, AutomatForm
 from PIL import Image
 from django.utils import translation
 from crontab import CronTab
 from threading import Thread
 import secrets
+import pytz
 
 # Create your views here.
 
@@ -267,10 +268,13 @@ def alert(request, suppr=False, pk=-1):
                 cron = CronTab(user=True)
                 cmd = settings.PYTHON+' '+os.path.join(settings.BASE_DIR,'app1/_running.py '+a+' '+client.folder)
                 job  = cron.new(command=cmd, comment=secrets.token_hex())
+                if d!='*' :
+                    h,m,d = local_to_utc(int(h),int(m),pytz.timezone(settings.TIME_ZONE),d=int(d))
+                    job.dow.on(d)
+                else :
+                    h,m,_ = local_to_utc(int(h),int(m),pytz.timezone(settings.TIME_ZONE))
                 job.minute.on(m)
                 job.hour.on(h)
-                if d!='*' :
-                    job.dow.on(d)
                 cron.write()
                 # redirect to a new URL:
                 return HttpResponseRedirect('/alert')
@@ -293,7 +297,8 @@ def alert(request, suppr=False, pk=-1):
     # get all the alert and all the automatism
     alert = Alert.objects.filter(client=request.session['client'])
     cron = CronTab(user=True)
-    auto = [(c.minute.render(), c.hour.render(), DAY_CODE_STR[c.dow.render()], c.command.split()[2], c.comment) for c in cron if client.folder in c.command]
+    auto = [utc_to_local(c.hour.render(),c.minute.render(),pytz.timezone(settings.TIME_ZONE),c.dow.render())+
+                  (c.command.split()[2], c.comment) for c in cron if client.folder in c.command]
     # test the telegram token
     telegram_token = Profile.objects.get(user=request.user).telegram_token
     chat_id = Telegram.objects.filter(profile=request.user.profile.id)
@@ -344,7 +349,7 @@ def thumbnail(request,im,key,w,h):
     else :
         client = request.session['client']
     try :
-        path_im = Result.objects.get(pk=im, camera__client=client).file 
+        path_im = Result.objects.get(pk=im, camera__client=client).file
         path_im = os.path.join(settings.MEDIA_ROOT,path_im)
         im = Image.open(path_im)
     except (OSError, Result.DoesNotExist) :

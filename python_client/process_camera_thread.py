@@ -15,6 +15,7 @@ import settings.settings as settings
 import os
 import darknet as dn
 from log import Logger
+import secrets
 
 logger = Logger('process_camera_thread').run()
 
@@ -162,7 +163,6 @@ class ProcessCamera(Thread):
     def run(self):
         """code run when the thread is started"""
         self.running = True
-        ifile = 0
         while self.running :
             t=time.time()
 
@@ -248,9 +248,9 @@ class ProcessCamera(Thread):
                 if self.base_condition(result_filtered) and EtoB(self.E_state):
                     self.logger.debug('>>> Result have changed <<< ')
                     date = time.strftime("%Y-%m-%d-%H-%M-%S")
-                    self.Q_img.put((self.cam.id, date+'_'+str(ifile),result_filtered, img_bytes))
+                    self.Q_img.put((self.cam.id, date+'_'+secrets.token_urlsafe(6),result_filtered, img_bytes))
                     self.logger.warning('Q_img size : {}'.format(self.Q_img.qsize()))
-                    self.Q_result.put((date+'_'+str(ifile)+'.jpg', self.cam.id , result_filtered, result_darknet))
+                    self.Q_result.put((date+'_'+secrets.token_urlsafe(6)+'.jpg', self.cam.id , result_filtered, result_darknet))
                     self.logger.warning('Q_result size : {}'.format(self.Q_result.qsize()))
                     self.logger.warning('>>>>>>>>>>>>>>>--------- Result change send to queue '
                     '-------------<<<<<<<<<<<<<<<<<<<<<\n')

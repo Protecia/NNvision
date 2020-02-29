@@ -203,14 +203,14 @@ class Process_alert(object):
                 body = _("Origin of detection") +"  : {}".format(Alert.stuffs_d[alert.stuffs])+"   ---  "+_("Type of detection")+" :  {}".format(Alert.actions_d[alert.actions])
                 body += "\n"+_("Time of detection")+" : {:%d-%m-%Y - %H:%M:%S}".format(t.astimezone(pytz.timezone(settings.TIME_ZONE)))
                 body += "\n"+_("Please check the images")+" : {} ".format(self.public_site+'/warning/0/'+alert.key)
-                for t in Telegram.objects.filter(profile=u):
-                    SendChatMessage(t.chat_id, '', '','', body)
-                    self.logger.warning('telegram send to : {} - user {}'.format(t.chat_id,u.user))
+                for t_user in Telegram.objects.filter(profile=u):
+                    SendChatMessage(t_user.chat_id, '', '','', body)
+                    self.logger.warning('telegram send to : {} - user {}'.format(t_user.chat_id,u.user))
                     img = open(settings.MEDIA_ROOT+'/'+alert.img_name, 'rb')
                     files = {'photo' : img }
-                    SendChatPhoto(t.chat_id, '', '','', files)
+                    SendChatPhoto(t_user.chat_id, '', '','', files)
                     img.close()
-                    Alert_when(client = self.client, what=canal, who=str(t.chat_id), stuffs=alert.stuffs, action=alert.actions).save()
+                    Alert_when(client = self.client, what=canal, who=str(t_user.chat_id), stuffs=alert.stuffs, action=alert.actions).save()
         activate('en')
 
 

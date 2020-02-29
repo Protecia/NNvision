@@ -23,19 +23,7 @@ django.setup()
 from app1.models import Telegram, Update_id, Profile, Alert
 from django.utils.translation import gettext as _
 from django.conf import settings
-####### log #######
-if settings.DEBUG :
-    level=logging.DEBUG
-else:
-    level=logging.WARNING
-logger = logging.getLogger('telegram')
-logger.setLevel(level)
-formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-file_handler = RotatingFileHandler(os.path.join(settings.BASE_DIR,'log','telegram.log'), 'a', 10000000, 1)
-file_handler.setLevel(level)
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
-####################
+
 
 botid = "bot988625521:AAHf4DF2kwocwEL89TVJoOvNxTRPZxF0g94"
 getupdateurl = ("https://api.telegram.org/%s/getUpdates" % (botid))
@@ -151,4 +139,17 @@ def main(freq):
 
 # start the process
 if __name__ == '__main__':
+    ####### log #######
+    if settings.DEBUG :
+        level=logging.DEBUG
+    else:
+        level=logging.WARNING
+    logger = logging.getLogger('telegram')
+    logger.setLevel(level)
+    formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+    file_handler = RotatingFileHandler(os.path.join(settings.BASE_DIR,'log','telegram.log'), 'a', 10000000, 1)
+    file_handler.setLevel(level)
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    ####################
     main(2)

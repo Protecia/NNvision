@@ -20,3 +20,4 @@ QUEUE_SIZE = 100 # number of images to queue at max
 
 KEY = '###'
 SERVER = 'https://client.protecia.com/'
+TUNNEL_PORT = 40000

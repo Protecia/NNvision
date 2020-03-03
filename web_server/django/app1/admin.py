@@ -9,7 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 
 # Register your models here.
 
-from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_type, Telegram, Update_id
+from .models import Client, Camera, Result, Object, Profile, Alert, Alert_when, Alert_type, Telegram
 
 
 @receiver(post_save, sender= User)
@@ -20,12 +20,12 @@ def add_group_permission(sender, instance, created, **kwargs):
 
 class CameraAdmin(admin.ModelAdmin):
     exclude = ('wait_for_set','update','from_client')
-    
+
     def delete_model(self, request, obj):
-        obj.client.update_camera = 1 
+        obj.client.update_camera = 1
         obj.client.save()
         obj.delete()
-    
+
     def get_readonly_fields(self, request, obj=None):
         fields=self.readonly_fields
         if obj and obj.from_client == True :
@@ -37,7 +37,7 @@ class CameraAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if getattr(obj, 'client', None) is None:
             obj.client = Profile.objects.get(user=request.user).client
-        if 'on_camera_LD' not in form.changed_data and 'on_camera_HD' not in form.changed_data:    
+        if 'on_camera_LD' not in form.changed_data and 'on_camera_HD' not in form.changed_data:
             obj.client.update_camera=1
             obj.client.save()
         obj.save()
@@ -63,11 +63,12 @@ class CameraAdmin(admin.ModelAdmin):
 
 class ClientAdmin(admin.ModelAdmin):
     readonly_fields = ('key','folder',)
-    
+    exclude = ('rec','change','update_camera','stop_thread')
+
 
 
 admin.site.register(Camera, CameraAdmin)
-
+admin.site.register(Client, ClientAdmin)
 
 if settings.DEBUG:
     admin.site.register(Result)
@@ -75,9 +76,8 @@ if settings.DEBUG:
     admin.site.register(Alert)
     admin.site.register(Alert_when)
     admin.site.register(Alert_type)
-    admin.site.register(Client, ClientAdmin)
     admin.site.register(Telegram)
-    
+
 
 
 
@@ -122,19 +122,19 @@ class MyUserAdmin(UserAdmin):
                 (_('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),
                 (_('Permissions'), {'fields': perm_fields}),
                 (_('Important dates'), {'fields': ('last_login', 'date_joined')})]
-    
+
     def get_readonly_fields(self, request, obj=None):
         fields=self.readonly_fields
         if not request.user.is_superuser :
             fields += ('last_login','date_joined',)
         return fields
-    
+
     def get_queryset(self, request):
         qs = super(UserAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
         return qs.filter(profile__client=Profile.objects.get(user=request.user).client)
-    
+
     def save_model(self, request, obj, form, change):
         if request.user.is_superuser:
             obj.save()

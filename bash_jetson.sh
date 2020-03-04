@@ -8,11 +8,29 @@ apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 
 pip3 install cython psutil Pillow numpy WSDiscovery requests onvif_zeep-roboticia
 
-# Compile ffmpeg
-RUN cd ffmpeg-4.1.3/ && \
-    ./configure --enable-nonfree --enable-shared --enable-gpl --enable-libx264 --cc="gcc -fPIC" && make -j4 && make install && cd .. && rm -rf ffmpeg-4.1.3
+# Compile ffmpeg  https://github.com/jocover/jetson-ffmpeg
+cd 
+git clone https://github.com/jocover/jetson-ffmpeg.git
+cd jetson-ffmpeg
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+sudo ldconfig
 
-rm -rf opencv-3.4.4/ opencv_contrib-3.4.4/
+git clone git://source.ffmpeg.org/ffmpeg.git -b release/4.2 --depth=1
+cd ffmpeg
+wget https://github.com/jocover/jetson-ffmpeg/raw/master/ffmpeg_nvmpi.patch
+git apply ffmpeg_nvmpi.patch
+./configure --enable-nvmpi --enable-nonfree --enable-shared --enable-gpl --enable-libx264 --cc="gcc -fPIC"
+make -j4
+sudo make install
+sudo ldconfig
+rm -rf ffmpeg
+
+
+
 
 #get nnvision code
 cd /NNvision

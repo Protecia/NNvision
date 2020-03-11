@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 <html class="no-js" lang="en">
   <head>
     <meta charset="utf-8">
@@ -55,39 +56,62 @@
     
 
 <div class="row wrap" data-equalizer data-equalize-on="medium">
-{% if running %}
-  <div class="large-4 medium-6 columns menu-tile border-on"  >
-  <form action="/" method="post"><input type='hidden' name='d_action' value='stop' />{% csrf_token %}
-	<a href="#" onclick="$(this).closest('form').submit()" data-equalizer-watch>
-      <h4 style="color: green" >
-        <svg class="pp-icon pp-icon-stats">
-          <title>Darknet</title>
-          <use xlink:href="#pp-icon-stats"></use>
-        </svg>
-      
-      <p  >Protection is ON</p></h4>
-	  
-	  <p style="color: green" >>> click to stop the protection <<</p>
-    </a></form>
-  </div>
-  {% endif %}
-{% if not running %}
-	<div class="large-4 medium-6 columns menu-tile border-off"  >
-	<form action="/" method="post"><input type='hidden' name='d_action' value='start' />{% csrf_token %}
-	<a href="#" onclick="$(this).closest('form').submit()" data-equalizer-watch>
-	  <h4 style="color: red" >
-		<svg class="pp-icon pp-icon-stats">
-		  <title>Darknet</title>
-		  <use xlink:href="#pp-icon-stats"></use>
-		</svg>
-	  
-	  <p  >Protection is OFF</p></h4>
-	  
-	  <p style="color: red" >>> click to start the protection <<</p>
-	</a></form>
-	</div>
+{% if connected %}
+    {% if running %}
+      <div class="large-4 medium-6 columns menu-tile border-on"  >
+      <form action="/" method="post"><input type='hidden' name='d_action' value='stop' />{% csrf_token %}
+    	<a href="#" onclick="$(this).closest('form').submit()" data-equalizer-watch>
+          <h4 style="color: green" >
+            <svg class="pp-icon pp-icon-stats">
+              <title>Protecia</title>
+              <use xlink:href="#pp-icon-stats"></use>
+            </svg>
+          
+          <p  >{% trans 'Protection is ON' %}</p></h4>
+    	  
+    	  <p style="color: green" >>>  {% trans 'click to stop the protection' %} <<</p>
+        </a></form>
+      </div>
+      {% endif %}
+    {% if not running %}
+    	<div class="large-4 medium-6 columns menu-tile border-off"  >
+    	<form action="/" method="post"><input type='hidden' name='d_action' value='start' />{% csrf_token %}
+    	<a href="#" onclick="$(this).closest('form').submit()" data-equalizer-watch>
+    	  <h4 style="color: red" >
+    		<svg class="pp-icon pp-icon-stats">
+    		  <title>Protecia</title>
+    		  <use xlink:href="#pp-icon-stats"></use>
+    		</svg>
+    	  
+    	  <p  >{% trans 'Protection is OFF' %}</p></h4>
+    	  
+    	  <p style="color: red" >>> {% trans 'click to start the protection' %} <<</p>
+    	</a></form>
+    	</div>
+    {% endif %}
+{% else %}
+    <div class="large-4 medium-6 columns menu-tile border-on"  >
+      <form action="/" method="post"><input type='hidden' name='d_action' value='stop' />{% csrf_token %}
+    	
+          <h4 style="color: yellow" >
+            <svg class="pp-icon pp-icon-stats">
+              <title>Protecia</title>
+              <use xlink:href="#pp-icon-stats"></use>
+            </svg>
+          
+          <p  >{% trans 'Camera not connected' %}</p></h4>
+    	  
+    	  <p style="color: green" >>> {% trans 'Check your camera and your Protecia box' %} <<</p>
+       </form>
+      </div>
+    
 {% endif %}
-  
+    
+    
+    
+    
+    
+    
   <div class="large-4 medium-6 columns menu-tile">
     <a href="/panel/d/0" data-equalizer-watch>
       <h3>

@@ -17,6 +17,7 @@ from django.conf import settings
 from PIL import Image, ImageFont, ImageDraw
 import subprocess
 import glob
+from datetime import datetime, timedelta
 
 def delete_space(client):
     ##### check the space on disk to respect the quota #######
@@ -170,7 +171,10 @@ def upCam(request):
 
 @csrf_exempt
 def getState(request):
+    # update the timestamp client connected
     key = request.POST.get('key', 'default')
+    now = datetime.now()
+    Client.objects.filter(key=key).update(timestamp=now)
     i=0
     while i<20 :
         c = Camera.objects.filter(client__key=key)

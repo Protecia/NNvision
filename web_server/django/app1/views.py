@@ -66,7 +66,7 @@ def index(request):
         time.sleep(2)
     running = client.rec
     context = {'info' : {'version' : settings.VERSION, 'client' : client},
-               'url_for_index' : '/','running':running, 'client':client}
+               'url_for_index' : '/','running':running, 'client':client, 'connected' : client.connected}
     return render(request, 'app1/index.html',context)
 
 def warning(request, first_alert, key):

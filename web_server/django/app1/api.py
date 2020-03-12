@@ -17,13 +17,13 @@ from django.conf import settings
 from PIL import Image, ImageFont, ImageDraw
 import subprocess
 import glob
-from datetime import datetime, timedelta
+from datetime import datetime
 
 def delete_space(client):
     ##### check the space on disk to respect the quota #######
     path = os.path.join(settings.MEDIA_ROOT,client.folder)
-    size = float(subprocess.check_output(['du','-sh', path]).split()[0].decode('utf-8').split('M')[0])
-    if size>client.space_allowed:
+    size = int(subprocess.check_output(['du','-s', path]).split()[0].decode('utf-8').split('M')[0])
+    if size>client.space_allowed*1000:
         r_to_delete = Result.objects.all()[:300]
         for im_d in r_to_delete:
             if 'jpg' in  im_d.file :

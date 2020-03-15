@@ -1,15 +1,23 @@
-apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-               tzdata libxml2-dev libxslt-dev \
+sudo apt update
+export DEBIAN_FRONTEND=noninteractive
+sudo  apt install -y tzdata libxml2-dev libxslt-dev \
                wget mlocate build-essential python3 python3-dev  openssh-client sshpass\
-               python3-pip nano cron yasm cmake libjpeg-dev \
+               nano cron yasm cmake libjpeg-dev \
                libpng-dev libtiff-dev libavcodec-dev libavformat-dev \
                libswscale-dev libv4l-dev libxvidcore-dev libx264-dev  \
-               libgtk-3-dev libatlas-base-dev gfortran libpq-dev \
+               libgtk-3-dev libatlas-base-dev gfortran libpq-dev curl
 
-pip3 install cython psutil Pillow numpy WSDiscovery requests onvif_zeep-roboticia
 
-# Compile ffmpeg  https://github.com/jocover/jetson-ffmpeg
-cd 
+
+## Get pip : https://pip.pypa.io/en/stable/installing/ ##############################
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python3 get-pip.py
+#####################################################################################
+
+sudo pip3 install -U protobuf
+sudo pip3 install psutil Pillow numpy WSDiscovery requests onvif_zeep-roboticia
+
+############## compile ffmpeg for jetson : https://github.com/jocover/jetson-ffmpeg 
 git clone https://github.com/jocover/jetson-ffmpeg.git
 cd jetson-ffmpeg
 mkdir build
@@ -27,9 +35,7 @@ git apply ffmpeg_nvmpi.patch
 make -j4
 sudo make install
 sudo ldconfig
-rm -rf ffmpeg
-
-
+####################################################################################"
 
 
 #get nnvision code

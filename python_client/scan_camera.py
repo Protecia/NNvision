@@ -5,7 +5,7 @@ Created on Sat Dec  7 11:48:41 2019
 @author: julien
 """
 
-import wsdiscovery
+#import wsdiscovery
 import json
 import settings.settings as settings
 import requests
@@ -13,9 +13,15 @@ from onvif import ONVIFCamera
 from onvif.exceptions import ONVIFError
 from log import Logger
 import time
+import socket
+import psutil
+import netifaces as ni
+import xml.etree.ElementTree as ET
+import re
 
 logger = Logger('scan_camera').run()
 
+'''
 def wsDiscovery():
     """Discover cameras on network using onvif discovery.
     Returns:
@@ -31,7 +37,47 @@ def wsDiscovery():
             dcam[scheme.split('/')[2].split(':')[0]] = scheme.split('/')[2].split(':')[1]
     wsd.stop()
     return dcam
+'''
 
+def wsDiscovery():
+    """Discover cameras on network using ws discovery.
+    Returns:
+        List: List of ips found in network.
+    """
+    addrs = psutil.net_if_addrs()
+    ip_list = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
+    with open('soap.xml') as f:
+        soap_xml = f.read()
+    mul_ip = "239.255.255.250"
+    mul_port = 3702
+    ret = []
+    for ip in ip_list :
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 255)
+        s.bind((ip, mul_port))
+        s.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP,
+                     socket.inet_aton(mul_ip) + socket.inet_aton(ip))
+        s.setblocking(False)
+        s.sendto(soap_xml.encode(), (mul_ip, mul_port))
+        time.sleep(2)
+        while True:
+            try:
+                data, address = s.recvfrom(65535)
+                ret.append(data)
+            except BlockingIOError :
+                pass
+                break
+        s.close()
+    dcam = {}
+    for rep in ret:
+        xml = ET.fromstring(rep)
+        url = [ i.text for i in xml.iter('{http://schemas.xmlsoap.org/ws/2005/04/discovery}XAddrs') ][0]
+        ip = re.search('http://(.*):',url).group(1)
+        port = re.search('[0-9]+:([0-9]+)/', url).group(1)
+        dcam[ip]=port
+    return dcam
+    
 def getOnvifUri(ip,port,user,passwd):
     """Find uri to request the camera.
     Returns:

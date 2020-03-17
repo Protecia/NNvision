@@ -12,7 +12,7 @@ sudo  apt install -y tzdata libxml2-dev libxslt-dev \
 ## Get pip : https://pip.pypa.io/en/stable/installing/ ##############################
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python3 get-pip.py
-#####################################################################################
+#------------------------------------------------------------------------------------
 
 sudo pip3 install -U protobuf
 sudo pip3 install psutil Pillow numpy WSDiscovery requests onvif_zeep-roboticia
@@ -35,23 +35,30 @@ git apply ffmpeg_nvmpi.patch
 make -j4
 sudo make install
 sudo ldconfig
-####################################################################################"
+#-------------------------------------------------------------------------------------------
+
+#### get darknet #########################################################################
+export PATH=/usr/local/cuda-10.0/bin${PATH:+:${PATH}}
+export LD_LIBRARY_PATH=/usr/local/cuda-10.0/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+git clone https://github.com/AlexeyAB/darknet
+cd darknet
+sed -i '1,10s/GPU=.*/GPU=1/' Makefile
+sed -i '1,10s/CUDNN=.*/CUDNN=1/' Makefile
+sed -i '1,10s/OPENCV=.*/OPENCV=1/' Makefile
+sed -i '1,10s/LIBSO=.*/LIBSO=1/' Makefile
+#--------------------------------------------------------------------------------------------
 
 
-#get nnvision code
-cd /NNvision
+############# get nnvision code ##############################################################
+mkdir NNvision
+cd ./NNvision
 git init
 git config core.sparseCheckout true
 git remote add -f origin https://github.com/jjehl/NNvision.git
 echo "python_client" > .git/info/sparse-checkout
-echo "darknet_nvenc/darknet_pjreddie_201906" >> .git/info/sparse-checkout
+#echo "darknet_nvenc/darknet_pjreddie_201906" >> .git/info/sparse-checkout
 git checkout client_server
-
-
-export PATH=$PATH:/usr/local/cuda-10.0/bin
-RUN cd darknet_pjreddie_201906 && make -s  --no-print-directory && \
-    rm -rf backup include scripts src results examples && rm L* M* R*
-
+#-------------------------------------------------------------------------------------------
 
 
 

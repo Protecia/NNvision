@@ -2,6 +2,7 @@ from ctypes import *
 import math
 import random
 import numpy as np
+from settings import settings
 
 def sample(probs):
     s = sum(probs)
@@ -43,9 +44,9 @@ class METADATA(Structure):
     _fields_ = [("classes", c_int),
                 ("names", POINTER(c_char_p))]
 
-    
 
-lib = CDLL("/NNvision/darknet_pjreddie_201906/libdarknet.so", RTLD_GLOBAL)
+
+lib = CDLL(settings.DARKNET_PATH+"/libdarknet.so", RTLD_GLOBAL)
 lib.network_width.argtypes = [c_void_p]
 lib.network_width.restype = c_int
 lib.network_height.argtypes = [c_void_p]

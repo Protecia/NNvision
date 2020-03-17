@@ -8,6 +8,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import settings.settings as settings
 import os
+from settings import settings
 
 #------------------------------------------------------------------------------
 # a simple config to create a file log - change the level to warning in
@@ -19,7 +20,7 @@ class Logger(object):
         self.logger = logging.getLogger(name)
         self.logger.setLevel(settings.LOG)
         formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
-        file_handler = RotatingFileHandler(os.path.join('/NNvision/camera',name+'.log'), 'a', 10000000, 1)
+        file_handler = RotatingFileHandler(os.path.join(settings.INSTALL_PATH+'/camera',name+'.log'), 'a', 10000000, 1)
         file_handler.setLevel(settings.LOG)
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)

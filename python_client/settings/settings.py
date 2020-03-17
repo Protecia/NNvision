@@ -8,16 +8,17 @@ import logging
 
 LOG = logging.ERROR
 
-CFG = 'cfg/yolov3-spp.cfg'
-WEIGHTS = '../weights/yolov3-spp.weights'
-DATA = 'cfg/coco.data'
-DARKNET_PATH='/NNvision/darknet_pjreddie_201906'
+CFG = 'cfg/yolov3.cfg'
+WEIGHTS = 'yolov3.weight'
+DATA = '/home/protecia/NNvision/python_client/coco_nano.data'
+DARKNET_PATH='/home/protecia/NNvision/darknet'
 
 PYTHON = 'python3'
 THREATED_REQUESTS=True
+INSTALL_PATH = '/home/protecia/NNvision/python_client'
 
 QUEUE_SIZE = 100 # number of images to queue at max
 
-KEY = '###'
+KEY = 'e40872239e1c0f4a56dc2636cd98d2b668d4260c10f4a9718433369333a2c54f'
 SERVER = 'https://client.protecia.com/'
-TUNNEL_PORT = 40000
+TUNNEL_PORT = 40002

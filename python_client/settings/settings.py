@@ -11,7 +11,7 @@ LOG = logging.ERROR
 CFG = 'cfg/yolov3.cfg'
 WEIGHTS = 'yolov3.weight'
 DATA = '/home/protecia/NNvision/python_client/coco_nano.data'
-DARKNET_PATH='/home/protecia/NNvision/darknet'
+DARKNET_PATH='/home/protecia/darknet'
 
 PYTHON = 'python3'
 THREATED_REQUESTS=True

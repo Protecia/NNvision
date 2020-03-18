@@ -64,10 +64,13 @@ def wsDiscovery():
         while True:
             try:
                 data, address = s.recvfrom(65535)
+                time.sleep(1)
+                print(address)
                 ret.append(data)
             except BlockingIOError :
                 pass
                 break
+        #s.shutdown()
         s.close()
     dcam = {}
     for rep in ret:

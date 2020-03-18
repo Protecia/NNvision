@@ -123,7 +123,7 @@ class Camera(models.Model):
     brand  = models.CharField(max_length=20, default='unknow')
     model = models.CharField(max_length=100, default='unknow')
     active = models.BooleanField(default=False)
-    ip = models.GenericIPAddressField(null=True, unique=True)
+    ip = models.GenericIPAddressField(null=True)
     port_onvif = models.IntegerField(default = 80)
     url = models.URLField(blank=True)
     auth_type = models.CharField(max_length=1, choices=AUTH_CHOICES, default='B')
@@ -144,6 +144,8 @@ class Camera(models.Model):
     on_camera_LD = models.BooleanField(default=False)
     on_camera_HD = models.BooleanField(default=False)
     max_object_area_detection = models.IntegerField(default = 100)
+    class Meta:
+        unique_together = ('client', 'ip')
 
     def secure_rtsp(self):
         return "rtsp://"+self.rtsp.split('@')[1]

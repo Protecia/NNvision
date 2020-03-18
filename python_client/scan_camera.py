@@ -65,7 +65,7 @@ def wsDiscovery():
             try:
                 data, address = s.recvfrom(65535)
                 time.sleep(1)
-                print(address)
+                #print(address)
                 ret.append(data)
             except BlockingIOError :
                 pass
@@ -110,7 +110,7 @@ def setCam(cam):
         s = json.loads(r.text)
         return s
     except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError) as ex :
-        logger.error('exception : {}'.format(ex))
+        logger.error('exception in setCam : {}'.format(ex))
         pass
     return False
 
@@ -182,7 +182,7 @@ def getCam(lock, force='0'):
             r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
         return c
     except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError) as ex :
-        logger.error('exception : {}'.format(ex))
+        logger.error('exception in getCam: {}'.format(ex))
         return False
         pass
 

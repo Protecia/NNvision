@@ -28,7 +28,7 @@ onLine = True
 
 def main():
     try:
-        pCameraDownload = Process(target=sc.run, args=(1,lock, E_cam_start, E_cam_stop))
+        pCameraDownload = Process(target=sc.run, args=(60,lock, E_cam_start, E_cam_stop))
         pCameraDownload.start()
         pImageUpload = Process(target=up.uploadImage, args=(Q_img,))
         pImageUploadRealTime = Process(target=up.uploadImageRealTime, args=(Q_img_real,))

@@ -148,16 +148,18 @@ def uploadResult(request):
 def getCam(request):
     key = request.POST.get('key', 'default')
     force = request.POST.get('force', '0')
+    client = Client.objects.get(key=key)
     cam = Camera.objects.filter(client__key=key).order_by('pk')
     if force=='1':
-        if cam.last().client.update_camera:
+        if client.update_camera:
             return JsonResponse(list(cam.values()), safe=False)
         else :
             return JsonResponse(False, safe=False)
     i=0
     while i<20 :
+        client = Client.objects.get(key=key)
         cam = Camera.objects.filter(client__key=key).order_by('pk')
-        if cam.last().client.update_camera:
+        if client.update_camera:
             return JsonResponse(list(cam.values()), safe=False)
         time.sleep(1)
         i+=1

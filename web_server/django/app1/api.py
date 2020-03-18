@@ -179,18 +179,18 @@ def getState(request):
     Client.objects.filter(key=key).update(timestamp=now)
     i=0
     while i<20 :
-        c = Camera.objects.filter(client__key=key)
-        _c = c[0].client
-        if not _c.change:
+        client = Client.objects.filter(key=key)
+        if not client.change:
             time.sleep(1)
         else :
-            _c.change = False
-            _c.save()
+            client.change = False
+            client.save()
             break
         i+=1
-    response = {'rec' :_c.rec,}
+    response = {'rec' :client.rec,}
     cam_dict = {}
-    for cam in c:
-        cam_dict[cam.id]=[cam.on_camera_LD,cam.on_camera_HD]
+    cam = Camera.objects.filter(client__key = key)
+    for c in cam:
+        cam_dict[c.id]=[c.on_camera_LD,c.on_camera_HD]
     response['cam']=cam_dict
     return JsonResponse(response, safe=False)

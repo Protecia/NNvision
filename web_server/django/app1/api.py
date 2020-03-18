@@ -189,7 +189,7 @@ def getState(request):
         i+=1
     response = {'rec' :client.rec,}
     cam_dict = {}
-    cam = Camera.objects.filter(client__key = key)
+    cam = Camera.objects.filter(active = True, client__key = key)
     for c in cam:
         cam_dict[c.id]=[c.on_camera_LD,c.on_camera_HD]
     response['cam']=cam_dict

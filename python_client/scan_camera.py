@@ -130,7 +130,7 @@ def compareCam(ws, lock):
     with lock:
         with open('camera/camera.json', 'r') as out:
             cameras = json.loads(out.read())
-    cameras_ip =  [ c['ip'] for c in cameras if c['wait_for_set'] is False and c['from_client'] is True]
+    cameras_ip =  [ c['ip'] for c in cameras if c['from_client'] is True]
     ws_copy = ws.copy()
     for c in ws_copy :
         if c in cameras_ip:
@@ -168,6 +168,30 @@ def compareCam(ws, lock):
                     except requests.exceptions.ConnectionError :
                         pass
         list_cam.append(new_cam)
+    # cameras could have wait_for_set camera : 
+    for cam in cameras :
+        if cam['wait_for_set']:
+            for user , passwd in cameras_users:
+                onvif = getOnvifUri(cam['ip'],cam['port_onvif'],user,passwd)
+                if onvif :
+                    info, rtsp , http = onvif
+                    auth = {'B':requests.auth.HTTPBasicAuth(user,passwd), 'D':requests.auth.HTTPDigestAuth(user,passwd)}
+                    for t, a in auth.items() :
+                        try:
+                            r = requests.get(http, auth = a , stream=False, timeout=1)
+                            if r.ok:
+                                cam['brand']=info['Manufacturer']
+                                cam['model']=info['Model']
+                                cam['url']= http
+                                cam['auth_type']= t
+                                cam['username'] = user
+                                cam['password'] = passwd
+                                cam['active'] = True
+                                cam['wait_for_set'] = False
+                                cam['rtsp'] = rtsp.split('//')[0]+'//'+user+':'+passwd+'@'+rtsp.split('//')[1]
+                                list_cam.append(cam)
+                        except requests.exceptions.ConnectionError :
+                            pass 
     # cameras_ip contains cam now unreachable
     return list_cam, cameras_ip
 

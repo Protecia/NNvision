@@ -22,3 +22,4 @@ QUEUE_SIZE = 100 # number of images to queue at max
 KEY = 'e40872239e1c0f4a56dc2636cd98d2b668d4260c10f4a9718433369333a2c54f'
 SERVER = 'https://client.protecia.com/'
 TUNNEL_PORT = 40002
+HARDWARE = 'xxx' # Nano or x64

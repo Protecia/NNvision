@@ -121,7 +121,7 @@ def removeCam(cam):
         s = json.loads(r.text)
         return s
     except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError) as ex :
-        logger.error('exception : {}'.format(ex))
+        logger.error('exception in remove cam : {}'.format(ex))
         pass
     return False
     

@@ -17,7 +17,7 @@ class AlertForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         client = kwargs.pop('client')
         super().__init__(*args, **kwargs)
-        self.fields['camera'].queryset = Camera.objects.filter(client=client)
+        self.fields['camera'].queryset = Camera.objects.filter(client=client, active=True)
 
 
     class Meta:

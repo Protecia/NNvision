@@ -10,6 +10,8 @@ import sys
 from datetime import datetime
 from django.conf import settings
 from logging.handlers import RotatingFileHandler
+import time
+import pytz
 
 #------------------------------------------------------------------------------
 # Because this script have to be run in a separate process from manage.py
@@ -28,17 +30,19 @@ django.setup()
 
 from app1.models import Client
 
-def main():
-    for client in Client.objects.filter.all():
-        time_gap = datetime.now()-client.timestamp
-        time_from_last_connection = time_gap.seconds
-        if time_from_last_connection > 60 :
-            logger.warning('Client {} is not connected'.format(client.name))
-            client.connected = False
-            client.save()
-        else :
-            client.connected= True
-            client.save()
+def main(period):
+    while True :
+        for client in Client.objects.all():
+            time_gap = datetime.now(pytz.utc)-client.timestamp
+            time_from_last_connection = time_gap.seconds
+            if time_from_last_connection > 60 :
+                logger.warning('Client {} is not connected'.format(client.name))
+                client.connected = False
+                client.save()
+            else :
+                client.connected= True
+                client.save()
+        time.sleep(20)
 
 # start the process
 if __name__ == '__main__':

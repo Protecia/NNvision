@@ -90,10 +90,10 @@
     	</div>
     {% endif %}
 {% else %}
-    <div class="large-4 medium-6 columns menu-tile border-on"  >
+    <div class="large-4 medium-6 columns menu-tile "  >
       <form action="/" method="post"><input type='hidden' name='d_action' value='stop' />{% csrf_token %}
-    	
-          <h4 style="color: yellow" >
+    	<a href="#"  data-equalizer-watch>
+          <h4 style="color: orange" >
             <svg class="pp-icon pp-icon-stats">
               <title>Protecia</title>
               <use xlink:href="#pp-icon-stats"></use>
@@ -101,8 +101,8 @@
           
           <p  >{% trans 'Camera not connected' %}</p></h4>
     	  
-    	  <p style="color: green" >>> {% trans 'Check your camera and your Protecia box' %} <<</p>
-       </form>
+    	  <p style="color: orange" >>> {% trans 'Check your Protecia box' %} <<</p>
+       </a></form>
       </div>
     
 {% endif %}

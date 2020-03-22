@@ -1,2 +1,2 @@
 
-docker build --rm -t roboticia/protecia:0.4 .
+docker build --rm -t roboticia/protecia:0.5 .

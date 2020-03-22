@@ -18,6 +18,7 @@ from PIL import Image, ImageFont, ImageDraw
 import subprocess
 import glob
 from datetime import datetime
+import pytz
 
 def delete_space(client):
     ##### check the space on disk to respect the quota #######
@@ -175,11 +176,11 @@ def upCam(request):
 def getState(request):
     # update the timestamp client connected
     key = request.POST.get('key', 'default')
-    now = datetime.now()
+    now = datetime.now(pytz.utc)
     Client.objects.filter(key=key).update(timestamp=now)
     i=0
     while i<20 :
-        client = Client.objects.filter(key=key)
+        client = Client.objects.get(key=key)
         if not client.change:
             time.sleep(1)
         else :

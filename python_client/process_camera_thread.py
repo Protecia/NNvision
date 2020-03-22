@@ -13,7 +13,10 @@ import numpy as np
 from threading import Thread, Lock
 import settings.settings as settings
 import os
-import darknet as dn
+if settings.HARDWARE == 'Nano':
+    import darknet as dn
+else:
+    import darknet_old as dn
 from log import Logger
 import secrets
 

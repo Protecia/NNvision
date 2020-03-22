@@ -11,7 +11,7 @@ ENV LC_ALL en_US.UTF-8
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
                tzdata \
-               wget mlocate build-essential python3 python3-dev  openssh-client sshpass\
+               wget mlocate build-essential python3 python3-dev  openssh-client sshpass autossh\
                python3-pip nano cron yasm pkg-config cmake libjpeg-dev \
                libpng-dev libtiff-dev libavcodec-dev libavformat-dev \
                libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libgtk-3-dev libatlas-base-dev gfortran libpq-dev \

@@ -44,7 +44,7 @@ RUN cd darknet_pjreddie_201906 && make -s  --no-print-directory && \
     rm -rf backup include scripts src results examples && rm L* M* R*
 
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y sshpass autossh
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y sshpass autossh && rm -rf /var/lib/apt/lists/*
     
 
 

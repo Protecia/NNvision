@@ -88,9 +88,10 @@ def ConsummeMessage(obj):
         SendChatMessage(chatid, fromusername, fromfirstname,fromlastname, "Hi %s , \nI am Protecia Bot. You shall first \n register your Protecia user ID in order\n to receive  Protecia notifications.\n\nType /help to start.\n\n" % (fromfirstname))
         SendChatMessage(chatid, fromusername, fromfirstname,fromlastname, "(For your information, your Telegram user id is: %d )" % (fromuserid) )
         return True
-    if text[0:5]=="/stop":
-        alert =  Alert.objects.filter(client=Telegram.objects.get(chat_id=chatid).profile.client)
-        if not alert:
+    if text[0:4]=="stop" or text[0:4]=="Stop":
+        alert =  Alert.objects.filter(client=Telegram.objects.filter(chat_id=chatid).first().profile.client)
+        is_alert = not any([ i.active for i in alert])
+        if is_alert:
              SendChatMessage(chatid, fromusername, fromfirstname,fromlastname, "%s, There isn't any active alarm. The place is quiet." % (fromfirstname))
         else :
            for a in alert :

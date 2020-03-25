@@ -25,25 +25,28 @@ def delete_space(client):
     path = os.path.join(settings.MEDIA_ROOT,client.folder)
     size = int(subprocess.check_output(['du','-s', path]).split()[0].decode('utf-8').split('M')[0])
     if size>client.space_allowed*1000:
-        r_to_delete = Result.objects.all()[:300]
+        r_to_delete = Result.objects.filter(camera__client=client).order_by('id')[:300]
         for im_d in r_to_delete:
             if 'jpg' in  im_d.file :
                 try :
                     os.remove(os.path.join(settings.MEDIA_ROOT,im_d.file))
+                    os.remove(os.path.join(settings.MEDIA_ROOT,im_d.file.split('.jpg')[0]+'_no_box.jpg'))
                 except OSError:
                     pass
             im_d.delete()
 
 def purge_files(client):
-        r = Result.objects.all().order_by('time')
-        if len(r)>0 :
-            r = r[0]
-            time_older = r.time.timestamp()
-            path = settings.MEDIA_ROOT+'/'+r.file.split('/')[0]
-            os.chdir(path)
-            for file in glob.glob("*.jpg"):
-                 if os.path.getctime(file) < time_older :
-                     os.remove(file)
+    # to remose all the image on disk which are not in the result
+    r = Result.objects.filter(camera__client=client)
+    r_file = [ i.file.split('/')[1][:28] for i in r]
+    path = os.path.join(settings.MEDIA_ROOT,client.folder)
+    os.chdir(path)
+    fd = 0
+    for file in glob.glob("*.jpg"):
+        if file[:28] not in r_file :
+            os.remove(os.path.join(settings.MEDIA_ROOT,client.folder,file))
+            fd += 1
+    return fd
 
 @csrf_exempt
 def setCam(request):

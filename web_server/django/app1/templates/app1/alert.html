@@ -109,7 +109,7 @@ function toggle(source) {
 <div class="row">
 	<div class="large-10 columns">
 	<code id="robot-state" class="accesslog hljs"> 
-     {% if not chat_id %}{% trans 'You don\'t have any Telegram id set.' %}{% trans ' Please send '  %}<span style="color:#FF0000";>/register {{telegram_token}}</span>{% trans ' to ProteciaBot on your Telegram app.'  %}
+     {% if not chat_id %}{% trans "You don\'t have any Telegram id set." %}{% trans ' Please send '  %}<span style="color:#FF0000";>/register {{telegram_token}}</span>{% trans ' to ProteciaBot on your Telegram app.'  %}
      {% else %}
      {% trans 'List of Telegram id set :  '  %}
      {% for id in chat_id %}

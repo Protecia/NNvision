@@ -61,7 +61,8 @@ git checkout client_server
 #-------------------------------------------------------------------------------------------
 
 
-
+#############  Add cron to open sshtunnel #################################################
+(crontab -l ; echo "@reboot /home/NNvision/python_client/sshtunnel.sh") | crontab
 
 
 

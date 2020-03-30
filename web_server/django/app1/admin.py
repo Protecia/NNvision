@@ -63,9 +63,29 @@ class CameraAdmin(admin.ModelAdmin):
 
 class ClientAdmin(admin.ModelAdmin):
     readonly_fields = ('key','folder',)
-    exclude = ('rec','change','update_camera','stop_thread')
-
-
+    exclude = ('rec','change','update_camera','stop_thread','connected')
+    def get_model_perms(self, request):
+        if not request.user.is_superuser:
+            return {}
+        else:
+            return super().get_model_perms(request)
+    def has_add_permission(self,request):
+        if request.user.is_superuser:
+            return True
+        else :
+            return False
+    def has_change_permission(self,request,obj=None):
+        if request.user.is_superuser:
+            return True
+        else :
+            return False
+    def has_delete_permission(self,request,obj=None):
+        if request.user.is_superuser:
+            return True
+        else :
+            return False
+	   
+	
 
 admin.site.register(Camera, CameraAdmin)
 admin.site.register(Client, ClientAdmin)

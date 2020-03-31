@@ -80,7 +80,8 @@ def wsDiscovery(repeat, wait):
             ip = re.search('http://(.*):',url).group(1)
             port = re.search('[0-9]+:([0-9]+)/', url).group(1)
             dcam[ip]=port
-        time.sleep(wait)
+        if not i+1==repeat:
+            time.sleep(wait)
     return dcam
     
 def getOnvifUri(ip,port,user,passwd):
@@ -234,7 +235,7 @@ def run(period, lock, E_cam_start, E_cam_stop):
     force = '1'
     while True :
         # scan the cam on the network
-        ws = wsDiscovery(1,0.2)
+        ws = wsDiscovery(2,20)
         # pull the cam from the server
         cam = getCam(lock, force)
         # check if changes

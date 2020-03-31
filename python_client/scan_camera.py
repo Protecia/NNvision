@@ -39,7 +39,7 @@ def wsDiscovery():
     return dcam
 '''
 
-def wsDiscovery():
+def wsDiscovery(repeat, wait):
     """Discover cameras on network using ws discovery.
     Returns:
         List: List of ips found in network.
@@ -52,7 +52,7 @@ def wsDiscovery():
     mul_port = 3702
     ret = []
     dcam = {}
-    for i in range(3):
+    for i in range(repeat):
         for ip in ip_list :
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -66,7 +66,7 @@ def wsDiscovery():
             while True:
                 try:
                     data, address = s.recvfrom(65535)
-                    time.sleep(1)
+                    #time.sleep(1)
                     #print(address)
                     ret.append(data)
                 except BlockingIOError :
@@ -80,7 +80,7 @@ def wsDiscovery():
             ip = re.search('http://(.*):',url).group(1)
             port = re.search('[0-9]+:([0-9]+)/', url).group(1)
             dcam[ip]=port
-        time.sleep(20)
+        time.sleep(wait)
     return dcam
     
 def getOnvifUri(ip,port,user,passwd):
@@ -138,6 +138,24 @@ def compareCam(ws, lock):
         if c in cameras_ip:
             del ws[c]
             cameras_ip.remove(c)
+    #test if camera is answering or not
+    cameras_ip_copy = cameras_ip.copy()
+    for ip in cameras_ip_copy:
+        for cam in cameras:
+            if cam['ip']== ip:
+                user = cam['username']
+                passwd = cam['password']
+                auth = {'B':requests.auth.HTTPBasicAuth(user,passwd), 'D':requests.auth.HTTPDigestAuth(user,passwd)}
+                try:
+                    r = requests.get(
+                            cam['url'],
+                            auth = auth[cam['auth_type']] ,
+                            stream=False, timeout=1)
+                    if r.ok :
+                        cameras_ip.remove(ip)
+                        logger.error('ip {} not in ws but answer correct: so ignore'.format(ip))
+                except requests.exceptions.ConnectionError :
+                    pass        
     cameras_users = [(c['username'],c['password']) for c in cameras]
     # ws contains new cam or cam not set
     # test connection
@@ -216,7 +234,7 @@ def run(period, lock, E_cam_start, E_cam_stop):
     force = '1'
     while True :
         # scan the cam on the network
-        ws = wsDiscovery()
+        ws = wsDiscovery(1,0.2)
         # pull the cam from the server
         cam = getCam(lock, force)
         # check if changes

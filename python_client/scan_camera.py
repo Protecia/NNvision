@@ -46,7 +46,7 @@ def wsDiscovery():
     """
     addrs = psutil.net_if_addrs()
     ip_list = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
-    with open('soap.xml') as f:
+    with open(settings.INSTALL_PATH+'/soap.xml') as f:
         soap_xml = f.read()
     mul_ip = "239.255.255.250"
     mul_port = 3702
@@ -123,14 +123,14 @@ def removeCam(cam):
         s = json.loads(r.text)
         return s
     except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError) as ex :
-        logger.error('exception in remove cam : {}'.format(ex))
+        logger.error('exception in remove cam for cam {} : {}'.format(cam, ex))
         pass
     return False
     
 
 def compareCam(ws, lock):
     with lock:
-        with open('camera/camera.json', 'r') as out:
+        with open(settings.INSTALL_PATH+'/camera/camera.json', 'r') as out:
             cameras = json.loads(out.read())
     cameras_ip =  [ c['ip'] for c in cameras if c['from_client'] is True]
     ws_copy = ws.copy()
@@ -203,7 +203,7 @@ def getCam(lock, force='0'):
         c = json.loads(r.text)
         if not c==False :
             with lock:
-                with open('camera/camera.json', 'w') as out:
+                with open(settings.INSTALL_PATH+'/camera/camera.json', 'w') as out:
                     json.dump(c,out)
             r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
         return c

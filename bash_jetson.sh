@@ -2,7 +2,7 @@ sudo apt update
 export DEBIAN_FRONTEND=noninteractive
 sudo  apt install -y tzdata libxml2-dev libxslt-dev \
                wget mlocate build-essential python3 python3-dev  openssh-client sshpass\
-               nano cron yasm cmake libjpeg-dev \
+               nano cron yasm cmake libjpeg-dev autossh\
                libpng-dev libtiff-dev libavcodec-dev libavformat-dev \
                libswscale-dev libv4l-dev libxvidcore-dev libx264-dev  \
                libgtk-3-dev libatlas-base-dev gfortran libpq-dev curl
@@ -62,7 +62,9 @@ git checkout client_server
 
 
 #############  Add cron to open sshtunnel #################################################
-(crontab -l ; echo "@reboot /home/NNvision/python_client/sshtunnel.sh") | crontab
+(crontab -l 2>/dev/null; echo "@reboot  sleep 30 &&  cd /home/protecia/NNvision/python_client && ./sshtunnel.sh > /home/protecia/NNvision/python_client/camera/ssh.log 2>&1&") | crontab -
+(crontab -l 2>/dev/null; echo "@reboot  sleep 30 &&  cd /home/protecia/NNvision/python_client/ && python3 main.py > /home/protecia/NNvision/python_client/camera/cron.log 2>&1&") | crontab -
+
 
 
 

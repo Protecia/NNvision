@@ -388,7 +388,7 @@ msgstr "Caméra non connecté"
 
 #: app1/templates/app1/index.html:104
 msgid "Check your Protecia box"
-msgstr "Vérifiea votre box Protecia"
+msgstr "Vérifier votre box Protecia"
 
 #: app1/templates/app1/panel.html:8
 msgid "Filter"

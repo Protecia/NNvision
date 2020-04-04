@@ -45,8 +45,11 @@ def wsDiscovery(repeat, wait):
         List: List of ips found in network.
     """
     addrs = psutil.net_if_addrs()
-    ip_list = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
-    with open(settings.INSTALL_PATH+'/soap.xml') as f:
+    try :
+        ip_list = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
+    except KeyError :
+        return False
+    with open('soap.xml') as f:
         soap_xml = f.read()
     mul_ip = "239.255.255.250"
     mul_port = 3702
@@ -236,25 +239,28 @@ def run(period, lock, E_cam_start, E_cam_stop):
     while True :
         # scan the cam on the network
         ws = wsDiscovery(2,20)
-        # pull the cam from the server
-        cam = getCam(lock, force)
-        # check if changes
-        if cam==False :
-            E_cam_start.set()
-            force = '0'
-            logger.info('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
-        else :
-            E_cam_stop.set()
-            force = '1'
-            logger.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
-        # compare the cam with the camera file
-        list_cam, remove_cam = compareCam(ws, lock)
-        # push the cam to the server
-        if list_cam : setCam(list_cam)
-        # inactive the cam
-        if remove_cam : removeCam(remove_cam)
-        # wait for the loop
-        time.sleep(period)
+        if not ws==False:
+            # pull the cam from the server
+            cam = getCam(lock, force)
+            # check if changes
+            if cam==False :
+                E_cam_start.set()
+                force = '0'
+                logger.info('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
+            else :
+                E_cam_stop.set()
+                force = '1'
+                logger.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
+            # compare the cam with the camera file
+            list_cam, remove_cam = compareCam(ws, lock)
+            # push the cam to the server
+            if list_cam : setCam(list_cam)
+            # inactive the cam
+            if remove_cam : removeCam(remove_cam)
+            # wait for the loop
+            time.sleep(period)
+        else : 
+            time.sleep(30)
         
 
 

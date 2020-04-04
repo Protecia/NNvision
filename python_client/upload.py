@@ -84,6 +84,6 @@ def getState(E, camera_state):
             for pk, state in on_camera.items():
                 [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for index, i in enumerate(state)]
         except requests.exceptions.ConnectionError :
-            logger.info('getState Can not find the remote server')
+            logger.warning('getState Can not find the remote server')
             time.sleep(5)
             pass

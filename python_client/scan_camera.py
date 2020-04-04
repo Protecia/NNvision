@@ -47,46 +47,46 @@ def wsDiscovery(repeat, wait):
     addrs = psutil.net_if_addrs()
     try :
         ip_list = [ni.ifaddresses(i)[ni.AF_INET][0]['addr'] for i in addrs if i.startswith('e')]
-    except KeyError :
+        with open('soap.xml') as f:
+            soap_xml = f.read()
+        mul_ip = "239.255.255.250"
+        mul_port = 3702
+        ret = []
+        dcam = {}
+        for i in range(repeat):
+            for ip in ip_list :
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 255)
+                s.bind((ip, mul_port))
+                s.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP,
+                             socket.inet_aton(mul_ip) + socket.inet_aton(ip))
+                s.setblocking(False)
+                s.sendto(soap_xml.encode(), (mul_ip, mul_port))
+                time.sleep(2)
+                while True:
+                    try:
+                        data, address = s.recvfrom(65535)
+                        #time.sleep(1)
+                        #print(address)
+                        ret.append(data)
+                    except BlockingIOError :
+                        pass
+                        break
+                #s.shutdown()
+                s.close()
+            for rep in ret:
+                xml = ET.fromstring(rep)
+                url = [ i.text for i in xml.iter('{http://schemas.xmlsoap.org/ws/2005/04/discovery}XAddrs') ][0]
+                ip = re.search('http://(.*):',url).group(1)
+                port = re.search('[0-9]+:([0-9]+)/', url).group(1)
+                dcam[ip]=port
+            if not i+1==repeat:
+                time.sleep(wait)
+    except (KeyError, OSError) :
         return False
-    with open('soap.xml') as f:
-        soap_xml = f.read()
-    mul_ip = "239.255.255.250"
-    mul_port = 3702
-    ret = []
-    dcam = {}
-    for i in range(repeat):
-        for ip in ip_list :
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            s.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 255)
-            s.bind((ip, mul_port))
-            s.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP,
-                         socket.inet_aton(mul_ip) + socket.inet_aton(ip))
-            s.setblocking(False)
-            s.sendto(soap_xml.encode(), (mul_ip, mul_port))
-            time.sleep(2)
-            while True:
-                try:
-                    data, address = s.recvfrom(65535)
-                    #time.sleep(1)
-                    #print(address)
-                    ret.append(data)
-                except BlockingIOError :
-                    pass
-                    break
-            #s.shutdown()
-            s.close()
-        for rep in ret:
-            xml = ET.fromstring(rep)
-            url = [ i.text for i in xml.iter('{http://schemas.xmlsoap.org/ws/2005/04/discovery}XAddrs') ][0]
-            ip = re.search('http://(.*):',url).group(1)
-            port = re.search('[0-9]+:([0-9]+)/', url).group(1)
-            dcam[ip]=port
-        if not i+1==repeat:
-            time.sleep(wait)
     return dcam
-    
+
 def getOnvifUri(ip,port,user,passwd):
     """Find uri to request the camera.
     Returns:
@@ -130,7 +130,7 @@ def removeCam(cam):
         logger.error('exception in remove cam for cam {} : {}'.format(cam, ex))
         pass
     return False
-    
+
 
 def compareCam(ws, lock):
     with lock:
@@ -159,7 +159,7 @@ def compareCam(ws, lock):
                         cameras_ip.remove(ip)
                         logger.error('ip {} not in ws but answer correct: so ignore'.format(ip))
                 except requests.exceptions.ConnectionError :
-                    pass        
+                    pass
     cameras_users = [(c['username'],c['password']) for c in cameras]
     # ws contains new cam or cam not set
     # test connection
@@ -192,7 +192,7 @@ def compareCam(ws, lock):
                     except requests.exceptions.ConnectionError :
                         pass
         list_cam.append(new_cam)
-    # cameras could have wait_for_set camera : 
+    # cameras could have wait_for_set camera :
     for cam in cameras :
         if cam['wait_for_set']:
             for user , passwd in cameras_users:
@@ -215,7 +215,7 @@ def compareCam(ws, lock):
                                 cam['rtsp'] = rtsp.split('//')[0]+'//'+user+':'+passwd+'@'+rtsp.split('//')[1]
                                 list_cam.append(cam)
                         except requests.exceptions.ConnectionError :
-                            pass 
+                            pass
     # cameras_ip contains cam now unreachable
     return list_cam, cameras_ip
 
@@ -259,9 +259,9 @@ def run(period, lock, E_cam_start, E_cam_stop):
             if remove_cam : removeCam(remove_cam)
             # wait for the loop
             time.sleep(period)
-        else : 
+        else :
             time.sleep(30)
-        
+
 
 
 

@@ -134,7 +134,7 @@ def removeCam(cam):
 
 def compareCam(ws, lock):
     with lock:
-        with open('camera/camera.json', 'r') as out:
+        with open(settings.INSTALL_PATH+'/camera/camera.json', 'r') as out:
             cameras = json.loads(out.read())
     cameras_ip =  [ c['ip'] for c in cameras if c['from_client'] is True]
     ws_copy = ws.copy()
@@ -225,7 +225,7 @@ def getCam(lock, force='0'):
         c = json.loads(r.text)
         if not c==False :
             with lock:
-                with open('camera/camera.json', 'w') as out:
+                with open(settings.INSTALL_PATH+'/camera/camera.json', 'w') as out:
                     json.dump(c,out)
             r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
         return c

@@ -104,7 +104,7 @@ def getOnvifUri(ip,port,user,passwd):
         rtsp = media_service.GetStreamUri(obj)['Uri']
         obj = media_service.create_type('GetSnapshotUri')
         obj.ProfileToken = profiles[0].token
-        http = media_service.GetSnapshotUri(obj)['Uri'].split('?')[0]
+        http = media_service.GetSnapshotUri(obj)['Uri']#.split('?')[0]
     except ONVIFError :
         return None
     return info, rtsp, http

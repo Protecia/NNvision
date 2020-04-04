@@ -73,9 +73,7 @@ def uploadResult(Q):
 def getState(E, camera_state):
     while True:
         try :
-            logger.warning('getState before post')
             r = requests.post(settings.SERVER+"getState", data = {'key': settings.KEY, }, timeout= 40 )
-            logger.warning('getState request post')
             data = json.loads(r.text)
             logger.warning('getState answer : {}'.format(data))
             if data['rec'] :

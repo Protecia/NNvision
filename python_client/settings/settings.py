@@ -7,6 +7,7 @@ Created on Tue Dec  3 15:06:16 2019
 import logging
 
 LOG = logging.ERROR
+VIDEO_LOG = logging.INFO
 
 CFG = 'cfg/yolov3.cfg'
 WEIGHTS = 'yolov3.weight'
@@ -23,3 +24,4 @@ KEY = 'e40872239e1c0f4a56dc2636cd98d2b668d4260c10f4a9718433369333a2c54f'
 SERVER = 'https://client.protecia.com/'
 TUNNEL_PORT = 40002
 HARDWARE = 'xxx' # Nano or x64
+VIDEO_REC_TIME = 10

@@ -6,7 +6,6 @@ Created on Sun Dec 22 11:11:54 2019
 """
 import logging
 from logging.handlers import RotatingFileHandler
-import settings.settings as settings
 import os
 from settings import settings
 

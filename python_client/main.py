@@ -14,6 +14,7 @@ from log import Logger
 import scan_camera as sc
 import upload as up
 
+
 logger = Logger(__name__).run()
 
 Q_img = Queue()
@@ -22,9 +23,12 @@ Q_result = Queue()
 E_cam_start = pEvent()
 E_cam_stop = pEvent()
 E_state = pEvent()
+E_video = pEvent()
 #E_state_real = pEvent()
 lock = Lock()
 onLine = True
+
+
 
 def main():
     try:
@@ -32,7 +36,7 @@ def main():
         pCameraDownload.start()
         pImageUpload = Process(target=up.uploadImage, args=(Q_img,))
         pImageUploadRealTime = Process(target=up.uploadImageRealTime, args=(Q_img_real,))
-        pResultUpload = Process(target=up.uploadResult, args=(Q_result,))
+        pResultUpload = Process(target=up.uploadResult, args=(Q_result,E_video))
         #pState = Process(target=up.getState, args=(E_state,E_state_real))
         pImageUpload.start()
         pResultUpload.start()
@@ -47,6 +51,7 @@ def main():
             with lock :
                 with open('camera/camera.json', 'r') as json_file:
                     cameras = json.load(json_file, object_hook=lambda d: namedtuple('camera', d.keys())(*d.values()))
+            E_video.set()        
             cameras = [c for c in cameras if c.active==True]
             list_thread=[]
             list_event=[Event() for i in range(len(cameras))]

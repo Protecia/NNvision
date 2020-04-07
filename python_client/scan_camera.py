@@ -112,10 +112,10 @@ def getOnvifUri(ip,port,user,passwd):
 def setCam(cam):
     camJson = {'key':settings.KEY,'cam':cam}
     try :
-        r = requests.post(settings.SERVER+"setCam", json=camJson )
+        r = requests.post(settings.SERVER+"setCam", json=camJson, timeout = 40 )
         s = json.loads(r.text)
         return s
-    except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError) as ex :
+    except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError, requests.Timeout) as ex :
         logger.error('exception in setCam : {}'.format(ex))
         pass
     return False
@@ -123,10 +123,10 @@ def setCam(cam):
 def removeCam(cam):
     camJson = {'key':settings.KEY,'cam':cam}
     try :
-        r = requests.post(settings.SERVER+"removeCam", json=camJson )
+        r = requests.post(settings.SERVER+"removeCam", json=camJson, timeout = 40 )
         s = json.loads(r.text)
         return s
-    except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError) as ex :
+    except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError, requests.Timeout) as ex :
         logger.error('exception in remove cam for cam {} : {}'.format(cam, ex))
         pass
     return False
@@ -221,7 +221,7 @@ def compareCam(ws, lock):
 
 def getCam(lock, force='0'):
     try :
-        r = requests.post(settings.SERVER+"getCam", data = {'key': settings.KEY, 'force':force} )
+        r = requests.post(settings.SERVER+"getCam", data = {'key': settings.KEY, 'force':force}, timeout = 40 ) 
         c = json.loads(r.text)
         if not c==False :
             with lock:
@@ -229,7 +229,7 @@ def getCam(lock, force='0'):
                     json.dump(c,out)
             r = requests.post(settings.SERVER+"upCam", data = {'key': settings.KEY})
         return c
-    except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError) as ex :
+    except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError, requests.Timeout) as ex :
         logger.error('exception in getCam: {}'.format(ex))
         return False
         pass

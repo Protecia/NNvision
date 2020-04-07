@@ -135,7 +135,7 @@ def uploadResult(request):
         pass
         return JsonResponse({'statut':False},safe=False)
     with transaction.atomic():
-       result_DB = Result(camera=camera,file = client.folder+'/'+data['img'], brut=data['result_darknet'])
+       result_DB = Result(camera=camera,file = client.folder+'/'+data['img'], video=data['video'], brut=data['result_darknet'])
        result_DB.save()
        for r in data['result_filtered']:
            object_DB = Object(result = result_DB,

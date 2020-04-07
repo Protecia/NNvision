@@ -10,6 +10,7 @@ from log import Logger
 import time
 import json
 
+
 logger = Logger(__name__).run()
 
 def uploadImageRealTime(Q):
@@ -50,7 +51,9 @@ def uploadImage(Q):
             time.sleep(5)
             pass
 
-def uploadResult(Q):
+def uploadResult(Q, E_video):
+    from video import RecCamera
+    recCamera  = RecCamera(E_video)
     server = True
     logger.warning('starting upload result')
     while True:
@@ -58,7 +61,9 @@ def uploadResult(Q):
             result = Q.get()
             logger.info('get result from queue : {}'.format(result))
             img, cam,  result_filtered, result_darknet = result[0], result[1], [(r[0].decode(),r[1],r[2]) for r in result[2] ], [(r[0].decode(),r[1],r[2]) for r in result[3] ]
-            resultJson = {'key': settings.KEY, 'img' : img, 'cam' : cam, 'result_filtered' : result_filtered, 'result_darknet' : result_darknet }
+            # set video record for this result
+            video = recCamera.rec_cam(cam)
+            resultJson = {'key': settings.KEY, 'img' : img, 'cam' : cam, 'result_filtered' : result_filtered, 'result_darknet' : result_darknet, 'video' : video }
         try :
             r = requests.post(settings.SERVER+"uploadresult", json=resultJson,  timeout= 40)
             server = True

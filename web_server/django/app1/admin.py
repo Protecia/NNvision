@@ -19,7 +19,7 @@ def add_group_permission(sender, instance, created, **kwargs):
         g.user_set.add(instance)
 
 class CameraAdmin(admin.ModelAdmin):
-    exclude = ('wait_for_set','update','from_client')
+    exclude = ('wait_for_set','update','from_client','stream','on_camera_LD','on_camera_HD')
 
     def delete_model(self, request, obj):
         obj.client.update_camera = 1

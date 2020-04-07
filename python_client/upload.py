@@ -12,6 +12,7 @@ import json
 
 
 logger = Logger(__name__).run()
+logger.setLevel(settings.UPLOAD_LOG)
 
 def uploadImageRealTime(Q):
     logger.warning('starting upload real time image')
@@ -63,6 +64,7 @@ def uploadResult(Q, E_video):
             img, cam,  result_filtered, result_darknet = result[0], result[1], [(r[0].decode(),r[1],r[2]) for r in result[2] ], [(r[0].decode(),r[1],r[2]) for r in result[3] ]
             # set video record for this result
             video = recCamera.rec_cam(cam)
+            logger.info('get video token : {}'.format(video))
             resultJson = {'key': settings.KEY, 'img' : img, 'cam' : cam, 'result_filtered' : result_filtered, 'result_darknet' : result_darknet, 'video' : video }
         try :
             r = requests.post(settings.SERVER+"uploadresult", json=resultJson,  timeout= 40)

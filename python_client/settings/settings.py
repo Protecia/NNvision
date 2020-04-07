@@ -8,6 +8,7 @@ import logging
 
 LOG = logging.ERROR
 VIDEO_LOG = logging.INFO
+UPLOAD_LOG = logging.INFO
 
 CFG = 'cfg/yolov3.cfg'
 WEIGHTS = 'yolov3.weight'

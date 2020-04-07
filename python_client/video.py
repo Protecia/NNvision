@@ -93,20 +93,50 @@ class RecCamera(object):
                 except ps.NoSuchProcess :
                     pass
                     break
-            i +=1    
+            i +=1
             time.sleep(0.5)
-            
+
     def check_space(self,G):
     ##### check the space on disk to respect the quota #######
         path = os.path.join(settings.INSTALL_PATH,'camera/live')
-        size = int(check_output(['du','-s', path]).split()[0].decode('utf-8').split('M')[0])
+        size = int(check_output(['du','-s', path]).split()[0].decode('utf-8'))
+        logger.info('check size {} Go'.format(size/1000000))
         if size>settings.VIDEO_SPACE*1000000:
             files = [os.path.join(path, f) for f in os.listdir(path)] # add path to each file
             files.sort(key=lambda x: os.path.getmtime(x))
-            while settings.VIDEO_SPACE*1000000-int(check_output(['du','-s', path]).split()[0].decode('utf-8').split('M')[0]) < G :
+            while settings.VIDEO_SPACE*1000000-int(check_output(['du','-s', path]).split()[0].decode('utf-8')) < G*1000000 :
                 os.remove(files[0])
                 del(files[0])
-          
+
+
+def http_serve(port):
+    """Static file server, using Python's CherryPy. Used to serve video."""
+    import cherrypy
+    from cherrypy.lib.static import serve_file
+    import os.path
+    
+    logger.warning('starting cherrypy')
+    
+    class Root:
+        @cherrypy.expose
+        def index(self, name):
+            return serve_file(os.path.join(static_dir, name))
+    
+    static_dir = os.path.join(settings.INSTALL_PATH,'camera/live') # Root static dir is this file's directory.
+    cherrypy.config.update( {  # I prefer configuring the server here, instead of in an external file.
+                'server.socket_host': '0.0.0.0',
+                'server.socket_port': port,
+                'environment': 'production',
+            } )
+    conf = {
+            '/': {  # Root folder.
+                'tools.staticdir.on':   True,  # Enable or disable this rule.
+                'tools.staticdir.root': static_dir,
+                'tools.staticdir.dir':  '',
+            }
+        }
+    
+    cherrypy.quickstart(Root(), '/', config=conf)  # ..and LAUNCH ! :)
 
 
 

@@ -13,6 +13,7 @@ from collections import namedtuple
 from log import Logger
 import scan_camera as sc
 import upload as up
+from video import http_serve
 
 
 logger = Logger(__name__).run()
@@ -37,11 +38,13 @@ def main():
         pImageUpload = Process(target=up.uploadImage, args=(Q_img,))
         pImageUploadRealTime = Process(target=up.uploadImageRealTime, args=(Q_img_real,))
         pResultUpload = Process(target=up.uploadResult, args=(Q_result,E_video))
+        pServeHttp =  Process(target=http_serve, args=(2525,))
         #pState = Process(target=up.getState, args=(E_state,E_state_real))
         pImageUpload.start()
         pResultUpload.start()
         #pState.start()
         pImageUploadRealTime.start()
+        pServeHttp.start()
         while(True):
             # start the process to synchronize cameras
             logger.warning('scan camera launch, E_cam_start.is_set : {}  / E_cam_stopt.is_set : {}'.format(E_cam_start.is_set(),E_cam_stop.is_set()) )

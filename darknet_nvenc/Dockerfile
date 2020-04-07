@@ -45,6 +45,8 @@ RUN cd darknet_pjreddie_201906 && make -s  --no-print-directory && \
 
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y sshpass autossh && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install cheerypy
     
 
 

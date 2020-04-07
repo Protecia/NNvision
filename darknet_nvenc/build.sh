@@ -1,1 +1,1 @@
-docker build --rm -t nnvision_client_base .
+docker build --rm -t nnvision_client_base2 .

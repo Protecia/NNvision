@@ -18,11 +18,15 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
                && rm -rf /var/lib/apt/lists/*
 
 
-RUN pip3 install psutil Pillow numpy WSDiscovery requests onvif_zeep-roboticia
+RUN pip3 install psutil Pillow numpy WSDiscovery requests onvif_zeep-roboticia cherrypy
 
 
 WORKDIR /NNvision
-COPY . /NNvision
+COPY ./darknet_pjreddie_201906 /NNvision/darknet_pjreddie_201906
+COPY ./ffmpeg-4.1.3 /NNvision/ffmpeg-4.1.3
+COPY ./opencv_contrib-3.4.4 /NNvision/opencv_contrib-3.4.4
+COPY ./opencv-3.4.4 /NNvision/opencv-3.4.4
+
 
 # Compile ffmpeg
 RUN cd ffmpeg-4.1.3/nv-codec-headers && make && make install && cd .. && \
@@ -46,7 +50,6 @@ RUN cd darknet_pjreddie_201906 && make -s  --no-print-directory && \
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y sshpass autossh && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install cheerypy
     
 
 

@@ -16,6 +16,7 @@ from settings import settings
 from log import Logger
 import json
 import os
+import cherrypy
 
 logger = Logger(__name__).run()
 logger.setLevel(settings.VIDEO_LOG)
@@ -108,20 +109,64 @@ class RecCamera(object):
                 os.remove(files[0])
                 del(files[0])
 
-
 def http_serve(port):
     """Static file server, using Python's CherryPy. Used to serve video."""
-    import cherrypy
-    from cherrypy.lib.static import serve_file
-    import os.path
-    
     logger.warning('starting cherrypy')
-    
+
     class Root:
+
         @cherrypy.expose
         def index(self, name):
-            return serve_file(os.path.join(static_dir, name))
-    
+            return cherrypy.lib.static.serve_file(os.path.join(static_dir, name))
+
+        @cherrypy.expose
+        def video(self,v):
+            file = os.path.join(static_dir, v)
+            if os.path.isfile(file):
+                return """
+                <!DOCTYPE html>
+                <html>
+                  <head>
+                    <meta charset="utf-8">
+                    <title>Protecia</title>
+                    <link rel="shortcut icon" href="img/favicon.ico">
+                  </head>
+                  <body>
+                <p>
+                  <img  width="120" height="50" src="img/logo_protecia.jpg" alt="Protecia">
+                </p>
+                <div style="text-align:center;">
+                <video  controls autoplay>
+                  <source src="{}" type="video/mp4">
+                  Your browser does not support HTML5 video.
+                </video>
+                </div>
+                  </body>
+                </html>
+
+                """.format(v)
+            else:
+                return """
+                <!DOCTYPE html>
+                <html>
+                  <head>
+                    <meta charset="utf-8">
+                    <title>Protecia</title>
+                    <link rel="shortcut icon" href="img/favicon.ico">
+                  </head>
+                  <body>
+                <p>
+                  <img  width="120" height="50" src="img/logo_protecia.jpg" alt="Protecia">
+                </p>
+                <div style="text-align:center;">
+                <h1>
+                  Video non disponible !
+                 </h1>
+                </video>
+                </div>
+                  </body>
+                </html>
+            """
     static_dir = os.path.join(settings.INSTALL_PATH,'camera/live') # Root static dir is this file's directory.
     cherrypy.config.update( {  # I prefer configuring the server here, instead of in an external file.
                 'server.socket_host': '0.0.0.0',
@@ -129,22 +174,22 @@ def http_serve(port):
                 'environment': 'production',
             } )
     conf = {
-            '/': {  # Root folder.
+            '/': {
                 'tools.staticdir.on':   True,  # Enable or disable this rule.
                 'tools.staticdir.root': static_dir,
                 'tools.staticdir.dir':  '',
-            }
+            },
+                    '/img': {
+            'tools.staticdir.on': True,
+            'tools.staticdir.dir': '../img'
         }
-    
-    cherrypy.quickstart(Root(), '/', config=conf)  # ..and LAUNCH ! :)
-
-
+        }
+    return cherrypy.quickstart(Root(), '/', config=conf)  # ..and LAUNCH ! :)
 
 def main():
     RecCamera.kill_ffmpeg_process()
     rec = RecCamera()
     rec.rec_all_cam()
-
 
 # start the threads
 if __name__ == '__main__':

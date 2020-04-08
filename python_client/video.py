@@ -133,7 +133,7 @@ def http_serve(port):
                   </head>
                   <body>
                 <p>
-                  <img  width="120" height="50" src="img/logo_protecia.jpg" alt="Protecia">
+                  <img   src="img/logo_protecia.jpg" alt="Protecia">
                 </p>
                 <div style="text-align:center;">
                 <video  controls autoplay>
@@ -156,7 +156,7 @@ def http_serve(port):
                   </head>
                   <body>
                 <p>
-                  <img  width="120" height="50" src="img/logo_protecia.jpg" alt="Protecia">
+                  <img  src="img/logo_protecia.jpg" alt="Protecia">
                 </p>
                 <div style="text-align:center;">
                 <h1>

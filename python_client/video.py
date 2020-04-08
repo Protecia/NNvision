@@ -162,6 +162,9 @@ def http_serve(port):
                 <h1>
                   Video non disponible !
                  </h1>
+                 <h1>
+                  Video unavailable !
+                 </h1>
                 </video>
                 </div>
                   </body>

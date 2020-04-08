@@ -49,7 +49,7 @@
 		<div class="large-4 columns">
 		<a class="th" href="/panel_detail/{{img_alert.id}}">
 			<img  style="border:5px solid red" src="/thumbnail/{{img_alert.id}}/0/{{client.image_panel_max_width}}/{{client.image_panel_max_hight}}" alt=""  ><br>{{img_alert.time|date:'Y-m-d H:i:s'}}</a>
-			&nbsp;&nbsp;<a href="http://client.protecia.com:{{client.serial_box | add:"1"}}/{{img_alert.video}}.mp4"><img   src="{% static "app1/img/play_small.png" %}" ></a>
+			&nbsp;&nbsp;<a href="http://client.protecia.com:{{client.serial_box | add:"1"}}/video?v={{img_alert.video}}.mp4"><img   src="{% static "app1/img/play_small.png" %}" ></a>
 		
 		</div>
 		{% endfor %}
@@ -81,7 +81,7 @@
 		<div class="large-4 columns">
 		<a href="/panel_detail/{{img.id}}">
 			<img {% if img.alert == True %} style="border:5px solid red" {% endif %} src="/thumbnail/{{img.id}}/0/{{client.image_panel_max_width}}/{{client.image_panel_max_hight}}" alt=""  ><br>{{img.time|date:'Y-m-d H:i:s'}}
-		</a><a href="http://client.protecia.com:{{client.serial_box | add:"1"}}/{{img.video}}.mp4">&nbsp;&nbsp;<img   src="{% static "app1/img/play_small.png" %}" ></a>
+		</a><a href="http://client.protecia.com:{{client.serial_box | add:"1"}}/video?v={{img.video}}.mp4">&nbsp;&nbsp;<img   src="{% static "app1/img/play_small.png" %}" ></a>
 		</div>
 		{% endfor %}
 

@@ -181,7 +181,7 @@ def http_serve(port):
             },
                     '/img': {
             'tools.staticdir.on': True,
-            'tools.staticdir.dir': '../img'
+            'tools.staticdir.dir': '../../img'
         }
         }
     return cherrypy.quickstart(Root(), '/', config=conf)  # ..and LAUNCH ! :)

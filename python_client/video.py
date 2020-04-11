@@ -22,28 +22,25 @@ logger = Logger(__name__).run()
 logger.setLevel(settings.VIDEO_LOG)
 
 class RecCamera(object):
-
     @classmethod
-    def kill_ffmpeg_process():
+    def kill_ffmpeg_process(cls):
         for p in ps.process_iter():
             try :
-                for n in p.cmdline():
-                    if 'ffmpeg' in n :
-                        p.terminate()
-                        time.sleep(2)
-                        p.kill()
-                        print(p,"kill")
+                cmd = ''.join(p.cmdline())
+                if 'ffmpeg' in cmd and 'backup' in cmd :
+                    p.terminate()
+                    time.sleep(2)
+                    p.kill()
+                    print(p,"kill")
             except ps.AccessDenied :
                 pass
                 return False
             except ps.NoSuchProcess :
                 pass
         return True
-
     def __init__(self, E_video):
         self.update = E_video
         Thread(target=self.update_cam).start()
-
     def update_cam(self):
         while True :
             self.update.wait()
@@ -55,12 +52,10 @@ class RecCamera(object):
                     v['rec'] = False
             logger.info('Update cameras')
             self.update.clear()
-
     def rec_all_cam(self):
         for k,v in self.cameras.items():
-            cmd = 'ffmpeg  -nostats -loglevel 0 -y -i  {} -vcodec copy camera/secu/{}.mp4'.format(v['rtsp'], datetime.now().strftime("%H")+'_cam'+str(k))
+            cmd = 'ffmpeg  -nostats -loglevel 0 -y -i  {} -vcodec copy camera/secu/{}.mp4'.format(v['rtsp'], 'backup.'+datetime.now().strftime("%H")+'_cam'+str(k))
             Popen(shlex.split(cmd))
-
     def rec_cam(self,cam_id):
         if not self.cameras[cam_id]['rec']:
             self.cameras[cam_id]['rec']=True
@@ -76,7 +71,6 @@ class RecCamera(object):
         else :
             self.cameras[cam_id]['rec_time']=time.time()
         return self.cameras[cam_id]['token']
-
     def kill_process(self, cam_id, p):
         self.check_space(5)
         i=0
@@ -96,7 +90,6 @@ class RecCamera(object):
                     break
             i +=1
             time.sleep(0.5)
-
     def check_space(self,G):
     ##### check the space on disk to respect the quota #######
         path = os.path.join(settings.INSTALL_PATH,'camera/live')
@@ -120,8 +113,10 @@ def http_serve(port):
             return cherrypy.lib.static.serve_file(os.path.join(static_dir, name))
 
         @cherrypy.expose
-        def video(self,v):
-            file = os.path.join(static_dir, v)
+        def video(self,v,l):
+            file = os.path.join(static_dir, v, l)
+            back = l.split('_')
+            site = "https://my.protecia.com"
             if os.path.isfile(file):
                 return """
                 <!DOCTYPE html>
@@ -133,7 +128,7 @@ def http_serve(port):
                   </head>
                   <body>
                 <p>
-                  <img   src="img/logo_protecia.jpg" alt="Protecia">
+                  <a href="{}/{}/{}/{}"><img   src="img/logo_protecia.jpg" alt="Protecia"></a>
                 </p>
                 <div style="text-align:center;">
                 <video  controls autoplay>
@@ -144,7 +139,7 @@ def http_serve(port):
                   </body>
                 </html>
 
-                """.format(v)
+                """.format(site,back[0],back[1],back[2],v)
             else:
                 return """
                 <!DOCTYPE html>
@@ -156,20 +151,26 @@ def http_serve(port):
                   </head>
                   <body>
                 <p>
-                  <img  src="img/logo_protecia.jpg" alt="Protecia">
+                  <a href="{}/{}/{}/{}"><img  src="img/logo_protecia.jpg" alt="Protecia"></a>
                 </p>
                 <div style="text-align:center;">
                 <h1>
                   Video non disponible !
                  </h1>
+                 <h6>
+                 Des vidéo anciennes ont pu être effacées en fonction de la place disponible sur votre box d'enregistrement.
+                 </h6>
                  <h1>
                   Video unavailable !
                  </h1>
+                 <h6>
+                 Video may have been deleted depends on the disk space available on your protecia box.
+                 </h6>
                 </video>
                 </div>
                   </body>
                 </html>
-            """
+            """.format(site,back[0],back[1],back[2])
     static_dir = os.path.join(settings.INSTALL_PATH,'camera/live') # Root static dir is this file's directory.
     cherrypy.config.update( {  # I prefer configuring the server here, instead of in an external file.
                 'server.socket_host': '0.0.0.0',
@@ -187,7 +188,7 @@ def http_serve(port):
             'tools.staticdir.dir': '../../img'
         }
         }
-    return cherrypy.quickstart(Root(), '/', config=conf)  # ..and LAUNCH ! :)
+    cherrypy.quickstart(Root(), '/', config=conf)  # ..and LAUNCH ! :)
 
 def main():
     RecCamera.kill_ffmpeg_process()

@@ -13,7 +13,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && apt-get install -y wget mlocate build-essential apache2 apache2-dev python3 python3-dev python3-pip nano cron libpq-dev postgresql
 
 RUN apt-get install -y python3-opencv
-RUN pip3 install psutil twilio Pillow django python-crontab psycopg2  # django==2.1
+RUN pip3 install psutil twilio Pillow  django python-crontab psycopg2
 
 WORKDIR /NNvision
 COPY . /NNvision
@@ -30,5 +30,6 @@ RUN tar  xvfz mod_wsgi-4.6.5.tar.gz && rm mod_wsgi-4.6.5.tar.gz && cd mod_wsgi-4
 
 RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y software-properties-common && add-apt-repository ppa:certbot/certbot &&\
                                    apt update && apt install -y certbot && apt install -y python-certbot-apache
+
 
 RUN mv protecia.conf /etc/apache2/sites-available/protecia.conf

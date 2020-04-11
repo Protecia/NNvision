@@ -52,8 +52,22 @@ class RecCamera(object):
                     v['rec'] = False
             logger.info('Update cameras')
             self.update.clear()
-    def rec_all_cam(self):
-        for k,v in self.cameras.items():
+    @classmethod
+    def rec_all_cam(cls):
+        repeat = True
+        while repeat :
+            i = 0
+            try :
+                with open('camera/camera.json', 'r') as json_file:
+                    cameras = json.load(json_file)
+                cameras = dict((item['id'], item) for item in cameras if item['active'])
+                repeat = False
+            except json.decoder.JSONDecodeError :
+                pass
+                i+=1
+                if i > 3 :
+                    break
+        for k,v in cameras.items():
             cmd = 'ffmpeg  -nostats -loglevel 0 -y -i  {} -vcodec copy camera/secu/{}.mp4'.format(v['rtsp'], 'backup.'+datetime.now().strftime("%H")+'_cam'+str(k))
             Popen(shlex.split(cmd))
     def rec_cam(self,cam_id):
@@ -192,8 +206,7 @@ def http_serve(port):
 
 def main():
     RecCamera.kill_ffmpeg_process()
-    rec = RecCamera()
-    rec.rec_all_cam()
+    RecCamera.rec_all_cam()
 
 # start the threads
 if __name__ == '__main__':

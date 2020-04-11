@@ -114,7 +114,7 @@ def http_serve(port):
 
         @cherrypy.expose
         def video(self,v,l):
-            file = os.path.join(static_dir, v, l)
+            file = os.path.join(static_dir, v)
             back = l.split('_')
             site = "https://my.protecia.com"
             if os.path.isfile(file):

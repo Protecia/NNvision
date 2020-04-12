@@ -29,6 +29,7 @@ class RecCamera(object):
                 cmd = ''.join(p.cmdline())
                 if 'ffmpeg' in cmd and 'backup' in cmd :
                     p.terminate()
+                    logger.warning('terminate process {}'.format(cmd))
                     time.sleep(2)
                     p.kill()
                     print(p,"kill")
@@ -68,8 +69,9 @@ class RecCamera(object):
                 if i > 3 :
                     break
         for k,v in cameras.items():
-            cmd = 'ffmpeg  -nostats -loglevel 0 -y -i  {} -vcodec copy camera/secu/{}.mp4'.format(v['rtsp'], 'backup.'+datetime.now().strftime("%H")+'_cam'+str(k))
+            cmd = '/usr/local/bin/ffmpeg  -nostats -loglevel 0 -y -i  {} -vcodec copy camera/secu/{}.mp4'.format(v['rtsp'], 'backup.'+datetime.now().strftime("%H")+'_cam'+str(k))
             Popen(shlex.split(cmd))
+            logger.warning('ffmpeg rec on  {}'.format(cmd))
     def rec_cam(self,cam_id):
         if not self.cameras[cam_id]['rec']:
             self.cameras[cam_id]['rec']=True

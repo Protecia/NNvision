@@ -149,6 +149,9 @@ class Camera(models.Model):
 
     def secure_rtsp(self):
         return "rtsp://"+self.rtsp.split('@')[1]
+    
+    def secure_url(self):
+        return self.url.split('?')[0]
 
     def __str__(self):
         return '{} - {}'.format(self.id, self.name)

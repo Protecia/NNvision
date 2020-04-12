@@ -9,10 +9,12 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Count
+from django.contrib.sites.models import Site
 from .models import Camera, Result, Alert, Client, Alert_type, Profile, Telegram, ALERT_CHOICES, local_to_utc, utc_to_local
 from .forms import AlertForm, AutomatForm
 from PIL import Image
 from django.utils import translation
+from django.utils.translation import ugettext_lazy as _
 from crontab import CronTab
 from threading import Thread
 import secrets
@@ -207,8 +209,12 @@ def panel(request, nav, first):
     img_array = [imgs[i:i + 3] for i in range(0, len(imgs), 3)]
     img_alert_array = [imgs_alert[i:i + 3] for i in range(0, len(imgs_alert), 3)]
     form = AlertForm(client=request.session['client'])
-    context = { 'class':filter_class, 'form':form, 'first' : first,
+    current_site = Site.objects.get_current()
+    dom = current_site.domain
+    context = { 'class':filter_class, 'form':form, 'first' : first, 'dom' : dom ,
                'first_alert' : first_alert, 'img_array' : img_array, 'img_alert_array' : img_alert_array, 'client':client}
+    if not client.connected :
+        context.update({'message' : _('Your Protecia box is not connected, you can not see the video'),'category' : 'warning'})   
     return render(request, 'app1/panel.html', context)
 
 @login_required

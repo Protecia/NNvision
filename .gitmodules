@@ -1,0 +1,3 @@
+[submodule "web_server/django"]
+	path = web_server/django
+	url = https://github.com/jjehl/django.git

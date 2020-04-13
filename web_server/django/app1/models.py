@@ -38,7 +38,6 @@ def utc_to_local(h,m,tz,d):
         return str(local.minute),str(local.hour), dict(DAY_CHOICES)[d]
 
 
-
 class Client(models.Model):
     first_name = models.CharField(max_length=200, blank = True)
     name = models.CharField(max_length=200, blank = True)

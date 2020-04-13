@@ -1,7 +1,6 @@
 {% extends "app1/base.html" %}
-
+{% load i18n %}
 {% block content %}
-
 <div class="row">
   <div class="columns">
     <h1 class="section-title">Camera</h1>
@@ -9,33 +8,39 @@
 </div>
 
 <div class="row">
-  <div class="large-12 columns">
-    
-	
-	<div class="row">
-	<div class="large-12 columns">
-	{% for row in camera %}
-	<div class="row">
-	{% for res in row %}
-	<div class="large-4 columns">
-	<code id="robot-state" class="accesslog hljs"><h6>{{ res.name }}<small> - {% if res.stream %}{{ res.secure_rtsp}}{% else %}{{ res.secure_url}}{% endif %}</small></h6><br>
-	<a href='/camera/last/{{ res.id }}'><img src="/img/last/{{ res.id }}" id="img{{ res.id }}"></a>  
-	</code>&nbsp;
-	</div>
-	 {% endfor %}
-	</div>
-	{% endfor %}
-	
-	</div>
-	<div class="row" ><div class="large-9 columns"><br>To add new camera please go to <a href='/admin'>admin</a>
-	</div></div>
-	
-	
-	
-	
-		
-	
-  </div>
+   <div class="large-12 columns">
+      <div class="row">
+        <div class="large-12 columns">
+        {% for row in camera %}
+            <div class="row">
+            {% for res in row %}
+               <div class="large-4 columns">
+                  <code id="robot-state" class="accesslog hljs"><h6>{{ res.name }}<small> - {% if res.stream %}{{ res.secure_rtsp}}{% else %}{{ res.secure_url}}{% endif %}</small></h6><br>
+                  <a href='/camera/last/{{ res.id }}'><img src="/img/last/{{ res.id }}" id="img{{ res.id }}"></a>
+                  </code>&nbsp;
+               </div>
+               {% endfor %}
+            </div>
+            {% endfor %}
+         </div>
+      <div class="row" ><div class="large-9 columns"><br>To add new camera please go to <a href='/admin'>admin</a>
+      <br>
+   </div>
+</div>
+<div class="row">
+   <div class="large-12 columns">
+     <div class="row" style="border: 1px solid #466d98;">
+        <form action="/camera/" method="post">{% csrf_token %}<input type="hidden" name="type" value="auto">
+           <div class="large-6 columns">
+              {{ archive_form }}
+           </div>
+           <div class="large-3 columns">
+              <br>
+              <button type="submit" name="valid_archive" value="ok" class="button large">{% trans 'Watch archive' %}</button>
+           </div>
+        </form>
+     </div>
+   </div>
 </div>
 
 

@@ -10,7 +10,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Count
 from .models import Camera, Result, Alert, Client, Alert_type, Profile, Telegram, ALERT_CHOICES, local_to_utc, utc_to_local
-from .forms import AlertForm, AutomatForm
+from .forms import AlertForm, AutomatForm, ArchiveForm
 from PIL import Image
 from django.utils import translation
 from django.utils.translation import ugettext_lazy as _
@@ -18,6 +18,7 @@ from crontab import CronTab
 from threading import Thread
 import secrets
 import pytz
+
 
 # Create your views here.
 
@@ -35,6 +36,7 @@ def index(request):
     user_language = 'fr'
     translation.activate(user_language)
     request.session[translation.LANGUAGE_SESSION_KEY] = user_language
+    request.session['django_timezone'] = 'Europe/Paris'
     if not request.user.is_authenticated or not request.user.has_perm('app1.camera'):
         return redirect('%s?next=%s' % (settings.LOGIN_URL, request.path))
     if request.user.is_superuser :
@@ -109,7 +111,8 @@ def camera(request):
     thread = Thread(target = stop_camera)
     thread.start()
     camera_array = [camera[i:i + 3] for i in range(0, len(camera), 3)]
-    context = {'camera' :camera_array, 'info' : {'version' : settings.VERSION, }, 'url_for_index' : '/','logo_client':client[0].logo_perso}
+    archive_form = ArchiveForm()
+    context = {'archive_form' : archive_form, 'camera' :camera_array, 'info' : {'version' : settings.VERSION, }, 'url_for_index' : '/','logo_client':client[0].logo_perso}
     return render(request, 'app1/camera.html',context)
 
 @login_required

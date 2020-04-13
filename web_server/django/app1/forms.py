@@ -8,6 +8,8 @@ Created on Tue Mar 13 12:32:32 2018
 from django import forms
 from .models import Alert, Camera, DAY_CHOICES
 from django.utils.translation import ugettext_lazy as _
+from datetime import datetime, timedelta
+import pytz
 
 
 class AlertForm(forms.ModelForm):
@@ -55,3 +57,18 @@ class AutomatForm(forms.Form):
     hour = forms.ChoiceField(choices=HOUR_CHOICES)
     minute = forms.ChoiceField(choices=MIN_CHOICES)
     action = forms.ChoiceField(choices=ACTION_CHOICES)
+    
+    
+class ArchiveForm(forms.Form):
+    
+    def __init__(self,request,*args,**kwargs):
+        super (ArchiveForm,self).__init__(*args,**kwargs)
+        self.fields['movie'] = forms.ChoiceField(label='Archive', choices=self.list_24hours(request))
+    
+    def list_24hours(self, request):
+        l = [datetime.now(pytz.utc) - timedelta(hours=i+1) for i in range(23)]
+        l = [(t.strftime("%H"),t.astimezone(pytz.timezone(request.session.get('django_timezone'))).strftime("%H")) for t in l]
+        return l
+
+
+   

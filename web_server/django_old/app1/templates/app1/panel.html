@@ -1,0 +1,108 @@
+{% extends "app1/base.html" %}
+
+{% block content %}
+{% load static %}
+{% load i18n %}
+<div class="row">
+<div class="large-15 columns">
+  <div class="large-7 columns"><br>
+    <h1 class="section-title" style="display : inline">Images </h1><h5 style="display : inline" >({% trans 'Filter' %} :  {% trans class %})</h5>
+  </div><br>
+<div class="large-5 columns" style="border: 1px solid #466d98;">
+
+<form action="/panel/d/{{ first }}" method="post">{% csrf_token %}
+    <div class="small-7 columns" >
+<br>
+      <label>{% trans 'Select display object' %}
+        {{form.stuffs}}
+      </label>
+    </div>
+	<div class="small-2 columns" align="right">
+<br>
+	<button type="submit" name="valid_filter" value="ok" class="button medium">{% trans 'Add filter' %}</button>
+	</div>
+<div class="small-2 columns" align="right">
+<br>
+	<button type="submit" name="valid_filter" value="del" class="button medium">{% trans 'Reset filter' %}</button>
+	</div>
+	</form>
+</div>
+</div>
+</div>
+
+
+	
+
+<br>
+<div class="row">
+  <div class="large-15 columns" style="border: 1px solid #466d98;">
+    <h3>{% trans 'Last alert' %} :  </h3>
+	<div align="right">
+	{% if first_alert >= 15 %}<a href="/panel/a/{{first_alert|add:-15}}" class="button tiny">&laquo; &laquo; &laquo; previous</a>{% endif %}
+	{% if first_alert >= 3 %}<a href="/panel/a/{{first_alert|add:-3}}" class="button tiny">&laquo; previous</a>{% endif %}
+	<a href="/panel/a/{{first_alert|add:3}}" class="button tiny">next &raquo;</a>
+	<a href="/panel/a/{{first_alert|add:15}}" class="button tiny">next &raquo;  &raquo;</a></div>
+	{% for row_alert in img_alert_array %}
+	<div class="row">
+
+		{% for img_alert in row_alert %}
+		<div class="large-4 columns">
+		<a class="th" href="/panel_detail/{{img_alert.id}}">
+			<img  style="border:5px solid red" src="/thumbnail/{{img_alert.id}}/0/{{client.image_panel_max_width}}/{{client.image_panel_max_hight}}" alt=""  ><br>{{img_alert.time|date:'Y-m-d H:i:s'}}</a>
+			&nbsp;&nbsp;{% if client.connected %}<a href="http://{{dom}}:{{client.serial_box | add:"1"}}/video?v={{img_alert.video}}.mp4&l=panel_a_{{first_alert}}"><img   src="{% static "app1/img/play_small.png" %}" ></a>
+			{% else %}<img   src="{% static "app1/img/no_play_small.png" %}" >{% endif %}
+		
+		</div>
+		{% endfor %}
+
+	</div><br>
+	{% endfor %}
+	<div align="right">
+	{% if first_alert >= 15 %}<a href="/panel/a/{{first_alert|add:-15}}" class="button tiny">&laquo;  &laquo; previous</a>{% endif %}
+	{% if first_alert >= 3 %}<a href="/panel/a/{{first_alert|add:-3}}" class="button tiny">&laquo; previous</a>{% endif %}
+	<a href="/panel/a/{{first_alert|add:3}}" class="button tiny">next &raquo;</a>
+	<a href="/panel/a/{{first_alert|add:15}}" class="button tiny">next &raquo;  &raquo;</a></div>
+  </div>
+</div>
+<br>
+<a id="detection"></a>
+<div class="row"><a name="detection"></a>
+  <div class="large-15 columns" style="border: 1px solid #466d98;">
+    <h3>{% trans 'Last detection' %} :  </h3>
+	<div align="right">
+	{% if first >= 60 %}<a href="/panel/d/{{first|add:-60}}#detection" class="button tiny">&laquo; &laquo; previous</a>{% endif %}
+	{% if first >= 12 %}<a href="/panel/d/{{first|add:-12}}#detection" class="button tiny">&laquo; previous</a>{% endif %}
+	
+	<a href="/panel/d/{{first|add:12}}#detection" class="button tiny">next &raquo;</a>
+	<a href="/panel/d/{{first|add:60}}#detection" class="button tiny">next &raquo;  &raquo;</a></div>
+	{% for row in img_array %}
+	<div class="row">
+
+		{% for img in row %}
+		<div class="large-4 columns">
+		<a href="/panel_detail/{{img.id}}">
+			<img {% if img.alert == True %} style="border:5px solid red" {% endif %} src="/thumbnail/{{img.id}}/0/{{client.image_panel_max_width}}/{{client.image_panel_max_hight}}" alt=""  ><br>{{img.time|date:'Y-m-d H:i:s'}}
+		</a>&nbsp;&nbsp;{% if client.connected %}<a href="http://client.protecia.com:{{client.serial_box | add:"1"}}/video?v={{img.video}}.mp4&l=panel_d_{{first}}"><img   src="{% static "app1/img/play_small.png" %}" ></a>
+		{% else %}<img   src="{% static "app1/img/no_play_small.png" %}" >{% endif %}
+		</div>
+		{% endfor %}
+
+	</div><br>
+	{% endfor %}
+	<div align="right">
+	{% if first >= 60 %}<a href="/panel/d/{{first|add:-60}}#detection" class="button tiny">&laquo;  &laquo; previous</a>{% endif %}
+	{% if first >= 12 %}<a href="/panel/d/{{first|add:-12}}#detection" class="button tiny">&laquo; previous</a>{% endif %}
+	
+	<a href="/panel/d/{{first|add:12}}#detection" class="button tiny">next &raquo;</a>
+	<a href="/panel/d/{{first|add:60}}#detection" class="button tiny">next &raquo; &raquo; </a></div>
+  </div>
+</div>
+<br>
+
+
+
+{% endblock content %}
+
+{% block endscript %}
+
+{% endblock endscript %}

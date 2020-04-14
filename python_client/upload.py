@@ -77,6 +77,12 @@ def uploadResult(Q, E_video):
             time.sleep(5)
             pass
 
+
+def set_token(token):
+    with open(settings.INSTALL_PATH+'/token', 'w') as f:
+        json.dump({'token':token},f)
+
+
 def getState(E, camera_state):
     while True:
         try :
@@ -88,6 +94,7 @@ def getState(E, camera_state):
             else :
                 E.clear()
             on_camera = data['cam']
+            set_token(data['token'])
             for pk, state in on_camera.items():
                 [camera_state[int(pk)][index].set() if i else camera_state[int(pk)][index].clear() for index, i in enumerate(state)]
         except (requests.exceptions.ConnectionError, requests.Timeout) :

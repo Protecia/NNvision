@@ -118,6 +118,20 @@ class RecCamera(object):
                 os.remove(files[0])
                 del(files[0])
 
+def check_token(token):
+    try :
+        with open(settings.INSTALL_PATH+'/token', 'r') as f:
+            data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) :
+        return False
+    for i in range(2):
+        if token == data['token']:
+            return True
+        else :
+            time.sleep(1)    
+    return False
+
+
 def http_serve(port):
     """Static file server, using Python's CherryPy. Used to serve video."""
     logger.warning('starting cherrypy')
@@ -129,11 +143,11 @@ def http_serve(port):
             return cherrypy.lib.static.serve_file(os.path.join(static_dir, name))
 
         @cherrypy.expose
-        def video(self,v,l):
+        def video(self,v,l,token=''):
             file = os.path.join(static_dir, v)
             back = l.split('_')
             site = "https://my.protecia.com"
-            if os.path.isfile(file):
+            if os.path.isfile(file) and check_token():
                 return """
                 <!DOCTYPE html>
                 <html>
@@ -202,6 +216,10 @@ def http_serve(port):
                     '/img': {
             'tools.staticdir.on': True,
             'tools.staticdir.dir': '../../img'
+        },
+                    '/secu': {
+            'tools.staticdir.on': True,
+            'tools.staticdir.dir': '../secu'
         }
         }
     cherrypy.quickstart(Root(), '/', config=conf)  # ..and LAUNCH ! :)

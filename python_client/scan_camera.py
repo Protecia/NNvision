@@ -251,12 +251,11 @@ def run(period, lock, E_cam_start, E_cam_stop):
             # check if changes
             if cam==False :
                 E_cam_start.set()
-                force = '0'
                 logger.info('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
             else :
                 E_cam_stop.set()
-                force = '1'
                 logger.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
+            force = '0'
             # compare the cam with the camera file
             list_cam, remove_cam = compareCam(ws, lock)
             # push the cam to the server

@@ -241,7 +241,7 @@ def getCam(lock, force='0'):
         pass
 
 def run(period, lock, E_cam_start, E_cam_stop):
-    force = '1'
+    force = '2'
     while True :
         # scan the cam on the network
         ws = wsDiscovery(2,20)
@@ -252,10 +252,11 @@ def run(period, lock, E_cam_start, E_cam_stop):
             if cam==False :
                 E_cam_start.set()
                 logger.info('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
+                force='0'
             else :
                 E_cam_stop.set()
                 logger.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
-            force = '0'
+                force = '1'
             # compare the cam with the camera file
             list_cam, remove_cam = compareCam(ws, lock)
             # push the cam to the server

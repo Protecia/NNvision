@@ -264,7 +264,8 @@ def run(period, lock, E_cam_start, E_cam_stop):
             # inactive the cam
             if remove_cam : removeCam(remove_cam)
             # wait for the loop
-            time.sleep(period)
+            if force==0:
+                time.sleep(period)
         else :
             time.sleep(30)
 

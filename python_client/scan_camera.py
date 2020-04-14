@@ -20,6 +20,7 @@ import xml.etree.ElementTree as ET
 import re
 
 logger = Logger('scan_camera').run()
+logger.setLevel(settings.SCAN_LOG)
 
 '''
 def wsDiscovery():
@@ -85,6 +86,7 @@ def wsDiscovery(repeat, wait):
                 time.sleep(wait)
     except (KeyError, OSError) :
         return False
+    logger.info('scan camera : {}'.format(dcam))
     return dcam
 
 def getOnvifUri(ip,port,user,passwd):
@@ -113,6 +115,7 @@ def setCam(cam):
     camJson = {'key':settings.KEY,'cam':cam}
     try :
         r = requests.post(settings.SERVER+"setCam", json=camJson, timeout = 40 )
+        logger.info('set cam {}'.format(cam))
         s = json.loads(r.text)
         return s
     except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError, requests.Timeout) as ex :
@@ -217,12 +220,15 @@ def compareCam(ws, lock):
                         except requests.exceptions.ConnectionError :
                             pass
     # cameras_ip contains cam now unreachable
+    logger.info('compare camera, list : {} / remove : {}'.format(list_cam,cameras_ip))
     return list_cam, cameras_ip
 
 def getCam(lock, force='0'):
     try :
+        logger.info('get camera, force state : {}'.format(force))
         r = requests.post(settings.SERVER+"getCam", data = {'key': settings.KEY, 'force':force}, timeout = 40 ) 
         c = json.loads(r.text)
+        logger.info('get camera : {}'.format(c))
         if not c==False :
             with lock:
                 with open(settings.INSTALL_PATH+'/camera/camera.json', 'w') as out:
@@ -263,16 +269,6 @@ def run(period, lock, E_cam_start, E_cam_stop):
             time.sleep(30)
 
 
-
-
-
-
-
 # camera_ip contains cam to inactive
 
-
-"""
-new cam -> test scheme and set
-inactive cam
-"""
 

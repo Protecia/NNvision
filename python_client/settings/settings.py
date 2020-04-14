@@ -9,6 +9,7 @@ import logging
 LOG = logging.ERROR
 VIDEO_LOG = logging.INFO
 UPLOAD_LOG = logging.INFO
+SCAN_LOG = logging.INFO
 
 #Darknet conf
 CFG = 'cfg/yolov3.cfg'

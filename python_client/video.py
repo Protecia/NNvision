@@ -153,9 +153,9 @@ def http_serve(port):
         @cherrypy.expose
         def video(self,v,l, token):
             page = v.split('.')
-            video_link = page[0]+'?name='+page[1]+'&token='+token
-            back = '/'.join(l.split('_')) 
-            file = os.path.join(static_dir, 'camera', page[0])
+            video_link = page[0]+'?name='+page[1]+'.mp4&token='+token
+            back = 'https://'+'/'.join(l.split('_')) 
+            file = os.path.join(static_dir, 'camera', page[0], page[1]+'.mp4')
             if os.path.isfile(file):
                 return """
                 <!DOCTYPE html>
@@ -190,7 +190,7 @@ def http_serve(port):
                   </head>
                   <body>
                 <p>
-                  <a href="{}/{}/{}/{}"><img  src="img/logo_protecia.jpg" alt="Protecia"></a>
+                  <a href="{}"><img  src="img/logo_protecia.jpg" alt="Protecia"></a>
                 </p>
                 <div style="text-align:center;">
                 <h1>

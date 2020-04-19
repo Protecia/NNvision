@@ -120,36 +120,43 @@ def kill_ffmpeg_process():
             pass
     return True
 
-def check_token(token):
-    try :
-        with open(settings.INSTALL_PATH+'/token', 'r') as f:
-            data = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError) :
-        return False
-    for i in range(2):
-        if token == data['token']:
-            return True
-        else :
-            time.sleep(1)    
-    return False
-
 
 def http_serve(port):
     """Static file server, using Python's CherryPy. Used to serve video."""
     logger.warning('starting cherrypy')
+    
+    def check_token(token):
+        try :
+            with open(settings.INSTALL_PATH+'/token', 'r') as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) :
+            return False
+        for i in range(2):
+            if token == data['token']:
+                return True
+            else :
+                time.sleep(1)    
+        return False
 
     class Root:
 
         @cherrypy.expose
-        def index(self, name):
-            return cherrypy.lib.static.serve_file(os.path.join(static_dir, name))
+        def live(self, name, token):
+            if check_token(token):
+                return cherrypy.lib.static.serve_file(os.path.join(static_dir_live, name))
+        
+        @cherrypy.expose
+        def secu(self, name, token):
+            if check_token(token):
+                return cherrypy.lib.static.serve_file(os.path.join(static_dir_secu, name))
 
         @cherrypy.expose
-        def video(self,v,l,token=''):
-            file = os.path.join(static_dir, v)
-            back = l.split('_')
-            site = "https://my.protecia.com"
-            if os.path.isfile(file) and check_token():
+        def video(self,v,l, token):
+            page = v.split('.')
+            video_link = page[0]+'?name='+page[1]+'&token='+token
+            back = '/'+  '/'.join(l.split('_')) 
+            file = os.path.join(static_dir, 'camera', page[0])
+            if os.path.isfile(file):
                 return """
                 <!DOCTYPE html>
                 <html>
@@ -160,7 +167,7 @@ def http_serve(port):
                   </head>
                   <body>
                 <p>
-                  <a href="{}/{}/{}/{}"><img   src="img/logo_protecia.jpg" alt="Protecia"></a>
+                  <a href="{}"><img   src="img/logo_protecia.jpg" alt="Protecia"></a>
                 </p>
                 <div style="text-align:center;">
                 <video  controls autoplay>
@@ -171,7 +178,7 @@ def http_serve(port):
                   </body>
                 </html>
 
-                """.format(site,back[0],back[1],back[2],v)
+                """.format(back,video_link)
             else:
                 return """
                 <!DOCTYPE html>
@@ -202,28 +209,24 @@ def http_serve(port):
                 </div>
                   </body>
                 </html>
-            """.format(site,back[0],back[1],back[2])
-    static_dir = os.path.join(settings.INSTALL_PATH,'camera/live') # Root static dir is this file's directory.
+            """.format(back)
+    
+    static_dir = settings.INSTALL_PATH # Root static dir is this file's directory.
+    static_dir_live = os.path.join(settings.INSTALL_PATH,'camera/live') # Root static dir is this file's directory.
+    static_dir_secu = os.path.join(settings.INSTALL_PATH,'camera/secu') # Root static dir is this file's directory.
+
     cherrypy.config.update( {  # I prefer configuring the server here, instead of in an external file.
                 'server.socket_host': '0.0.0.0',
                 'server.socket_port': port,
                 'environment': 'production',
             } )
     conf = {
-            '/': {
-                'tools.staticdir.on':   True,  # Enable or disable this rule.
-                'tools.staticdir.root': static_dir,
-                'tools.staticdir.dir':  '',
-            },
                     '/img': {
             'tools.staticdir.on': True,
-            'tools.staticdir.dir': '../../img'
-        },
-                    '/secu': {
-            'tools.staticdir.on': True,
-            'tools.staticdir.dir': '../secu'
+            'tools.staticdir.root': static_dir,
+            'tools.staticdir.dir': 'img'}
         }
-        }
+    
     cherrypy.quickstart(Root(), '/', config=conf)  # ..and LAUNCH ! :)
 
 def main():

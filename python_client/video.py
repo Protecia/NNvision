@@ -154,7 +154,7 @@ def http_serve(port):
         def video(self,v,l, token):
             page = v.split('.')
             video_link = page[0]+'?name='+page[1]+'&token='+token
-            back = '/'+  '/'.join(l.split('_')) 
+            back = '/'.join(l.split('_')) 
             file = os.path.join(static_dir, 'camera', page[0])
             if os.path.isfile(file):
                 return """

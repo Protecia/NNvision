@@ -162,7 +162,7 @@ def compareCam(ws, lock, force):
                         logger.error('ip {} not in ws but answer correct: so ignore'.format(ip))
                 except requests.exceptions.ConnectionError :
                     pass
-    cameras_users = [(c['username'],c['password']) for c in cameras]
+    cameras_users = list(set([(c['username'],c['password']) for c in cameras]))
     # ws contains new cam or cam not set
     # test connection
     list_cam = []
@@ -196,10 +196,9 @@ def compareCam(ws, lock, force):
         list_cam.append(new_cam)
     # cameras could have wait_for_set camera :
     for cam in cameras :
-        logger.info('testing cam {} /wait_for_set {} / from_client {} / force {}'.format(
+        logger.info('cam {} in state / wait_for_set {} / from_client {} / force {}'.format(
                 cam['ip'],cam['wait_for_set'],cam['from_client'], force))
         if cam['wait_for_set'] or (cam['from_client'] and force==2)  :
-            logger.info('testing cam because reboot')
             for user , passwd in cameras_users:
                 logger.info('testing onvif cam with {} {}'.format(user, passwd))
                 onvif = getOnvifUri(cam['ip'],cam['port_onvif'],user,passwd)
@@ -209,8 +208,9 @@ def compareCam(ws, lock, force):
                     for t, a in auth.items() :
                         try:
                             r = requests.get(http.split('?')[0], auth = a , stream=False, timeout=1)
+                            logger.info('request on {}'.format(http.split('?')[0]))
                             if r.ok:
-                                logger.info('request on camera OK for {} / {} / {} / {}'.format(
+                                logger.info('request  on camera OK for {} / {} / {} / {}'.format(
                                              cam['ip'],user, passwd, t))
                                 cam['brand']=info['Manufacturer']
                                 cam['model']=info['Model']
@@ -246,7 +246,16 @@ def getCam(lock, force= 0):
         pass
 
 def run(period, lock, E_cam_start, E_cam_stop):
-    force = 2
+    # reboot
+    cam = getCam(lock, 2)
+    ws = wsDiscovery(2,20)
+    if not ws==False:
+        list_cam, remove_cam = compareCam(ws, lock, 2)
+        if list_cam : setCam(list_cam)
+        if remove_cam : removeCam(remove_cam)
+    cam = getCam(lock, 1)
+    force = 1
+    E_cam_start.set()
     while True :
         # scan the cam on the network
         ws = wsDiscovery(2,20)

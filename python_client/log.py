@@ -15,7 +15,7 @@ from settings import settings
 #------------------------------------------------------------------------------
 
 class Logger(object):
-    def __init__(self, name, level=10):
+    def __init__(self, name, level=logging.ERROR):
         self.logger = logging.getLogger(name)
         self.logger.setLevel(level)
         formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
@@ -23,8 +23,8 @@ class Logger(object):
         file_handler.setLevel(level)
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
-        
+
     def run(self):
         return self.logger
-        
+
 

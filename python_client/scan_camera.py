@@ -208,8 +208,10 @@ def compareCam(ws, lock, force):
                     auth = {'B':requests.auth.HTTPBasicAuth(user,passwd), 'D':requests.auth.HTTPDigestAuth(user,passwd)}
                     for t, a in auth.items() :
                         try:
-                            r = requests.get(http, auth = a , stream=False, timeout=1)
+                            r = requests.get(http.split('?')[0], auth = a , stream=False, timeout=1)
                             if r.ok:
+                                logger.info('request on camera OK for {} / {} / {} / {}'.format(
+                                             cam['ip'],user, passwd, t))
                                 cam['brand']=info['Manufacturer']
                                 cam['model']=info['Model']
                                 cam['url']= http
@@ -229,7 +231,7 @@ def compareCam(ws, lock, force):
 def getCam(lock, force= 0):
     try :
         logger.info('get camera, force state : {}'.format(force))
-        r = requests.post(settings.SERVER+"getCam", data = {'key': settings.KEY, 'force':force}, timeout = 40 ) 
+        r = requests.post(settings.SERVER+"getCam", data = {'key': settings.KEY, 'force':force}, timeout = 40 )
         c = json.loads(r.text)
         logger.info('get camera : {}'.format(c))
         if not c==False :

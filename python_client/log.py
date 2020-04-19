@@ -15,12 +15,12 @@ from settings import settings
 #------------------------------------------------------------------------------
 
 class Logger(object):
-    def __init__(self, name):
+    def __init__(self, name, level=10):
         self.logger = logging.getLogger(name)
-        self.logger.setLevel(settings.LOG)
+        self.logger.setLevel(level)
         formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
         file_handler = RotatingFileHandler(os.path.join(settings.INSTALL_PATH+'/camera',name+'.log'), 'a', 10000000, 1)
-        file_handler.setLevel(settings.LOG)
+        file_handler.setLevel(level)
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
         

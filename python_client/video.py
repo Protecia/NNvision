@@ -18,27 +18,10 @@ import json
 import os
 import cherrypy
 
-logger = Logger(__name__).run()
-logger.setLevel(settings.VIDEO_LOG)
+logger = Logger('video',settings.VIDEO_LOG).run()
+
 
 class RecCamera(object):
-    @classmethod
-    def kill_ffmpeg_process(cls):
-        for p in ps.process_iter():
-            try :
-                cmd = ''.join(p.cmdline())
-                if 'ffmpeg' in cmd and 'backup' in cmd :
-                    p.terminate()
-                    logger.warning('terminate process {}'.format(cmd))
-                    time.sleep(2)
-                    p.kill()
-                    print(p,"kill")
-            except ps.AccessDenied :
-                pass
-                return False
-            except ps.NoSuchProcess :
-                pass
-        return True
     def __init__(self, E_video):
         self.update = E_video
         Thread(target=self.update_cam).start()
@@ -53,25 +36,7 @@ class RecCamera(object):
                     v['rec'] = False
             logger.info('Update cameras')
             self.update.clear()
-    @classmethod
-    def rec_all_cam(cls):
-        repeat = True
-        while repeat :
-            i = 0
-            try :
-                with open('camera/camera.json', 'r') as json_file:
-                    cameras = json.load(json_file)
-                cameras = dict((item['id'], item) for item in cameras if item['active'])
-                repeat = False
-            except json.decoder.JSONDecodeError :
-                pass
-                i+=1
-                if i > 3 :
-                    break
-        for k,v in cameras.items():
-            cmd = '/usr/local/bin/ffmpeg  -nostats -loglevel 0 -y -i  {} -vcodec copy camera/secu/{}.mp4'.format(v['rtsp'], 'backup.'+datetime.now().strftime("%H")+'_cam'+str(k))
-            Popen(shlex.split(cmd))
-            logger.warning('ffmpeg rec on  {}'.format(cmd))
+    
     def rec_cam(self,cam_id):
         if not self.cameras[cam_id]['rec']:
             self.cameras[cam_id]['rec']=True
@@ -117,6 +82,43 @@ class RecCamera(object):
             while settings.VIDEO_SPACE*1000000-int(check_output(['du','-s', path]).split()[0].decode('utf-8')) < G*1000000 :
                 os.remove(files[0])
                 del(files[0])
+
+
+def rec_all_cam():
+    repeat = True
+    while repeat :
+        i = 0
+        try :
+            with open('camera/camera.json', 'r') as json_file:
+                cameras = json.load(json_file)
+            cameras = dict((item['id'], item) for item in cameras if item['active'])
+            repeat = False
+        except json.decoder.JSONDecodeError :
+            pass
+            i+=1
+            if i > 3 :
+                break
+    for k,v in cameras.items():
+        cmd = '/usr/local/bin/ffmpeg  -nostats -loglevel 0 -y -i  {} -vcodec copy camera/secu/{}.mp4'.format(v['rtsp'], 'backup.'+datetime.now().strftime("%H")+'_cam'+str(k))
+        Popen(shlex.split(cmd))
+        logger.warning('ffmpeg rec on  {}'.format(cmd))
+
+
+def kill_ffmpeg_process():
+    for p in ps.process_iter():
+        try :
+            cmd = ''.join(p.cmdline())
+            if 'ffmpeg' in cmd and 'backup' in cmd :
+                p.terminate()
+                logger.warning('terminate process {}'.format(cmd))
+                time.sleep(2)
+                p.kill()
+        except ps.AccessDenied :
+            pass
+            return False
+        except ps.NoSuchProcess :
+            pass
+    return True
 
 def check_token(token):
     try :
@@ -225,8 +227,9 @@ def http_serve(port):
     cherrypy.quickstart(Root(), '/', config=conf)  # ..and LAUNCH ! :)
 
 def main():
-    RecCamera.kill_ffmpeg_process()
-    RecCamera.rec_all_cam()
+    print(logger)
+    kill_ffmpeg_process()
+    rec_all_cam()
 
 # start the threads
 if __name__ == '__main__':

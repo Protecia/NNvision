@@ -19,8 +19,7 @@ import netifaces as ni
 import xml.etree.ElementTree as ET
 import re
 
-logger = Logger('scan_camera').run()
-logger.setLevel(settings.SCAN_LOG)
+logger = Logger('scan_camera', level=settings.SCAN_LOG).run()
 
 '''
 def wsDiscovery():
@@ -135,7 +134,7 @@ def removeCam(cam):
     return False
 
 
-def compareCam(ws, lock):
+def compareCam(ws, lock, force):
     with lock:
         with open(settings.INSTALL_PATH+'/camera/camera.json', 'r') as out:
             cameras = json.loads(out.read())
@@ -197,8 +196,12 @@ def compareCam(ws, lock):
         list_cam.append(new_cam)
     # cameras could have wait_for_set camera :
     for cam in cameras :
-        if cam['wait_for_set']:
+        logger.info('testing cam {} /wait_for_set {} / from_client {} / force {}'.format(
+                cam['ip'],cam['wait_for_set'],cam['from_client'], force))
+        if cam['wait_for_set'] or (cam['from_client'] and force==2)  :
+            logger.info('testing cam because reboot')
             for user , passwd in cameras_users:
+                logger.info('testing onvif cam with {} {}'.format(user, passwd))
                 onvif = getOnvifUri(cam['ip'],cam['port_onvif'],user,passwd)
                 if onvif :
                     info, rtsp , http = onvif
@@ -223,7 +226,7 @@ def compareCam(ws, lock):
     logger.info('compare camera, list : {} / remove : {}'.format(list_cam,cameras_ip))
     return list_cam, cameras_ip
 
-def getCam(lock, force='0'):
+def getCam(lock, force= 0):
     try :
         logger.info('get camera, force state : {}'.format(force))
         r = requests.post(settings.SERVER+"getCam", data = {'key': settings.KEY, 'force':force}, timeout = 40 ) 
@@ -241,27 +244,27 @@ def getCam(lock, force='0'):
         pass
 
 def run(period, lock, E_cam_start, E_cam_stop):
-    force = '2'
+    force = 2
     while True :
         # scan the cam on the network
         ws = wsDiscovery(2,20)
         if not ws==False:
             # pull the cam from the server
             cam = getCam(lock, force)
+            # compare the cam with the camera file
+            list_cam, remove_cam = compareCam(ws, lock, force)
             # check if changes
             if cam==False :
                 E_cam_start.set()
                 logger.info('camera unchanged : E_cam_start is_set {}'.format(E_cam_start.is_set()))
-                force='0'
+                force= 0
             else :
                 E_cam_stop.set()
                 logger.info(' ********* camera changed : E_cam_stop is_set {}'.format(E_cam_start.is_set()))
-                force = '1'
-            # compare the cam with the camera file
-            list_cam, remove_cam = compareCam(ws, lock)
+                force =  1
             # push the cam to the server
             if list_cam : setCam(list_cam)
-            # inactive the cam
+            # inactive the cam on the server
             if remove_cam : removeCam(remove_cam)
             # wait for the loop
             if force==0:

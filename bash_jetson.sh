@@ -15,7 +15,7 @@ python3 get-pip.py
 #------------------------------------------------------------------------------------
 
 sudo pip3 install -U protobuf
-sudo pip3 install psutil Pillow numpy WSDiscovery requests onvif_zeep-roboticia
+sudo pip3 install psutil Pillow numpy WSDiscovery requests onvif_zeep-roboticia cherrypy python-crontab
 
 ############## compile ffmpeg for jetson : https://github.com/jocover/jetson-ffmpeg 
 git clone https://github.com/jocover/jetson-ffmpeg.git
@@ -65,7 +65,9 @@ git checkout client_server
 (crontab -l 2>/dev/null; echo "@reboot  sleep 30 &&  cd /home/protecia/NNvision/python_client && ./sshtunnel.sh > /home/protecia/NNvision/python_client/camera/ssh.log 2>&1&") | crontab -
 (crontab -l 2>/dev/null; echo "@reboot  sleep 30 &&  cd /home/protecia/NNvision/python_client/ && python3 main.py > /home/protecia/NNvision/python_client/camera/cron.log 2>&1&") | crontab -
 
-
+############ untrack local settings
+git update-index --assume-unchanged settings/*.*
+git update-index --assume-unchanged camera/*
 
 
 

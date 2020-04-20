@@ -99,7 +99,7 @@ def rec_all_cam():
             if i > 3 :
                 break
     for k,v in cameras.items():
-        cmd = '/usr/local/bin/ffmpeg  -nostats -loglevel 0 -y -i  {} -vcodec copy camera/secu/{}.mp4'.format(v['rtsp'], 'backup.'+datetime.now().strftime("%H")+'_cam'+str(k))
+        cmd = '/usr/local/bin/ffmpeg  -nostats -loglevel 0 -y -i  {} -vcodec copy camera/secu/{}.mp4'.format(v['rtsp'], 'backup_'+datetime.now().strftime("%H")+'_cam'+str(k))
         Popen(shlex.split(cmd))
         logger.warning('ffmpeg rec on  {}'.format(cmd))
 
@@ -154,7 +154,7 @@ def http_serve(port):
         def video(self,v,l, token):
             page = v.split('.')
             video_link = page[0]+'?name='+page[1]+'.mp4&token='+token
-            back = 'https://'+'/'.join(l.split('_')) 
+            back = 'http://'+'/'.join(l.split('_')) 
             file = os.path.join(static_dir, 'camera', page[0], page[1]+'.mp4')
             if os.path.isfile(file):
                 return """

@@ -1,3 +1,0 @@
-"""
-log for the camera
-"""

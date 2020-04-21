@@ -126,16 +126,18 @@ def http_serve(port):
     logger.warning('starting cherrypy')
     
     def check_token(token):
-        try :
-            with open(settings.INSTALL_PATH+'/token', 'r') as f:
-                data = json.load(f)
-        except (FileNotFoundError, json.JSONDecodeError) :
-            return False
         for i in range(2):
-            if token == data['token']:
-                return True
-            else :
-                time.sleep(1)    
+            try :
+                with open(settings.INSTALL_PATH+'/token', 'r') as f:
+                    data = json.load(f)
+                if token == data['token1'] or token == data['token2']:
+                    return True
+                else :
+                    time.sleep(1)  
+            except (FileNotFoundError, json.JSONDecodeError) :
+                pass
+                if i==1 :
+                    return False         
         return False
 
     class Root:

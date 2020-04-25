@@ -68,6 +68,7 @@ git checkout client_server
 ############ untrack local settings
 git update-index --assume-unchanged settings/*.*
 git update-index --assume-unchanged camera/*
+git config --global status.showUntrackedFiles no
 
 
 

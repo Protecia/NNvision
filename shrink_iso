@@ -2,3 +2,17 @@ mount the sd card on other ubuntu
 shrink the file system using gparted
 
 dd if=/dev/mmcblk0 of=2020_04_nnvision.img bs=1M count=14500 iflag=fullblock status=progress
+
+** Inflate :
+sudo parted
+
+select /dev/mmcblk0
+print
+resizepart
+120000
+q
+
+
+
+sudo resize2fs /dev/mmcblk0p1
+

@@ -1,0 +1,17 @@
+https://docs.ovh.com/gb/en/vps/configuring-ipv6/
+
+# This file is generated from information provided by the datasource.  Changes
+# to it will not persist across an instance reboot.  To disable cloud-init's
+# network configuration capabilities, write a file
+# /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg with the following:
+# network: {config: disabled}
+network:
+    version: 2
+    ethernets:
+        ens3:
+            dhcp6: no
+            match:
+                name: ens3
+            addresses: ["2001:41d0:404:200:0:0:0:4293/64"]
+            gateway6: "2001:41d0:0404:0200:0000:0000:0000:0001"
+

@@ -3,6 +3,8 @@ FROM nnvision_server_base
 WORKDIR /NNvision
 COPY . /NNvision
 
+RUN pip3 install html2text
+
 # Activate postgresql
 USER postgres
 RUN    /etc/init.d/postgresql start &&\

@@ -11,13 +11,13 @@ ENV LC_ALL en_US.UTF-8
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
                tzdata \
-               wget mlocate build-essential python3 python3-dev  openssh-client python-crontab\
+               wget mlocate build-essential python3 python3-dev  openssh-client \
                python3-pip nano cron yasm pkg-config cmake libjpeg-dev python3-opencv sshpass\
                libpng-dev libtiff-dev libavcodec-dev libavformat-dev autossh \
                libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libgtk-3-dev libatlas-base-dev gfortran libpq-dev \
                && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install psutil Pillow numpy WSDiscovery requests onvif_zeep-roboticia cherrypy
+RUN pip3 install psutil Pillow numpy WSDiscovery requests onvif_zeep-roboticia cherrypy python-crontab
 
 WORKDIR /NNvision
 COPY ./ffmpeg-4.1.3 /NNvision/ffmpeg-4.1.3

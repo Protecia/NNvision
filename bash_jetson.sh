@@ -69,6 +69,8 @@ git checkout client_server
 git update-index --assume-unchanged settings/*.*
 git update-index --assume-unchanged camera/*
 git config --global status.showUntrackedFiles no
+git config credential.helper store
+#git config --global credential.helper 'cache --timeout 7200'
 
 
 

@@ -72,7 +72,8 @@ git config --global status.showUntrackedFiles no
 git config credential.helper store
 #git config --global credential.helper 'cache --timeout 7200'
 
-
+git update-index --skip-worktree settings/*.*
+git update-index --skip-worktree camera/*
 
 
 

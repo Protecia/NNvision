@@ -5,7 +5,7 @@ sudo  apt install -y tzdata libxml2-dev libxslt-dev \
                nano cron yasm cmake libjpeg-dev autossh\
                libpng-dev libtiff-dev libavcodec-dev libavformat-dev \
                libswscale-dev libv4l-dev libxvidcore-dev libx264-dev  \
-               libgtk-3-dev libatlas-base-dev gfortran libpq-dev curl
+               libgtk-3-dev libatlas-base-dev gfortran libpq-dev curl fail2ban
 
 
 
@@ -46,19 +46,19 @@ sed -i '1,10s/GPU=.*/GPU=1/' Makefile
 sed -i '1,10s/CUDNN=.*/CUDNN=1/' Makefile
 sed -i '1,10s/OPENCV=.*/OPENCV=1/' Makefile
 sed -i '1,10s/LIBSO=.*/LIBSO=1/' Makefile
+make -j4
+sudo ldconfig
 #--------------------------------------------------------------------------------------------
 
 
 ############# get nnvision code ##############################################################
 mkdir NNvision
 cd ./NNvision
-git init
-git config core.sparseCheckout true
-git remote add -f origin https://github.com/jjehl/NNvision.git
-echo "python_client" > .git/info/sparse-checkout
-#echo "darknet_nvenc/darknet_pjreddie_201906" >> .git/info/sparse-checkout
-git checkout client_server
+git clone https://github.com/Protecia/python_client.git
 #-------------------------------------------------------------------------------------------
+
+########## swapoff
+sudo -- bash -c 'echo "swapoff -a" >> /etc/systemd/nvzramconfig.sh'
 
 
 #############  Add cron to open sshtunnel #################################################
@@ -66,8 +66,8 @@ git checkout client_server
 (crontab -l 2>/dev/null; echo "@reboot  sleep 30 &&  cd /home/protecia/NNvision/python_client/ && python3 main.py > /home/protecia/NNvision/python_client/camera/cron.log 2>&1&") | crontab -
 
 ############ untrack local settings
-git update-index --assume-unchanged settings/*.*
-git update-index --assume-unchanged camera/*
+#git update-index --assume-unchanged settings/*.*
+#git update-index --assume-unchanged camera/*
 git config --global status.showUntrackedFiles no
 git config credential.helper store
 #git config --global credential.helper 'cache --timeout 7200'

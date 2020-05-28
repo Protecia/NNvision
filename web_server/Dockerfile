@@ -4,6 +4,7 @@ WORKDIR /NNvision
 COPY . /NNvision
 
 # Make django a git repo
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y git
 RUN rm -rf ./django && git clone https://updateProtecia:proteciaforupdate@github.com/Protecia/django.git
 
 RUN pip3 install html2text

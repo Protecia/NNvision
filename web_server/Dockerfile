@@ -3,6 +3,9 @@ FROM nnvision_server_base
 WORKDIR /NNvision
 COPY . /NNvision
 
+# Make django a git repo
+RUN rm -rf ./django && git clone https://updateProtecia:proteciaforupdate@github.com/Protecia/django.git
+
 RUN pip3 install html2text
 
 # Activate postgresql

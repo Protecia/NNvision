@@ -39,6 +39,7 @@ RUN cd opencv-4.3.0 && mkdir build && cd build && \
 	-D CMAKE_INSTALL_PREFIX=/usr/local \
 	-D INSTALL_PYTHON_EXAMPLES=OFF \
 	-D INSTALL_C_EXAMPLES=OFF \
+        -D OPENCV_GENERATE_PKGCONFIG=ON \
 	-D OPENCV_ENABLE_NONFREE=ON \
 	-D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-4.3.0/modules \
 	-D BUILD_EXAMPLES=OFF .. && \
@@ -46,12 +47,11 @@ RUN cd opencv-4.3.0 && mkdir build && cd build && \
     && cd ../.. && rm -rf opencv-4.3.0/ opencv_contrib-4.3.0/
 
 # get darknet
-RUN cd darknet
-RUN sed -i '1,10s/GPU=.*/GPU=1/' Makefile && sed -i '1,10s/CUDNN=.*/CUDNN=1/' Makefile && \
-    sed -i '1,10s/OPENCV=.*/OPENCV=1/' Makefile && sed -i '1,10s/LIBSO=.*/LIBSO=1/' Makefile &&  \
-    sed -i '1,10s/CUDNN_HALF=.*/CUDNN_HALF=1/' Makefile
-RUN make -s  --no-print-directory && \
-    rm -rf backup include scripts src results examples && rm L* M* R*
+RUN cd darknet &&  sed -i '1,10s/GPU=.*/GPU=1/' Makefile && sed -i '1,10s/CUDNN=.*/CUDNN=1/' Makefile && \
+                   sed -i '1,10s/OPENCV=.*/OPENCV=1/' Makefile && sed -i '1,10s/LIBSO=.*/LIBSO=1/' Makefile &&  \
+                   sed -i '1,10s/CUDNN_HALF=.*/CUDNN_HALF=1/' Makefile && \
+                   make -s  --no-print-directory && \
+                   rm -rf backup include scripts src results examples && rm L* M* R*
 
 
 

@@ -75,6 +75,10 @@ git config credential.helper store
 git update-index --skip-worktree settings/*.*
 git update-index --skip-worktree camera/*
 
+######### give reboot privilege ###############
+sudo -- bash -c 'echo "protecia ALL=(root) NOPASSWD: /sbin/reboot" >  /etc/sudoers.d/tunnel'
+
+
 
 
 

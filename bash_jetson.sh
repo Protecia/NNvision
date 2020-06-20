@@ -63,7 +63,7 @@ sudo -- bash -c 'echo "swapoff -a" >> /etc/systemd/nvzramconfig.sh'
 
 #############  Add cron to open sshtunnel #################################################
 (crontab -l 2>/dev/null; echo "@reboot  sleep 30 &&  cd /home/protecia/NNvision/python_client && ./sshtunnel.sh > /home/protecia/NNvision/python_client/camera/ssh.log 2>&1&") | crontab -
-(crontab -l 2>/dev/null; echo "@reboot  sleep 30 &&  cd /home/protecia/NNvision/python_client/ && python3 main.py > /home/protecia/NNvision/python_client/camera/cron.log 2>&1&") | crontab -
+(crontab -l 2>/dev/null; echo "@reboot  sleep 30 &&  cd /home/protecia/NNvision/python_client/ && python3 main.py > /home/protecia/NNvision/python_client/camera/cron_main.log 2>&1&") | crontab -
 
 ############ untrack local settings
 #git update-index --assume-unchanged settings/*.*

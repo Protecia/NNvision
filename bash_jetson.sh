@@ -72,12 +72,21 @@ git config --global status.showUntrackedFiles no
 git config credential.helper store
 #git config --global credential.helper 'cache --timeout 7200'
 
-git update-index --skip-worktree settings/*.*
+#git update-index --skip-worktree settings/*.*
 git update-index --skip-worktree camera/*
 
 ######### give reboot privilege ###############
 sudo -- bash -c 'echo "protecia ALL=(root) NOPASSWD: /sbin/reboot" >  /etc/sudoers.d/tunnel'
 
+
+####### setup ssh ################
+sudo -- bash -c 'echo "TCPKeepAlive yes" >> /etc/ssh/ssh_config'
+sudo -- bash -c 'echo "ServerAliveCountMax 3" >> /etc/ssh/ssh_config'
+sudo -- bash -c 'echo "ServerAliveInterval 15" >> /etc/ssh/ssh_config'
+sudo -- bash -c 'echo "ExitOnForwardFailure yes" >> /etc/ssh/ssh_config'
+
+ssh-keygen -t rsa
+ssh-copy-id -i ~/.ssh/id_rsa.pub -p 2222 cez542de@client.protecia.com
 
 
 

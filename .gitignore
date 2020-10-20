@@ -101,6 +101,7 @@ ENV/
 # migrations files
 app1/migrations/*
 app2/migrations/*
+app3/migrations/*
 
 # weights files
 *.weights

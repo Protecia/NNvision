@@ -13,7 +13,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y apt-utils
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && apt-get install -y wget mlocate build-essential apache2 apache2-dev python3 python3-dev python3-pip nano cron libpq-dev postgresql
 
 RUN apt-get install -y python3-opencv
-RUN pip3 install psutil twilio Pillow  django python-crontab psycopg2 daphne
+RUN pip3 install psutil twilio Pillow  django python-crontab psycopg2 daphne html2text
 
 WORKDIR /NNvision
 COPY . /NNvision

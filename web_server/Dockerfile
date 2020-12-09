@@ -16,10 +16,10 @@ RUN    /etc/init.d/postgresql start &&\
 
 USER root
 # Activate django
-RUN cd django && python3 manage.py collectstatic && /etc/init.d/postgresql start &&\
+RUN cd django && mv projet/settings.base.py projet/settings.py && python3 manage.py collectstatic && /etc/init.d/postgresql start &&\
     python3 manage.py makemigrations &&  python3 manage.py migrate && python3 manage.py loaddata group.json &&\
     echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@protecia.com', 'protecia')" | python3 manage.py shell && \
-    /etc/init.d/postgresql stop
+    /etc/init.d/postgresql stop && mv projet/settings.py projet/settings.base.py
 
 RUN django/change_right.sh  && a2enmod ssl && a2ensite protecia && rm Dockerfile* && rm build.sh
  

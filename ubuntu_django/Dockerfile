@@ -20,8 +20,9 @@ COPY . /NNvision
 
 RUN rm Dockerfile
 
-RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y software-properties-common && add-apt-repository ppa:certbot/certbot &&\
-                                   apt update && apt install -y certbot && apt install -y python-certbot-apache
+RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y software-properties-common
+
+RUN apt update && apt install -y certbot python3-certbot-apache
 
 
 RUN mv protecia.conf /etc/apache2/sites-available/protecia.conf

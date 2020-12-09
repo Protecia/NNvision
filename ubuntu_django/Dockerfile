@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 RUN apt-get update
 
@@ -19,15 +19,6 @@ WORKDIR /NNvision
 COPY . /NNvision
 
 RUN rm Dockerfile
-
-
-# Activate mod_wsgi
-#RUN tar  xvfz mod_wsgi-4.6.5.tar.gz && rm mod_wsgi-4.6.5.tar.gz && cd mod_wsgi-4.6.5 && \
-#    ./configure  --with-apxs=/usr/bin/apxs2  --with-python=/usr/bin/python3 && make && make install && \
-#    echo "LoadModule  wsgi_module /usr/lib/apache2/modules/mod_wsgi.so" > /etc/apache2/mods-available/wsgi.load && \
-#    mv ../wsgi.conf /etc/apache2/mods-available/ && cd .. && rm -rf mod_wsgi-4.6.5
-
-
 
 RUN DEBIAN_FRONTEND=noninteractive apt update && apt install -y software-properties-common && add-apt-repository ppa:certbot/certbot &&\
                                    apt update && apt install -y certbot && apt install -y python-certbot-apache

@@ -3,6 +3,9 @@ shrink the file system using gparted
 
 dd if=/dev/mmcblk0 of=2020_04_nnvision.img bs=1M count=14500 iflag=fullblock status=progress
 
+
+Mise en production box : 
+
 ** Inflate :
 sudo parted
 
@@ -16,3 +19,14 @@ q
 
 sudo resize2fs /dev/mmcblk0p1
 
+libérer les crons
+connecter au ssh 
+
+ssh-keygen -t rsa
+ssh-copy-id -i ~/.ssh/id_rsa.pub -p 2222 cez542de@client.protecia.com
+
+pass : ki4d6z
+
+git pull
+
+faire le fichier de conf

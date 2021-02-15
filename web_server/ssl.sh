@@ -1,1 +1,1 @@
-certbot --apache
+certbot certonly --webroot

@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/l4t-base:r32.3.1
+FROM nvcr.io/nvidia/l4t-ml:r32.5.0-py3
 
 RUN apt-get update && apt-get install -y apt-utils && rm -rf /var/lib/apt/lists/*
 
@@ -8,49 +8,28 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-               tzdata libxml2-dev libxslt-dev \
-               wget mlocate build-essential python3 python3-dev  openssh-client sshpass\
-               python3-pip nano cron yasm pkg-config cmake libjpeg-dev \
+tzdata libxml2-dev libxslt-dev \
+               wget mlocate build-essential openssh-client sshpass\
+               nano cron yasm cmake libjpeg-dev autossh \
                libpng-dev libtiff-dev libavcodec-dev libavformat-dev \
-               libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libgtk-3-dev libatlas-base-dev gfortran libpq-dev \
-               && rm -rf /var/lib/apt/lists/*
-
-
-RUN pip3 install cython psutil Pillow numpy WSDiscovery requests onvif_zeep-roboticia
+               libswscale-dev libv4l-dev libxvidcore-dev libx264-dev  \
+               libgtk-3-dev libatlas-base-dev gfortran libpq-dev curl fail2ban
 
 WORKDIR /NNvision
-COPY . /NNvision
 
-# Compile ffmpeg
-RUN cd ffmpeg-4.1.3/ && \
-    ./configure --enable-nonfree --enable-shared --enable-gpl --enable-libx264 --cc="gcc -fPIC" && make -j4 && make install && cd .. && rm -rf ffmpeg-4.1.3
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python3 get-pip.py
 
-# Compile OpenCV
-# start from opencv image ready : https://forums.developer.nvidia.com/t/process-to-install-opencv-4-1-on-nano/75801 
-# https://github.com/mdegans/nano_build_opencv/tree/docker  mdegans/tegra-opencv:latest
-RUN cd opencv-3.4.4 && mkdir build && cd build && \
-    cmake -D CMAKE_BUILD_TYPE=RELEASE \
-	-D CMAKE_INSTALL_PREFIX=/usr/local \
-	-D INSTALL_PYTHON_EXAMPLES=OFF \
-	-D INSTALL_C_EXAMPLES=OFF \
-	-D OPENCV_ENABLE_NONFREE=ON \
-	-D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-3.4.4/modules \
-	-D BUILD_EXAMPLES=OFF .. && \
-    make && make install && ln -s /usr/local/python/cv2/python-3.6/cv2.cpython-36m-aarch64-linux-gnu.so /usr/local/lib/python3.6/dist-packages/cv2.so && ldconfig \
-    && cd ../.. && rm -rf opencv-3.4.4/ opencv_contrib-3.4.4/
+RUN pip install psutil Pillow WSDiscovery requests onvif_zeep-roboticia cherrypy python-crontab
 
-RUN cd darknet_pjreddie_201906 && make -s  --no-print-directory && \
-    rm -rf backup include scripts src results examples && rm L* M* R*
+ENV LD_LIBRARY_PATH=/usr/local/cuda-10.2/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
+RUN git clone https://github.com/AlexeyAB/darknet
 
+RUN cd  darknet  && \
+        sed -i '1,10s/GPU=.*/GPU=1/' Makefile && \
+        sed -i '1,10s/CUDNN=.*/CUDNN=1/' Makefile && \
+        sed -i '1,10s/OPENCV=.*/OPENCV=1/' Makefile && \
+        sed -i '1,10s/LIBSO=.*/LIBSO=1/' Makefile
 
-
-
-
-
-
-
-
-
+# darknet have to be compiled in the container and commit after -> cd darknet && make -j4 && ldconfig

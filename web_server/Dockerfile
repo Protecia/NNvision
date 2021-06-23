@@ -26,3 +26,5 @@ RUN django/change_right.sh && a2enmod  wsgi && a2enmod ssl && a2ensite protecia 
  
 
 CMD ["/NNvision/start.sh"]
+
+# missing uvicorn and gunicorn install

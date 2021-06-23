@@ -105,3 +105,4 @@ app2/migrations/*
 # weights files
 *.weights
 
+.idea/

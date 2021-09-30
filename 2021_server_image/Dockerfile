@@ -14,10 +14,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && apt-get install 
     apache2 apache2-dev python3 python3-dev python3-pip nano cron libpq-dev postgresql software-properties-common \
     git  python3-opencv
 
-RUN DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:certbot/certbot && apt update && apt install -y certbot && \
-    apt install -y python-certbot-apache
-
-RUN pip3 install psutil twilio Pillow  django python-crontab psycopg2 reportlab html2text uvicorn gunicorn
+RUN pip3 install psutil twilio Pillow  django python-crontab psycopg2 reportlab html2text uvicorn gunicorn certbot
 
 WORKDIR /NNvision
 COPY . /NNvision

@@ -1,9 +1,0 @@
-INSTALL JETSON NANO
-
-> sudo apt install gparted
-
-Create new partition
-format using ubuntu with LUKS using ubuntu gnome
-automount using ubuntu gnome
-
-apply the bash_jetson.sh script

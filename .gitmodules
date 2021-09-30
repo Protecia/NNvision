@@ -1,6 +1,0 @@
-[submodule "web_server/django"]
-	path = web_server/django
-	url = https://github.com/jjehl/django.git
-[submodule "python_client"]
-	path = python_client
-	url = https://github.com/Protecia/python_client.git

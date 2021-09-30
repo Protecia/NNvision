@@ -23,7 +23,8 @@ WORKDIR /NNvision
 COPY . /NNvision
 
 RUN rm Dockerfile
-RUN mv protecia.conf /etc/apache2/sites-available/protecia.conf
+RUN mv jouvencia-80.conf /etc/apache2/sites-available/jouvencia-80.conf && \
+    mv jouvencia-ssl.conf /etc/apache2/sites-available/jouvencia-ssl.conf
 
 # Activate postgresql
 USER postgres

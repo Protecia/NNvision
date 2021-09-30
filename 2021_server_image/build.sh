@@ -1,0 +1,1 @@
+docker build -t Roboticia/nnvision_server:1.5 .

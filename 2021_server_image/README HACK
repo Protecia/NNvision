@@ -1,0 +1,9 @@
+Allow auto relaoad in Uvicorn : uvicorn/main.py
+https://github.com/encode/uvicorn/issues/675
+
+here the code to force reload line 422
+
+if config.should_reload:
+    server.force_exit = True
+    sock = config.bind_socket()
+    ChangeReload(config, target=server.run, sockets=[sock]).run()

@@ -29,6 +29,8 @@ RUN    /etc/init.d/postgresql start &&\
        psql --command "CREATE USER djdb WITH PASSWORD 'protecia';" && \
        psql --command "CREATE DATABASE protecia WITH OWNER djdb;" && /etc/init.d/postgresql stop
 
+RUN git clone https://updateprotecia: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@github.com/Protecia/django.git
+
 USER root
 # Activate django
 RUN cd django && python3 manage.py collectstatic && /etc/init.d/postgresql start &&\

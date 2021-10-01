@@ -41,7 +41,7 @@ USER root
 
 # RUN django/change_right.sh
 RUN ls
-RUN a2enmod ssl && a2ensite jouvencia-80 && a2ensite jouvencia-ssl && rm Dockerfile build.sh README_HACK
+RUN a2enmod ssl && a2ensite jouvencia-80 && a2ensite jouvencia-ssl && rm build.sh README_HACK
 
 
 CMD ["/NNvision/start.sh"]

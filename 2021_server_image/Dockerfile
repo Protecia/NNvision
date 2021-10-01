@@ -32,14 +32,16 @@ RUN    /etc/init.d/postgresql start &&\
 
 
 USER root
-RUN git clone https://updateprotecia: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@github.com/Protecia/django.git
+# RUN git clone https://updateprotecia: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@github.com/Protecia/django.git
 # Activate django
-RUN cd django && python3 manage.py collectstatic && /etc/init.d/postgresql start &&\
-    python3 manage.py makemigrations &&  python3 manage.py migrate && python3 manage.py loaddata group.json &&\
-    echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@protecia.com', 'protecia')" | python3 manage.py shell && \
-    /etc/init.d/postgresql stop
+# RUN cd django && python3 manage.py collectstatic && /etc/init.d/postgresql start &&\
+#     python3 manage.py makemigrations &&  python3 manage.py migrate && python3 manage.py loaddata group.json &&\
+#     echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'admin@protecia.com', 'protecia')" | python3 manage.py shell && \
+#     /etc/init.d/postgresql stop
 
-RUN django/change_right.sh && a2enmod ssl && a2ensite protecia && rm Dockerfile* && rm build.sh
+# RUN django/change_right.sh
+
+RUN a2enmod ssl && a2ensite jouvencia-80 && a2ensite jouvencia-ssl && rm Dockerfile* && rm build.sh
 
 
 CMD ["/NNvision/start.sh"]

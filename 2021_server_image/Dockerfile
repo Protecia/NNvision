@@ -14,7 +14,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && apt-get install 
     apache2 apache2-dev python3 python3-dev python3-pip nano cron libpq-dev postgresql software-properties-common \
     git  python3-opencv
 
-RUN pip3 install psutil twilio Pillow  django python-crontab psycopg2 reportlab html2text uvicorn gunicorn certbot
+RUN pip3 install psutil twilio Pillow  django python-crontab psycopg2 reportlab html2text uvicorn gunicorn certbot \
+    django_compressor geopy BeautifulSoup4 websockets docusign-esign  google-api-python-client matplotlib \
+    python-docx
 
 WORKDIR /NNvision
 COPY . /NNvision
@@ -22,6 +24,7 @@ COPY . /NNvision
 RUN rm Dockerfile
 RUN mv jouvencia-80.conf /etc/apache2/sites-available/jouvencia-80.conf && \
     mv jouvencia-ssl.conf /etc/apache2/sites-available/jouvencia-ssl.conf
+    mv ports.conf /etc/apache2/ports.conf
 
 # Activate postgresql
 USER postgres
@@ -41,7 +44,7 @@ USER root
 
 # RUN django/change_right.sh
 RUN ls
-RUN a2enmod ssl && a2ensite jouvencia-80 && a2ensite jouvencia-ssl && rm build.sh README_HACK
+RUN a2enmod rewrite && a2enmod ssl && a2ensite jouvencia-80 && a2ensite jouvencia-ssl && rm build.sh README_HACK
 
 
 CMD ["/NNvision/start.sh"]

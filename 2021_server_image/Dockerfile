@@ -16,7 +16,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && apt-get install 
 
 RUN pip3 install psutil twilio Pillow  django python-crontab psycopg2 reportlab html2text uvicorn gunicorn certbot \
     django_compressor geopy BeautifulSoup4 websockets docusign-esign  google-api-python-client matplotlib \
-    python-docx
+    python-docx PyPDF2 django-filter xhtml2pdf
 
 WORKDIR /NNvision
 COPY . /NNvision
